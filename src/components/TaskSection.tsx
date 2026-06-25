@@ -1,0 +1,68 @@
+import type { Todo } from '../types/todo'
+import TodoItem from './TodoItem'
+import { CheckCircleIcon, ChevronIcon, ClockIcon } from './TodosUi'
+
+interface TaskSectionProps {
+  title: string
+  variant: 'pending' | 'completed'
+  todos: Todo[]
+  isOpen: boolean
+  onToggle: () => void
+  onEdit: (todo: Todo) => void
+  onDelete: (id: string) => void
+  onToggleStatus: (todo: Todo) => void
+}
+
+export default function TaskSection({
+  title,
+  variant,
+  todos,
+  isOpen,
+  onToggle,
+  onEdit,
+  onDelete,
+  onToggleStatus,
+}: TaskSectionProps) {
+  const isPending = variant === 'pending'
+  const Icon = isPending ? ClockIcon : CheckCircleIcon
+  const headerColor = isPending ? 'text-blue-600' : 'text-green-600'
+
+  return (
+    <section className="space-y-4">
+      <button
+        type="button"
+        onClick={onToggle}
+        className={`flex w-full items-center gap-2.5 text-left text-base font-bold tracking-wide ${headerColor}`}
+      >
+        <Icon className="h-4 w-4" />
+        <span>{title}</span>
+        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-500">
+          {todos.length}
+        </span>
+        <span className="ml-auto">
+          <ChevronIcon up={isOpen} className="h-4 w-4 text-slate-400" />
+        </span>
+      </button>
+
+      {isOpen && (
+        <ul className="space-y-3">
+          {todos.length === 0 ? (
+            <li className="rounded-2xl border border-dashed border-slate-200 py-8 text-center text-sm text-slate-400">
+              Nenhuma tarefa nesta seção.
+            </li>
+          ) : (
+            todos.map((todo) => (
+              <TodoItem
+                key={todo.id}
+                todo={todo}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onToggleStatus={onToggleStatus}
+              />
+            ))
+          )}
+        </ul>
+      )}
+    </section>
+  )
+}
