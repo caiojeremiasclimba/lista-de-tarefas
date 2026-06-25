@@ -6,7 +6,7 @@ import FilterTabs, { type FiltroTarefas } from './FilterTabs'
 import SearchBar from './SearchBar'
 import TaskSection from './TaskSection'
 import TodoForm from './TodoForm'
-import { PlusIcon } from './TodosUi'
+import { LogOutIcon, PlusIcon } from './TodosUi'
 
 interface TodosScreenProps {
   userEmail: string
@@ -140,6 +140,7 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
 
   const showPendentes = filtroAtivo === 'todas' || filtroAtivo === 'pendentes'
   const showConcluidas = filtroAtivo === 'todas' || filtroAtivo === 'concluidas'
+  const userInitial = userEmail ? userEmail.charAt(0).toUpperCase() : 'U'
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100">
@@ -224,14 +225,23 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
         Nova tarefa
       </button>
 
-      <footer className="relative border-t border-white/60 bg-white/80 px-6 py-4 backdrop-blur-sm sm:px-8">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
-          <p className="truncate text-sm text-slate-500">{userEmail}</p>
+      <footer className="relative h-16 shrink-0 border-t border-slate-200/40 bg-transparent px-6 backdrop-blur-md sm:px-8">
+        <div className="mx-auto flex h-full max-w-3xl items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600"
+              aria-hidden
+            >
+              {userInitial}
+            </div>
+            <p className="truncate text-sm text-slate-500">{userEmail}</p>
+          </div>
           <button
             type="button"
             onClick={onLogout}
-            className="shrink-0 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+            className="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100/60 hover:text-slate-800"
           >
+            <LogOutIcon />
             Sair
           </button>
         </div>
