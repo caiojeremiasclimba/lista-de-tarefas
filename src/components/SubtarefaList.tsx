@@ -1,4 +1,5 @@
 import type { Subtarefa, SubtarefaDraft } from '../types/subtarefa'
+import { createSubtarefaDraft, getSubtarefaDraftKey } from '../types/subtarefa'
 
 interface SubtarefaListReadonlyProps {
   mode: 'readonly'
@@ -60,7 +61,11 @@ export default function SubtarefaList(props: SubtarefaListProps) {
   const { subtarefas, onChange } = props
 
   function updateTitulo(index: number, titulo: string) {
-    onChange(subtarefas.map((s, i) => (i === index ? { ...s, titulo } : s)))
+    onChange(
+      subtarefas.map((s, i) =>
+        i === index ? { ...s, titulo, concluida: s.concluida ?? false } : s
+      )
+    )
   }
 
   function removeItem(index: number) {
@@ -68,13 +73,13 @@ export default function SubtarefaList(props: SubtarefaListProps) {
   }
 
   function addItem() {
-    onChange([...subtarefas, { titulo: '' }])
+    onChange([...subtarefas, createSubtarefaDraft()])
   }
 
   return (
     <div className="space-y-2">
       {subtarefas.map((sub, index) => (
-        <div key={sub.id ?? `draft-${index}`} className="flex items-center gap-2">
+        <div key={getSubtarefaDraftKey(sub)} className="flex items-center gap-2">
           <input
             type="text"
             value={sub.titulo}
