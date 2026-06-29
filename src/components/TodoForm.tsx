@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import type { SubmitEvent } from 'react'
 import type { Categoria } from '../types/categoria'
+import { createSubtarefaDraft } from '../types/subtarefa'
 import type { Todo, TodoFormData, TodoStatus } from '../types/todo'
 import { TODO_STATUS_CONFIG, TODO_STATUSES } from '../constants/todoStatus'
 import { validateTodo } from '../utils/validateTodo'
@@ -45,11 +46,14 @@ export default function TodoForm({
         data_prevista: editingTodo.data_prevista ?? '',
         status: editingTodo.status,
         categoria_id: editingTodo.categoria_id ?? '',
-        subtarefas: (editingTodo.subtarefas ?? []).map((s) => ({
-          id: s.id,
-          titulo: s.titulo,
-          concluida: s.concluida,
-        })),
+        subtarefas: (editingTodo.subtarefas ?? []).map((s) =>
+          createSubtarefaDraft({
+            id: s.id,
+            titulo: s.titulo,
+            concluida: s.concluida,
+            clientKey: s.id,
+          })
+        ),
       })
     } else {
       setForm({
