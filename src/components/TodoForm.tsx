@@ -4,6 +4,7 @@ import type { Categoria } from '../types/categoria'
 import type { Todo, TodoFormData, TodoStatus } from '../types/todo'
 import { TODO_STATUS_CONFIG, TODO_STATUSES } from '../constants/todoStatus'
 import { validateTodo } from '../utils/validateTodo'
+import SubtarefaList from './SubtarefaList'
 
 interface TodoFormProps {
   editingTodo?: Todo | null
@@ -19,6 +20,7 @@ const emptyForm: TodoFormData = {
   data_prevista: '',
   status: 'pendente',
   categoria_id: '',
+  subtarefas: [],
 }
 
 export default function TodoForm({
@@ -43,6 +45,11 @@ export default function TodoForm({
         data_prevista: editingTodo.data_prevista ?? '',
         status: editingTodo.status,
         categoria_id: editingTodo.categoria_id ?? '',
+        subtarefas: (editingTodo.subtarefas ?? []).map((s) => ({
+          id: s.id,
+          titulo: s.titulo,
+          concluida: s.concluida,
+        })),
       })
     } else {
       setForm({
@@ -137,6 +144,17 @@ export default function TodoForm({
         {categorias.length === 0 && (
           <p className="mt-1 text-sm text-slate-500">Crie uma categoria na sidebar</p>
         )}
+      </div>
+
+      <div>
+        <label className="mb-2 block text-sm font-medium text-slate-700">
+          Subtarefas
+        </label>
+        <SubtarefaList
+          mode="editable"
+          subtarefas={form.subtarefas}
+          onChange={(subtarefas) => setForm((prev) => ({ ...prev, subtarefas }))}
+        />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">

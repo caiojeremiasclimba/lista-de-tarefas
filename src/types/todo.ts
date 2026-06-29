@@ -1,3 +1,5 @@
+import type { Subtarefa, SubtarefaDraft } from './subtarefa'
+
 export type TodoStatus = 'pendente' | 'em_andamento' | 'concluida' | 'cancelada'
 
 export interface Todo {
@@ -9,6 +11,7 @@ export interface Todo {
   status: TodoStatus
   categoria_id: string | null
   created_at: string
+  subtarefas?: Subtarefa[]
 }
 
 export interface TodoFormData {
@@ -17,6 +20,7 @@ export interface TodoFormData {
   data_prevista: string
   status: TodoStatus
   categoria_id: string
+  subtarefas: SubtarefaDraft[]
 }
 
 export interface TodoValidationErrors {
