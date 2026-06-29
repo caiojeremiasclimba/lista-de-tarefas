@@ -1,16 +1,30 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { SubmitEvent } from 'react'
+import type { Categoria } from '../types/categoria'
 
 interface CategoriaFormProps {
+  editingCategoria?: Categoria | null
   onSubmit: (nome: string) => Promise<void>
   onClose?: () => void
 }
 
-export default function CategoriaForm({ onSubmit, onClose }: CategoriaFormProps) {
+export default function CategoriaForm({
+  editingCategoria,
+  onSubmit,
+  onClose,
+}: CategoriaFormProps) {
   const [nome, setNome] = useState('')
   const [erro, setErro] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+
+  const isEditing = Boolean(editingCategoria)
+
+  useEffect(() => {
+    setNome(editingCategoria?.nome ?? '')
+    setErro(null)
+    setSubmitError(null)
+  }, [editingCategoria])
 
   async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -26,9 +40,11 @@ export default function CategoriaForm({ onSubmit, onClose }: CategoriaFormProps)
     setLoading(true)
     try {
       await onSubmit(trimmed)
-      setNome('')
+      if (!isEditing) {
+        setNome('')
+      }
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Erro ao criar categoria')
+      setSubmitError(err instanceof Error ? err.message : 'Erro ao salvar categoria')
     } finally {
       setLoading(false)
     }
@@ -36,7 +52,9 @@ export default function CategoriaForm({ onSubmit, onClose }: CategoriaFormProps)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-lg font-semibold text-slate-800">Nova categoria</h2>
+      <h2 className="text-lg font-semibold text-slate-800">
+        {isEditing ? 'Editar categoria' : 'Nova categoria'}
+      </h2>
 
       <div>
         <label htmlFor="categoria-nome" className="mb-1 block text-sm font-medium text-slate-700">
@@ -64,7 +82,7 @@ export default function CategoriaForm({ onSubmit, onClose }: CategoriaFormProps)
           disabled={loading}
           className="rounded-xl bg-blue-600 px-4 py-2.5 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? 'Criando...' : 'Criar'}
+          {loading ? 'Salvando...' : isEditing ? 'Salvar' : 'Criar'}
         </button>
 
         {onClose && (

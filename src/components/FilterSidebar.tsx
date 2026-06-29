@@ -1,9 +1,11 @@
+import { useEffect, useRef, useState } from 'react'
 import type { Categoria } from '../types/categoria'
 import type { TodoStatus } from '../types/todo'
 import {
   AlertIcon,
   CheckCircleIcon,
   ClockIcon,
+  DotsVerticalIcon,
   ListIcon,
   PlayCircleIcon,
   TagIcon,
@@ -23,6 +25,8 @@ interface FilterSidebarProps {
   countsPorCategoria: Record<string, number>
   onCategoriaChange: (id: string | null) => void
   onNovaCategoria: () => void
+  onEditCategoria: (categoria: Categoria) => void
+  onDeleteCategoria: (id: string) => void
 }
 
 type FilterItem = { id: FiltroTarefas; label: string; Icon: typeof ListIcon }
@@ -83,41 +87,102 @@ function FilterButton({
 }
 
 function CategoryFilterButton({
-  id,
-  label,
+  categoria,
   active,
   count,
   onChange,
+  onEdit,
+  onDelete,
 }: {
-  id: string
-  label: string
+  categoria: Categoria
   active: string | null
   count: number
   onChange: (id: string | null) => void
+  onEdit: (categoria: Categoria) => void
+  onDelete: (id: string) => void
 }) {
-  const isActive = active === id
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const isActive = active === categoria.id
+
+  useEffect(() => {
+    if (!menuOpen) return
+
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [menuOpen])
+
+  function handleEdit() {
+    setMenuOpen(false)
+    onEdit(categoria)
+  }
+
+  function handleDelete() {
+    setMenuOpen(false)
+    onDelete(categoria.id)
+  }
 
   return (
-    <button
-      type="button"
-      onClick={() => onChange(isActive ? null : id)}
-      aria-current={isActive ? 'page' : undefined}
-      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
-        isActive
-          ? 'bg-blue-50 font-medium text-blue-700'
-          : 'text-slate-600 hover:bg-slate-50'
+    <div
+      className={`flex items-center gap-0.5 rounded-xl pr-1 transition-colors ${
+        isActive ? 'bg-blue-50' : 'hover:bg-slate-50'
       }`}
     >
-      <TagIcon className="h-4 w-4 shrink-0" />
-      <span className="truncate">{label}</span>
-      <span
-        className={`ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-xs font-medium ${
-          isActive ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'
+      <button
+        type="button"
+        onClick={() => onChange(isActive ? null : categoria.id)}
+        aria-current={isActive ? 'page' : undefined}
+        className={`flex min-w-0 flex-1 items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
+          isActive ? 'font-medium text-blue-700' : 'text-slate-600'
         }`}
       >
-        {count}
-      </span>
-    </button>
+        <TagIcon className="h-4 w-4 shrink-0" />
+        <span className="truncate">{categoria.nome}</span>
+        <span
+          className={`ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-xs font-medium ${
+            isActive ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'
+          }`}
+        >
+          {count}
+        </span>
+      </button>
+
+      <div className="relative shrink-0" ref={menuRef}>
+        <button
+          type="button"
+          onClick={() => setMenuOpen((prev) => !prev)}
+          aria-label={`Ações da categoria ${categoria.nome}`}
+          className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+        >
+          <DotsVerticalIcon className="h-4 w-4" />
+        </button>
+
+        {menuOpen && (
+          <div className="absolute right-0 z-10 mt-1 w-36 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
+            <button
+              type="button"
+              onClick={handleEdit}
+              className="w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+            >
+              Editar
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+            >
+              Excluir
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -161,6 +226,8 @@ export default function FilterSidebar({
   countsPorCategoria,
   onCategoriaChange,
   onNovaCategoria,
+  onEditCategoria,
+  onDeleteCategoria,
 }: FilterSidebarProps) {
   return (
     <nav aria-label="Filtros de tarefas" className="space-y-6 px-3 py-6">
@@ -191,11 +258,12 @@ export default function FilterSidebar({
           categorias.map((cat) => (
             <CategoryFilterButton
               key={cat.id}
-              id={cat.id}
-              label={cat.nome}
+              categoria={cat}
               active={categoriaAtiva}
               count={countsPorCategoria[cat.id] ?? 0}
               onChange={onCategoriaChange}
+              onEdit={onEditCategoria}
+              onDelete={onDeleteCategoria}
             />
           ))
         )}

@@ -43,6 +43,7 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
   const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [showCategoriaForm, setShowCategoriaForm] = useState(false)
+  const [editingCategoria, setEditingCategoria] = useState<Categoria | null>(null)
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
   const [secoesAbertas, setSecoesAbertas] = useState<SecoesAbertas>(SECOES_INICIAIS)
   const [loading, setLoading] = useState(true)
@@ -99,8 +100,19 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
     setEditingTodo(null)
   }
 
+  function openNovaCategoriaForm() {
+    setEditingCategoria(null)
+    setShowCategoriaForm(true)
+  }
+
+  function openEditCategoriaForm(categoria: Categoria) {
+    setEditingCategoria(categoria)
+    setShowCategoriaForm(true)
+  }
+
   function closeCategoriaForm() {
     setShowCategoriaForm(false)
+    setEditingCategoria(null)
   }
 
   async function handleCreateCategoria(nome: string) {
@@ -118,6 +130,66 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
     setCategorias((prev) => [...prev, created].sort((a, b) => a.nome.localeCompare(b.nome)))
     setFiltroCategoria(created.id)
     closeCategoriaForm()
+  }
+
+  async function handleUpdateCategoria(id: string, nome: string) {
+    const { data: updated, error: updateError } = await supabase
+      .from('categorias')
+      .update({ nome })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (updateError) throw new Error(updateError.message)
+
+    setCategorias((prev) =>
+      prev.map((c) => (c.id === id ? updated : c)).sort((a, b) => a.nome.localeCompare(b.nome))
+    )
+    closeCategoriaForm()
+  }
+
+  async function handleDeleteCategoria(id: string) {
+    const qtd = todos.filter((t) => t.categoria_id === id).length
+
+    const mensagem =
+      qtd > 0
+        ? `Excluir esta categoria? ${qtd} tarefa(s) ficarão sem categoria.`
+        : 'Deseja excluir esta categoria?'
+
+    if (!window.confirm(mensagem)) return
+
+    if (qtd > 0) {
+      const { error: unlinkError } = await supabase
+        .from('tarefas')
+        .update({ categoria_id: null })
+        .eq('categoria_id', id)
+
+      if (unlinkError) {
+        setError(unlinkError.message)
+        return
+      }
+    }
+
+    const { error: deleteError } = await supabase.from('categorias').delete().eq('id', id)
+
+    if (deleteError) {
+      setError(deleteError.message)
+      return
+    }
+
+    setCategorias((prev) => prev.filter((c) => c.id !== id))
+    if (filtroCategoria === id) setFiltroCategoria(null)
+    setTodos((prev) =>
+      prev.map((t) => (t.categoria_id === id ? { ...t, categoria_id: null } : t))
+    )
+  }
+
+  async function handleSubmitCategoria(nome: string) {
+    if (editingCategoria) {
+      await handleUpdateCategoria(editingCategoria.id, nome)
+    } else {
+      await handleCreateCategoria(nome)
+    }
   }
 
   async function handleSubmit(data: TodoFormData) {
@@ -333,7 +405,9 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
             categoriaAtiva={filtroCategoria}
             countsPorCategoria={countsPorCategoria}
             onCategoriaChange={setFiltroCategoria}
-            onNovaCategoria={() => setShowCategoriaForm(true)}
+            onNovaCategoria={openNovaCategoriaForm}
+            onEditCategoria={openEditCategoriaForm}
+            onDeleteCategoria={handleDeleteCategoria}
           />
         </div>
 
@@ -433,7 +507,11 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
             className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <CategoriaForm onSubmit={handleCreateCategoria} onClose={closeCategoriaForm} />
+            <CategoriaForm
+              editingCategoria={editingCategoria}
+              onSubmit={handleSubmitCategoria}
+              onClose={closeCategoriaForm}
+            />
           </div>
         </div>
       )}
