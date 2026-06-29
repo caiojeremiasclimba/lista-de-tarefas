@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { TODO_STATUS_CONFIG } from '../constants/todoStatus'
+import type { Subtarefa } from '../types/subtarefa'
 import type { Todo } from '../types/todo'
 import { formatTodoDate } from '../utils/formatTodoDate'
+import { getSubtarefaProgress } from '../utils/subtarefaProgress'
 import { isTodoOverdue } from '../utils/todoDue'
-import { CalendarIcon, DotsVerticalIcon } from './TodosUi'
+import SubtarefaList from './SubtarefaList'
+import { CalendarIcon, ChevronIcon, DotsVerticalIcon } from './TodosUi'
 
 interface TodoItemProps {
   todo: Todo
@@ -11,6 +14,7 @@ interface TodoItemProps {
   onEdit: (todo: Todo) => void
   onDelete: (id: string) => void
   onToggleStatus: (todo: Todo) => void
+  onToggleSubtarefa: (sub: Subtarefa) => void
 }
 
 export default function TodoItem({
@@ -19,14 +23,19 @@ export default function TodoItem({
   onEdit,
   onDelete,
   onToggleStatus,
+  onToggleSubtarefa,
 }: TodoItemProps) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [checklistOpen, setChecklistOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const isConcluida = todo.status === 'concluida'
   const isCancelada = todo.status === 'cancelada'
   const overdue = isTodoOverdue(todo)
   const dateLabel = formatTodoDate(todo.data_prevista)
   const statusConfig = TODO_STATUS_CONFIG[todo.status]
+  const subtarefas = todo.subtarefas ?? []
+  const { concluidas, total } = getSubtarefaProgress(subtarefas)
+  const progressPercent = total > 0 ? Math.round((concluidas / total) * 100) : 0
 
   useEffect(() => {
     if (!menuOpen) return
@@ -111,6 +120,20 @@ export default function TodoItem({
             )}
           </div>
 
+          {total > 0 && (
+            <div className="mt-2 space-y-1.5">
+              <p className="text-xs text-slate-500">
+                {concluidas} de {total} subtarefas concluídas
+              </p>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="h-full rounded-full bg-blue-500 transition-all"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
+          )}
+
           {dateLabel && (
             <p
               className={`mt-1.5 flex min-w-0 items-center gap-1 text-xs sm:gap-1.5 sm:text-sm ${
@@ -122,6 +145,29 @@ export default function TodoItem({
                 {overdue ? `Vencida · ${dateLabel}` : dateLabel}
               </span>
             </p>
+          )}
+
+          {total > 0 && (
+            <div className="mt-2">
+              <button
+                type="button"
+                onClick={() => setChecklistOpen((prev) => !prev)}
+                className="flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-slate-800"
+              >
+                <ChevronIcon up={checklistOpen} className="h-3.5 w-3.5" />
+                Checklist
+              </button>
+              {checklistOpen && (
+                <div className="mt-2 rounded-xl border border-slate-100 bg-slate-50/50 p-3">
+                  <SubtarefaList
+                    mode="readonly"
+                    subtarefas={subtarefas}
+                    disabled={isCancelada}
+                    onToggle={onToggleSubtarefa}
+                  />
+                </div>
+              )}
+            </div>
           )}
         </div>
 

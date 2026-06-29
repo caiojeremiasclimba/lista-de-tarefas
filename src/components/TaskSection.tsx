@@ -1,6 +1,7 @@
 import type { TodoStatus } from '../types/todo'
 import { TODO_STATUS_CONFIG } from '../constants/todoStatus'
 import type { Todo } from '../types/todo'
+import type { Subtarefa } from '../types/subtarefa'
 import TodoItem from './TodoItem'
 import {
   CheckCircleIcon,
@@ -19,6 +20,7 @@ interface TaskSectionProps {
   onEdit: (todo: Todo) => void
   onDelete: (id: string) => void
   onToggleStatus: (todo: Todo) => void
+  onToggleSubtarefa: (sub: Subtarefa) => void
   categoriasPorId: Record<string, string>
 }
 
@@ -39,6 +41,7 @@ export default function TaskSection({
   onEdit,
   onDelete,
   onToggleStatus,
+  onToggleSubtarefa,
   categoriasPorId,
 }: TaskSectionProps) {
   const Icon = SECTION_ICONS[variant]
@@ -79,6 +82,7 @@ export default function TaskSection({
                 onEdit={onEdit}
                 onDelete={onDelete}
                 onToggleStatus={onToggleStatus}
+                onToggleSubtarefa={onToggleSubtarefa}
               />
             ))
           )}

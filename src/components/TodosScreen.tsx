@@ -2,10 +2,17 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { TODO_STATUS_CONFIG, TODO_STATUSES } from '../constants/todoStatus'
 import { supabase } from '../lib/supabase'
 import type { Categoria } from '../types/categoria'
+import type { Subtarefa } from '../types/subtarefa'
 import type { Todo, TodoFormData, TodoStatus } from '../types/todo'
 import { sortActiveTodos, sortFinalTodos } from '../utils/sortTodos'
 import { formatTodayHeader } from '../utils/formatTodoDate'
 import { isTodoOverdue } from '../utils/todoDue'
+import {
+  fetchTodoWithSubtarefas,
+  insertSubtarefas,
+  mergeTodoSubtarefas,
+  syncSubtarefas,
+} from '../utils/subtarefaSync'
 import CategoriaForm from './CategoriaForm'
 import FilterSidebar, { type FiltroCounts, type FiltroTarefas } from './FilterSidebar'
 import SearchBar from './SearchBar'
@@ -60,8 +67,9 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
     setError(null)
     const { data, error: fetchError } = await supabase
       .from('tarefas')
-      .select('*')
+      .select('*, subtarefas(*)')
       .order('created_at', { ascending: false })
+      .order('ordem', { foreignTable: 'subtarefas', ascending: true })
 
     if (fetchError) {
       setError(fetchError.message)
@@ -122,16 +130,17 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
     }
 
     if (editingTodo) {
-      const { data: updated, error: updateError } = await supabase
+      const { error: updateError } = await supabase
         .from('tarefas')
         .update(payload)
         .eq('id', editingTodo.id)
-        .select()
-        .single()
 
       if (updateError) throw new Error(updateError.message)
 
-      setTodos((prev) => prev.map((t) => (t.id === editingTodo.id ? updated : t)))
+      await syncSubtarefas(editingTodo.id, data.subtarefas, editingTodo.subtarefas)
+      const refreshed = await fetchTodoWithSubtarefas(editingTodo.id)
+
+      setTodos((prev) => prev.map((t) => (t.id === editingTodo.id ? refreshed : t)))
     } else {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Usuário não autenticado')
@@ -144,7 +153,8 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
 
       if (insertError) throw new Error(insertError.message)
 
-      setTodos((prev) => [created, ...prev])
+      const subtarefas = await insertSubtarefas(created.id, data.subtarefas)
+      setTodos((prev) => [{ ...created, subtarefas }, ...prev])
     }
 
     closeForm()
@@ -181,7 +191,35 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
       return
     }
 
-    setTodos((prev) => prev.map((t) => (t.id === todo.id ? updated : t)))
+    setTodos((prev) => prev.map((t) => (t.id === todo.id ? mergeTodoSubtarefas(updated, t) : t)))
+  }
+
+  async function handleToggleSubtarefa(sub: Subtarefa) {
+    const parent = todos.find((t) => t.id === sub.tarefa_id)
+    if (!parent || parent.status === 'cancelada') return
+
+    const { data: updated, error: updateError } = await supabase
+      .from('subtarefas')
+      .update({ concluida: !sub.concluida })
+      .eq('id', sub.id)
+      .select()
+      .single()
+
+    if (updateError) {
+      setError(updateError.message)
+      return
+    }
+
+    setTodos((prev) =>
+      prev.map((t) =>
+        t.id !== sub.tarefa_id
+          ? t
+          : {
+              ...t,
+              subtarefas: t.subtarefas?.map((s) => (s.id === sub.id ? updated : s)) ?? [],
+            }
+      )
+    )
   }
 
   const termo = busca.toLowerCase()
@@ -191,7 +229,8 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
       todos.filter(
         (t) =>
           t.titulo.toLowerCase().includes(termo) ||
-          (t.descricao ?? '').toLowerCase().includes(termo)
+          (t.descricao ?? '').toLowerCase().includes(termo) ||
+          (t.subtarefas?.some((s) => s.titulo.toLowerCase().includes(termo)) ?? false)
       ),
     [todos, termo]
   )
@@ -350,6 +389,7 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
                   onEdit={openEditForm}
                   onDelete={handleDelete}
                   onToggleStatus={handleToggleStatus}
+                  onToggleSubtarefa={handleToggleSubtarefa}
                   categoriasPorId={categoriasPorId}
                 />
               ) : (
@@ -364,6 +404,7 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
                     onEdit={openEditForm}
                     onDelete={handleDelete}
                     onToggleStatus={handleToggleStatus}
+                    onToggleSubtarefa={handleToggleSubtarefa}
                     categoriasPorId={categoriasPorId}
                   />
                 ))
