@@ -45,6 +45,7 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
   const [showCategoriaForm, setShowCategoriaForm] = useState(false)
   const [editingCategoria, setEditingCategoria] = useState<Categoria | null>(null)
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
+  const [newTaskCategoriaId, setNewTaskCategoriaId] = useState<string | null>(null)
   const [secoesAbertas, setSecoesAbertas] = useState<SecoesAbertas>(SECOES_INICIAIS)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -86,6 +87,7 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
   }, [fetchTodos, fetchCategorias])
 
   function openNewTaskForm() {
+    setNewTaskCategoriaId(filtroCategoria)
     setEditingTodo(null)
     setShowForm(true)
   }
@@ -98,6 +100,7 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
   function closeForm() {
     setShowForm(false)
     setEditingTodo(null)
+    setNewTaskCategoriaId(null)
   }
 
   function openNovaCategoriaForm() {
@@ -528,7 +531,7 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
             <TodoForm
               editingTodo={editingTodo}
               categorias={categorias}
-              defaultCategoriaId={filtroCategoria}
+              defaultCategoriaId={newTaskCategoriaId}
               onSubmit={handleSubmit}
               onClose={closeForm}
             />
