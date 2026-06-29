@@ -19,6 +19,7 @@ interface TaskSectionProps {
   onEdit: (todo: Todo) => void
   onDelete: (id: string) => void
   onToggleStatus: (todo: Todo) => void
+  categoriasPorId: Record<string, string>
 }
 
 const SECTION_ICONS = {
@@ -38,6 +39,7 @@ export default function TaskSection({
   onEdit,
   onDelete,
   onToggleStatus,
+  categoriasPorId,
 }: TaskSectionProps) {
   const Icon = SECTION_ICONS[variant]
   const headerColor =
@@ -71,6 +73,9 @@ export default function TaskSection({
               <TodoItem
                 key={todo.id}
                 todo={todo}
+                categoriaNome={
+                  todo.categoria_id ? categoriasPorId[todo.categoria_id] : undefined
+                }
                 onEdit={onEdit}
                 onDelete={onDelete}
                 onToggleStatus={onToggleStatus}
