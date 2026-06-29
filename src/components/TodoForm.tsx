@@ -63,7 +63,7 @@ export default function TodoForm({
     }
     setErros({})
     setSubmitError(null)
-  }, [editingTodo, defaultCategoriaId])
+  }, [editingTodo])
 
   function updateField<K extends keyof TodoFormData>(field: K, value: TodoFormData[K]) {
     setForm((prev) => ({ ...prev, [field]: value }))
