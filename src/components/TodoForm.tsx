@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
 import type { SubmitEvent } from 'react'
+import type { Categoria } from '../types/categoria'
 import type { Todo, TodoFormData, TodoStatus } from '../types/todo'
 import { TODO_STATUS_CONFIG, TODO_STATUSES } from '../constants/todoStatus'
 import { validateTodo } from '../utils/validateTodo'
 
 interface TodoFormProps {
   editingTodo?: Todo | null
+  categorias: Categoria[]
+  defaultCategoriaId?: string | null
   onSubmit: (data: TodoFormData) => Promise<void>
   onClose?: () => void
 }
@@ -15,9 +18,16 @@ const emptyForm: TodoFormData = {
   descricao: '',
   data_prevista: '',
   status: 'pendente',
+  categoria_id: '',
 }
 
-export default function TodoForm({ editingTodo, onSubmit, onClose }: TodoFormProps) {
+export default function TodoForm({
+  editingTodo,
+  categorias,
+  defaultCategoriaId,
+  onSubmit,
+  onClose,
+}: TodoFormProps) {
   const [form, setForm] = useState<TodoFormData>(emptyForm)
   const [erros, setErros] = useState<ReturnType<typeof validateTodo>>({})
   const [loading, setLoading] = useState(false)
@@ -32,13 +42,17 @@ export default function TodoForm({ editingTodo, onSubmit, onClose }: TodoFormPro
         descricao: editingTodo.descricao ?? '',
         data_prevista: editingTodo.data_prevista ?? '',
         status: editingTodo.status,
+        categoria_id: editingTodo.categoria_id ?? '',
       })
     } else {
-      setForm(emptyForm)
+      setForm({
+        ...emptyForm,
+        categoria_id: defaultCategoriaId ?? '',
+      })
     }
     setErros({})
     setSubmitError(null)
-  }, [editingTodo])
+  }, [editingTodo, defaultCategoriaId])
 
   function updateField<K extends keyof TodoFormData>(field: K, value: TodoFormData[K]) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -57,7 +71,7 @@ export default function TodoForm({ editingTodo, onSubmit, onClose }: TodoFormPro
     try {
       await onSubmit(form)
       if (!isEditing) {
-        setForm(emptyForm)
+        setForm({ ...emptyForm, categoria_id: defaultCategoriaId ?? '' })
       }
       setErros({})
     } catch (err) {
@@ -100,6 +114,29 @@ export default function TodoForm({ editingTodo, onSubmit, onClose }: TodoFormPro
           className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           placeholder="Detalhes da tarefa (opcional)"
         />
+      </div>
+
+      <div>
+        <label htmlFor="categoria_id" className="mb-1 block text-sm font-medium text-slate-700">
+          Categoria
+        </label>
+        <select
+          id="categoria_id"
+          value={form.categoria_id}
+          onChange={(e) => updateField('categoria_id', e.target.value)}
+          disabled={categorias.length === 0}
+          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-50 disabled:text-slate-400"
+        >
+          <option value="">Sem categoria</option>
+          {categorias.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.nome}
+            </option>
+          ))}
+        </select>
+        {categorias.length === 0 && (
+          <p className="mt-1 text-sm text-slate-500">Crie uma categoria na sidebar</p>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">

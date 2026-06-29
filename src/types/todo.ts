@@ -7,6 +7,7 @@ export interface Todo {
   descricao: string | null
   data_prevista: string | null
   status: TodoStatus
+  categoria_id: string | null
   created_at: string
 }
 
@@ -15,6 +16,7 @@ export interface TodoFormData {
   descricao: string
   data_prevista: string
   status: TodoStatus
+  categoria_id: string
 }
 
 export interface TodoValidationErrors {

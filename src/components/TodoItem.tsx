@@ -7,12 +7,19 @@ import { CalendarIcon, DotsVerticalIcon } from './TodosUi'
 
 interface TodoItemProps {
   todo: Todo
+  categoriaNome?: string
   onEdit: (todo: Todo) => void
   onDelete: (id: string) => void
   onToggleStatus: (todo: Todo) => void
 }
 
-export default function TodoItem({ todo, onEdit, onDelete, onToggleStatus }: TodoItemProps) {
+export default function TodoItem({
+  todo,
+  categoriaNome,
+  onEdit,
+  onDelete,
+  onToggleStatus,
+}: TodoItemProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const isConcluida = todo.status === 'concluida'
@@ -92,6 +99,11 @@ export default function TodoItem({ todo, onEdit, onDelete, onToggleStatus }: Tod
             >
               {statusConfig.label}
             </span>
+            {categoriaNome && (
+              <span className="rounded-full bg-violet-100 px-1.5 py-0.5 text-[10px] font-medium text-violet-700 sm:px-2 sm:text-xs">
+                {categoriaNome}
+              </span>
+            )}
             {overdue && (
               <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700 sm:px-2 sm:text-xs">
                 Vencida

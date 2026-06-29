@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { TODO_STATUS_CONFIG, TODO_STATUSES } from '../constants/todoStatus'
 import { supabase } from '../lib/supabase'
+import type { Categoria } from '../types/categoria'
 import type { Todo, TodoFormData, TodoStatus } from '../types/todo'
 import { sortActiveTodos, sortFinalTodos } from '../utils/sortTodos'
 import { formatTodayHeader } from '../utils/formatTodoDate'
 import { isTodoOverdue } from '../utils/todoDue'
+import CategoriaForm from './CategoriaForm'
 import FilterSidebar, { type FiltroCounts, type FiltroTarefas } from './FilterSidebar'
 import SearchBar from './SearchBar'
 import TaskSection from './TaskSection'
@@ -28,15 +30,31 @@ const SECOES_INICIAIS: SecoesAbertas = {
 
 export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
   const [todos, setTodos] = useState<Todo[]>([])
+  const [categorias, setCategorias] = useState<Categoria[]>([])
   const [busca, setBusca] = useState('')
   const [filtroAtivo, setFiltroAtivo] = useState<FiltroTarefas>('todas')
+  const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [showCategoriaForm, setShowCategoriaForm] = useState(false)
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
   const [secoesAbertas, setSecoesAbertas] = useState<SecoesAbertas>(SECOES_INICIAIS)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const { title, subtitle } = formatTodayHeader()
+
+  const fetchCategorias = useCallback(async () => {
+    const { data, error: fetchError } = await supabase
+      .from('categorias')
+      .select('*')
+      .order('nome')
+
+    if (fetchError) {
+      setError(fetchError.message)
+    } else {
+      setCategorias(data ?? [])
+    }
+  }, [])
 
   const fetchTodos = useCallback(async () => {
     setError(null)
@@ -55,7 +73,8 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
 
   useEffect(() => {
     fetchTodos()
-  }, [fetchTodos])
+    fetchCategorias()
+  }, [fetchTodos, fetchCategorias])
 
   function openNewTaskForm() {
     setEditingTodo(null)
@@ -72,12 +91,34 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
     setEditingTodo(null)
   }
 
+  function closeCategoriaForm() {
+    setShowCategoriaForm(false)
+  }
+
+  async function handleCreateCategoria(nome: string) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Usuário não autenticado')
+
+    const { data: created, error: insertError } = await supabase
+      .from('categorias')
+      .insert({ nome, user_id: user.id })
+      .select()
+      .single()
+
+    if (insertError) throw new Error(insertError.message)
+
+    setCategorias((prev) => [...prev, created].sort((a, b) => a.nome.localeCompare(b.nome)))
+    setFiltroCategoria(created.id)
+    closeCategoriaForm()
+  }
+
   async function handleSubmit(data: TodoFormData) {
     const payload = {
       titulo: data.titulo.trim(),
       descricao: data.descricao.trim() || null,
       data_prevista: data.data_prevista || null,
       status: data.status,
+      categoria_id: data.categoria_id || null,
     }
 
     if (editingTodo) {
@@ -144,7 +185,8 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
   }
 
   const termo = busca.toLowerCase()
-  const filtradosPorBusca = useMemo(
+
+  const filtradosParaContadores = useMemo(
     () =>
       todos.filter(
         (t) =>
@@ -153,6 +195,13 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
       ),
     [todos, termo]
   )
+
+  const filtradosPorCategoria = useMemo(() => {
+    if (!filtroCategoria) return filtradosParaContadores
+    return filtradosParaContadores.filter((t) => t.categoria_id === filtroCategoria)
+  }, [filtradosParaContadores, filtroCategoria])
+
+  const filtradosPorBusca = filtradosPorCategoria
 
   const porStatus = useMemo(() => {
     const grouped = Object.fromEntries(
@@ -175,16 +224,32 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
     [filtradosPorBusca]
   )
 
+  const countsPorCategoria = useMemo(
+    () =>
+      Object.fromEntries(
+        categorias.map((c) => [
+          c.id,
+          filtradosParaContadores.filter((t) => t.categoria_id === c.id).length,
+        ])
+      ),
+    [filtradosParaContadores, categorias]
+  )
+
   const counts: FiltroCounts = useMemo(
     () => ({
-      todas: filtradosPorBusca.length,
-      pendente: porStatus.pendente.length,
-      em_andamento: porStatus.em_andamento.length,
-      concluida: porStatus.concluida.length,
-      cancelada: porStatus.cancelada.length,
-      vencidas: vencidas.length,
+      todas: filtradosPorCategoria.length,
+      pendente: filtradosPorCategoria.filter((t) => t.status === 'pendente').length,
+      em_andamento: filtradosPorCategoria.filter((t) => t.status === 'em_andamento').length,
+      concluida: filtradosPorCategoria.filter((t) => t.status === 'concluida').length,
+      cancelada: filtradosPorCategoria.filter((t) => t.status === 'cancelada').length,
+      vencidas: filtradosPorCategoria.filter((t) => isTodoOverdue(t)).length,
     }),
-    [filtradosPorBusca.length, porStatus, vencidas.length]
+    [filtradosPorCategoria]
+  )
+
+  const categoriasPorId = useMemo(
+    () => Object.fromEntries(categorias.map((c) => [c.id, c.nome])),
+    [categorias]
   )
 
   function toggleSecao(key: TodoStatus | 'vencidas') {
@@ -192,6 +257,10 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
   }
 
   const userInitial = userEmail ? userEmail.charAt(0).toUpperCase() : 'U'
+
+  const categoriaAtivaNome = filtroCategoria
+    ? categorias.find((c) => c.id === filtroCategoria)?.nome
+    : null
 
   const secoesVisiveis =
     filtroAtivo === 'todas'
@@ -217,7 +286,16 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
 
       <aside className="fixed inset-y-0 left-0 z-10 flex h-dvh w-56 flex-col overflow-hidden border-r border-slate-200/60 bg-white/70 backdrop-blur-md">
         <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-          <FilterSidebar active={filtroAtivo} onChange={setFiltroAtivo} counts={counts} />
+          <FilterSidebar
+            active={filtroAtivo}
+            onChange={setFiltroAtivo}
+            counts={counts}
+            categorias={categorias}
+            categoriaAtiva={filtroCategoria}
+            countsPorCategoria={countsPorCategoria}
+            onCategoriaChange={setFiltroCategoria}
+            onNovaCategoria={() => setShowCategoriaForm(true)}
+          />
         </div>
 
         <div className="shrink-0 border-t border-slate-200/60 px-4 py-4">
@@ -256,6 +334,10 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
 
           {loading ? (
             <p className="text-center text-slate-500">Carregando tarefas...</p>
+          ) : filtradosPorBusca.length === 0 && filtroCategoria && categoriaAtivaNome ? (
+            <p className="text-center text-slate-500">
+              Nenhuma tarefa em &ldquo;{categoriaAtivaNome}&rdquo;
+            </p>
           ) : (
             <div className="space-y-10">
               {filtroAtivo === 'vencidas' ? (
@@ -268,6 +350,7 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
                   onEdit={openEditForm}
                   onDelete={handleDelete}
                   onToggleStatus={handleToggleStatus}
+                  categoriasPorId={categoriasPorId}
                 />
               ) : (
                 secoesVisiveis.map((status) => (
@@ -281,6 +364,7 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
                     onEdit={openEditForm}
                     onDelete={handleDelete}
                     onToggleStatus={handleToggleStatus}
+                    categoriasPorId={categoriasPorId}
                   />
                 ))
               )}
@@ -299,6 +383,20 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
         </button>
       </div>
 
+      {showCategoriaForm && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-4 sm:items-center"
+          onClick={closeCategoriaForm}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <CategoriaForm onSubmit={handleCreateCategoria} onClose={closeCategoriaForm} />
+          </div>
+        </div>
+      )}
+
       {showForm && (
         <div
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-4 sm:items-center"
@@ -310,6 +408,8 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
           >
             <TodoForm
               editingTodo={editingTodo}
+              categorias={categorias}
+              defaultCategoriaId={filtroCategoria}
               onSubmit={handleSubmit}
               onClose={closeForm}
             />
