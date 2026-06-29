@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import type { SubmitEvent } from 'react'
 import type { Todo, TodoFormData, TodoStatus } from '../types/todo'
+import { TODO_STATUS_CONFIG, TODO_STATUSES } from '../constants/todoStatus'
 import { validateTodo } from '../utils/validateTodo'
 
 interface TodoFormProps {
@@ -128,8 +129,11 @@ export default function TodoForm({ editingTodo, onSubmit, onClose }: TodoFormPro
             onChange={(e) => updateField('status', e.target.value as TodoStatus)}
             className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           >
-            <option value="pendente">Pendente</option>
-            <option value="concluida">Concluída</option>
+            {TODO_STATUSES.map((status) => (
+              <option key={status} value={status}>
+                {TODO_STATUS_CONFIG[status].label}
+              </option>
+            ))}
           </select>
         </div>
       </div>

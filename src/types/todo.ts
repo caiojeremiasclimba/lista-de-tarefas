@@ -1,4 +1,4 @@
-export type TodoStatus = 'pendente' | 'concluida'
+export type TodoStatus = 'pendente' | 'em_andamento' | 'concluida' | 'cancelada'
 
 export interface Todo {
   id: string
