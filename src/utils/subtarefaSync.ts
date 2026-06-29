@@ -8,6 +8,7 @@ export function mergeTodoSubtarefas(updated: Todo, existing?: Todo): Todo {
 
 export async function insertSubtarefas(
   tarefaId: string,
+  userId: string,
   drafts: SubtarefaDraft[]
 ): Promise<Subtarefa[]> {
   const valid = drafts.filter((d) => d.titulo.trim())
@@ -18,6 +19,7 @@ export async function insertSubtarefas(
     .insert(
       valid.map((d, i) => ({
         tarefa_id: tarefaId,
+        user_id: userId,
         titulo: d.titulo.trim(),
         ordem: i,
       }))
@@ -30,6 +32,7 @@ export async function insertSubtarefas(
 
 export async function syncSubtarefas(
   tarefaId: string,
+  userId: string,
   drafts: SubtarefaDraft[],
   existing: Subtarefa[] | undefined
 ): Promise<void> {
@@ -43,27 +46,30 @@ export async function syncSubtarefas(
     if (error) throw new Error(error.message)
   }
 
-  for (const draft of validDrafts.filter((d) => d.id)) {
-    const original = existingList.find((s) => s.id === draft.id)
-    if (original && original.titulo !== draft.titulo.trim()) {
-      const { error } = await supabase
-        .from('subtarefas')
-        .update({ titulo: draft.titulo.trim() })
-        .eq('id', draft.id!)
+  for (let index = 0; index < validDrafts.length; index++) {
+    const draft = validDrafts[index]
+    const titulo = draft.titulo.trim()
+
+    if (draft.id) {
+      const original = existingList.find((s) => s.id === draft.id)
+      if (!original) continue
+
+      if (original.titulo !== titulo || original.ordem !== index) {
+        const { error } = await supabase
+          .from('subtarefas')
+          .update({ titulo, ordem: index })
+          .eq('id', draft.id)
+        if (error) throw new Error(error.message)
+      }
+    } else {
+      const { error } = await supabase.from('subtarefas').insert({
+        tarefa_id: tarefaId,
+        user_id: userId,
+        titulo,
+        ordem: index,
+      })
       if (error) throw new Error(error.message)
     }
-  }
-
-  const newDrafts = validDrafts.filter((d) => !d.id)
-  if (newDrafts.length > 0) {
-    const { error } = await supabase.from('subtarefas').insert(
-      newDrafts.map((d, i) => ({
-        tarefa_id: tarefaId,
-        titulo: d.titulo.trim(),
-        ordem: existingList.length + i,
-      }))
-    )
-    if (error) throw new Error(error.message)
   }
 }
 

@@ -193,6 +193,9 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
   }
 
   async function handleSubmit(data: TodoFormData) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Usuário não autenticado')
+
     const payload = {
       titulo: data.titulo.trim(),
       descricao: data.descricao.trim() || null,
@@ -209,14 +212,11 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
 
       if (updateError) throw new Error(updateError.message)
 
-      await syncSubtarefas(editingTodo.id, data.subtarefas, editingTodo.subtarefas)
+      await syncSubtarefas(editingTodo.id, user.id, data.subtarefas, editingTodo.subtarefas)
       const refreshed = await fetchTodoWithSubtarefas(editingTodo.id)
 
       setTodos((prev) => prev.map((t) => (t.id === editingTodo.id ? refreshed : t)))
     } else {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Usuário não autenticado')
-
       const { data: created, error: insertError } = await supabase
         .from('tarefas')
         .insert({ ...payload, user_id: user.id })
@@ -225,7 +225,7 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
 
       if (insertError) throw new Error(insertError.message)
 
-      const subtarefas = await insertSubtarefas(created.id, data.subtarefas)
+      const subtarefas = await insertSubtarefas(created.id, user.id, data.subtarefas)
       setTodos((prev) => [{ ...created, subtarefas }, ...prev])
     }
 
