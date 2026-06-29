@@ -63,6 +63,8 @@ export default function TodoForm({
     }
     setErros({})
     setSubmitError(null)
+    // defaultCategoriaId omitido de propósito: é snapshot ao abrir "Nova tarefa".
+    // Incluí-lo aqui resetaria título, subtarefas e demais campos.
   }, [editingTodo])
 
   function updateField<K extends keyof TodoFormData>(field: K, value: TodoFormData[K]) {
