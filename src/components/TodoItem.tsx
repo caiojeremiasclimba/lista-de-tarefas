@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import { TODO_STATUS_CONFIG } from '../constants/todoStatus'
 import type { Todo } from '../types/todo'
 import { formatTodoDate } from '../utils/formatTodoDate'
+import { isTodoOverdue } from '../utils/todoDue'
 import { CalendarIcon, DotsVerticalIcon } from './TodosUi'
 
 interface TodoItemProps {
@@ -14,7 +16,10 @@ export default function TodoItem({ todo, onEdit, onDelete, onToggleStatus }: Tod
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const isConcluida = todo.status === 'concluida'
+  const isCancelada = todo.status === 'cancelada'
+  const overdue = isTodoOverdue(todo)
   const dateLabel = formatTodoDate(todo.data_prevista)
+  const statusConfig = TODO_STATUS_CONFIG[todo.status]
 
   useEffect(() => {
     if (!menuOpen) return
@@ -42,16 +47,23 @@ export default function TodoItem({ todo, onEdit, onDelete, onToggleStatus }: Tod
   }
 
   return (
-    <li className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-      <div className="flex items-start gap-4">
+    <li
+      className={`min-w-0 rounded-2xl border bg-white px-3 py-3 shadow-sm sm:px-5 sm:py-4 ${
+        overdue ? 'border-red-300 bg-red-50/50' : 'border-slate-200'
+      }`}
+    >
+      <div className="flex min-w-0 items-start gap-2 sm:gap-4">
         <button
           type="button"
-          onClick={() => onToggleStatus(todo)}
+          onClick={() => !isCancelada && onToggleStatus(todo)}
+          disabled={isCancelada}
           aria-label={isConcluida ? 'Marcar como pendente' : 'Marcar como concluída'}
           className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded border-2 transition-colors ${
-            isConcluida
-              ? 'border-green-500 bg-green-500 text-white'
-              : 'border-slate-300 bg-white hover:border-blue-400'
+            isCancelada
+              ? 'cursor-not-allowed border-slate-200 bg-slate-50 opacity-50'
+              : isConcluida
+                ? 'border-green-500 bg-green-500 text-white'
+                : 'border-slate-300 bg-white hover:border-blue-400'
           }`}
         >
           {isConcluida && (
@@ -63,17 +75,40 @@ export default function TodoItem({ todo, onEdit, onDelete, onToggleStatus }: Tod
 
         <div className="min-w-0 flex-1 text-left">
           <h3
-            className={`text-base font-medium text-slate-800 ${
-              isConcluida ? 'line-through text-slate-400' : ''
+            className={`truncate text-sm font-medium sm:text-base ${
+              isConcluida
+                ? 'line-through text-slate-400'
+                : isCancelada
+                  ? 'text-slate-400'
+                  : 'text-slate-800'
             }`}
           >
             {todo.titulo}
           </h3>
 
+          <div className="mt-1 flex flex-wrap gap-1">
+            <span
+              className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium sm:px-2 sm:text-xs ${statusConfig.badgeClass}`}
+            >
+              {statusConfig.label}
+            </span>
+            {overdue && (
+              <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700 sm:px-2 sm:text-xs">
+                Vencida
+              </span>
+            )}
+          </div>
+
           {dateLabel && (
-            <p className="mt-1.5 flex items-center gap-1.5 text-sm text-slate-500">
-              <CalendarIcon className="h-4 w-4" />
-              {dateLabel}
+            <p
+              className={`mt-1.5 flex min-w-0 items-center gap-1 text-xs sm:gap-1.5 sm:text-sm ${
+                overdue ? 'font-medium text-red-600' : 'text-slate-500'
+              }`}
+            >
+              <CalendarIcon className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+              <span className="truncate">
+                {overdue ? `Vencida · ${dateLabel}` : dateLabel}
+              </span>
             </p>
           )}
         </div>

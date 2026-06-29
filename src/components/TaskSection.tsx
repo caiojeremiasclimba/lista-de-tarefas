@@ -1,10 +1,18 @@
+import type { TodoStatus } from '../types/todo'
+import { TODO_STATUS_CONFIG } from '../constants/todoStatus'
 import type { Todo } from '../types/todo'
 import TodoItem from './TodoItem'
-import { CheckCircleIcon, ChevronIcon, ClockIcon } from './TodosUi'
+import {
+  CheckCircleIcon,
+  ChevronIcon,
+  ClockIcon,
+  PlayCircleIcon,
+  XCircleIcon,
+} from './TodosUi'
 
 interface TaskSectionProps {
   title: string
-  variant: 'pending' | 'completed'
+  variant: TodoStatus | 'vencidas'
   todos: Todo[]
   isOpen: boolean
   onToggle: () => void
@@ -12,6 +20,14 @@ interface TaskSectionProps {
   onDelete: (id: string) => void
   onToggleStatus: (todo: Todo) => void
 }
+
+const SECTION_ICONS = {
+  pendente: ClockIcon,
+  em_andamento: PlayCircleIcon,
+  concluida: CheckCircleIcon,
+  cancelada: XCircleIcon,
+  vencidas: ClockIcon,
+} as const
 
 export default function TaskSection({
   title,
@@ -23,9 +39,9 @@ export default function TaskSection({
   onDelete,
   onToggleStatus,
 }: TaskSectionProps) {
-  const isPending = variant === 'pending'
-  const Icon = isPending ? ClockIcon : CheckCircleIcon
-  const headerColor = isPending ? 'text-blue-600' : 'text-green-600'
+  const Icon = SECTION_ICONS[variant]
+  const headerColor =
+    variant === 'vencidas' ? 'text-red-600' : TODO_STATUS_CONFIG[variant as TodoStatus].headerClass
 
   return (
     <section className="space-y-4">

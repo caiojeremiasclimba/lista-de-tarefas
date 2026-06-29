@@ -1,8 +1,11 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { TODO_STATUS_CONFIG, TODO_STATUSES } from '../constants/todoStatus'
 import { supabase } from '../lib/supabase'
-import type { Todo, TodoFormData } from '../types/todo'
+import type { Todo, TodoFormData, TodoStatus } from '../types/todo'
+import { sortActiveTodos, sortFinalTodos } from '../utils/sortTodos'
 import { formatTodayHeader } from '../utils/formatTodoDate'
-import FilterTabs, { type FiltroTarefas } from './FilterTabs'
+import { isTodoOverdue } from '../utils/todoDue'
+import FilterSidebar, { type FiltroCounts, type FiltroTarefas } from './FilterSidebar'
 import SearchBar from './SearchBar'
 import TaskSection from './TaskSection'
 import TodoForm from './TodoForm'
@@ -13,13 +16,23 @@ interface TodosScreenProps {
   onLogout: () => void
 }
 
+type SecoesAbertas = Record<TodoStatus | 'vencidas', boolean>
+
+const SECOES_INICIAIS: SecoesAbertas = {
+  pendente: true,
+  em_andamento: true,
+  concluida: true,
+  cancelada: true,
+  vencidas: true,
+}
+
 export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
   const [todos, setTodos] = useState<Todo[]>([])
   const [busca, setBusca] = useState('')
   const [filtroAtivo, setFiltroAtivo] = useState<FiltroTarefas>('todas')
   const [showForm, setShowForm] = useState(false)
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
-  const [secoesAbertas, setSecoesAbertas] = useState({ pendentes: true, concluidas: true })
+  const [secoesAbertas, setSecoesAbertas] = useState<SecoesAbertas>(SECOES_INICIAIS)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -111,6 +124,8 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
   }
 
   async function handleToggleStatus(todo: Todo) {
+    if (todo.status === 'cancelada') return
+
     const newStatus = todo.status === 'concluida' ? 'pendente' : 'concluida'
 
     const { data: updated, error: updateError } = await supabase
@@ -129,21 +144,64 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
   }
 
   const termo = busca.toLowerCase()
-  const filtradosPorBusca = todos.filter(
-    (t) =>
-      t.titulo.toLowerCase().includes(termo) ||
-      (t.descricao ?? '').toLowerCase().includes(termo)
+  const filtradosPorBusca = useMemo(
+    () =>
+      todos.filter(
+        (t) =>
+          t.titulo.toLowerCase().includes(termo) ||
+          (t.descricao ?? '').toLowerCase().includes(termo)
+      ),
+    [todos, termo]
   )
 
-  const pendentes = filtradosPorBusca.filter((t) => t.status === 'pendente')
-  const concluidas = filtradosPorBusca.filter((t) => t.status === 'concluida')
+  const porStatus = useMemo(() => {
+    const grouped = Object.fromEntries(
+      TODO_STATUSES.map((status) => [
+        status,
+        filtradosPorBusca.filter((t) => t.status === status),
+      ])
+    ) as Record<TodoStatus, Todo[]>
 
-  const showPendentes = filtroAtivo === 'todas' || filtroAtivo === 'pendentes'
-  const showConcluidas = filtroAtivo === 'todas' || filtroAtivo === 'concluidas'
+    grouped.pendente = sortActiveTodos(grouped.pendente)
+    grouped.em_andamento = sortActiveTodos(grouped.em_andamento)
+    grouped.concluida = sortFinalTodos(grouped.concluida)
+    grouped.cancelada = sortFinalTodos(grouped.cancelada)
+
+    return grouped
+  }, [filtradosPorBusca])
+
+  const vencidas = useMemo(
+    () => sortActiveTodos(filtradosPorBusca.filter((t) => isTodoOverdue(t))),
+    [filtradosPorBusca]
+  )
+
+  const counts: FiltroCounts = useMemo(
+    () => ({
+      todas: filtradosPorBusca.length,
+      pendente: porStatus.pendente.length,
+      em_andamento: porStatus.em_andamento.length,
+      concluida: porStatus.concluida.length,
+      cancelada: porStatus.cancelada.length,
+      vencidas: vencidas.length,
+    }),
+    [filtradosPorBusca.length, porStatus, vencidas.length]
+  )
+
+  function toggleSecao(key: TodoStatus | 'vencidas') {
+    setSecoesAbertas((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
+
   const userInitial = userEmail ? userEmail.charAt(0).toUpperCase() : 'U'
 
+  const secoesVisiveis =
+    filtroAtivo === 'todas'
+      ? TODO_STATUSES
+      : filtroAtivo === 'vencidas'
+        ? []
+        : [filtroAtivo]
+
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100">
+    <div className="relative h-dvh overflow-hidden bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100">
       <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-blue-300/20 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-indigo-300/20 blur-3xl" />
       <div className="pointer-events-none absolute right-8 top-8 grid grid-cols-3 gap-1.5 opacity-20">
@@ -157,76 +215,12 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
         ))}
       </div>
 
-      <main className="relative mx-auto w-full max-w-3xl flex-1 space-y-8 px-6 py-8 pb-32 sm:px-8">
-        <header className="text-left">
-          <h1 className="text-3xl font-bold text-slate-800">{title}</h1>
-          <p className="mt-1 text-base text-slate-500">{subtitle}</p>
-        </header>
+      <aside className="fixed inset-y-0 left-0 z-10 flex h-dvh w-56 flex-col overflow-hidden border-r border-slate-200/60 bg-white/70 backdrop-blur-md">
+        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+          <FilterSidebar active={filtroAtivo} onChange={setFiltroAtivo} counts={counts} />
+        </div>
 
-        <SearchBar value={busca} onChange={setBusca} />
-
-        <FilterTabs
-          active={filtroAtivo}
-          onChange={setFiltroAtivo}
-          counts={{
-            todas: filtradosPorBusca.length,
-            pendentes: pendentes.length,
-            concluidas: concluidas.length,
-          }}
-        />
-
-        {error && (
-          <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
-        )}
-
-        {loading ? (
-          <p className="text-center text-slate-500">Carregando tarefas...</p>
-        ) : (
-          <div className="space-y-10">
-            {showPendentes && (
-              <TaskSection
-                title="PENDENTES"
-                variant="pending"
-                todos={pendentes}
-                isOpen={secoesAbertas.pendentes}
-                onToggle={() =>
-                  setSecoesAbertas((prev) => ({ ...prev, pendentes: !prev.pendentes }))
-                }
-                onEdit={openEditForm}
-                onDelete={handleDelete}
-                onToggleStatus={handleToggleStatus}
-              />
-            )}
-
-            {showConcluidas && (
-              <TaskSection
-                title="CONCLUÍDAS"
-                variant="completed"
-                todos={concluidas}
-                isOpen={secoesAbertas.concluidas}
-                onToggle={() =>
-                  setSecoesAbertas((prev) => ({ ...prev, concluidas: !prev.concluidas }))
-                }
-                onEdit={openEditForm}
-                onDelete={handleDelete}
-                onToggleStatus={handleToggleStatus}
-              />
-            )}
-          </div>
-        )}
-      </main>
-
-      <button
-        type="button"
-        onClick={openNewTaskForm}
-        className="fixed bottom-24 right-8 z-20 flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-600/30 transition hover:bg-blue-700"
-      >
-        <PlusIcon className="h-5 w-5" />
-        Nova tarefa
-      </button>
-
-      <footer className="relative h-16 shrink-0 border-t border-slate-200/40 bg-transparent px-6 backdrop-blur-md sm:px-8">
-        <div className="mx-auto flex h-full max-w-3xl items-center justify-between gap-4">
+        <div className="shrink-0 border-t border-slate-200/60 px-4 py-4">
           <div className="flex min-w-0 items-center gap-2.5">
             <div
               className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600"
@@ -234,18 +228,76 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
             >
               {userInitial}
             </div>
-            <p className="truncate text-sm text-slate-500">{userEmail}</p>
+            <p className="min-w-0 truncate text-sm text-slate-500">{userEmail}</p>
           </div>
           <button
             type="button"
             onClick={onLogout}
-            className="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100/60 hover:text-slate-800"
+            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-800"
           >
             <LogOutIcon />
             Sair
           </button>
         </div>
-      </footer>
+      </aside>
+
+      <div className="relative ml-56 flex h-dvh w-[calc(100%-14rem)] min-w-0 flex-col overflow-hidden">
+        <main className="min-h-0 flex-1 space-y-6 overflow-x-hidden overflow-y-auto px-3 py-6 pb-24 sm:px-6">
+          <header className="text-left">
+            <h1 className="text-2xl font-bold text-slate-800 sm:text-3xl">{title}</h1>
+            <p className="mt-1 text-sm text-slate-500 sm:text-base">{subtitle}</p>
+          </header>
+
+          <SearchBar value={busca} onChange={setBusca} />
+
+          {error && (
+            <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+          )}
+
+          {loading ? (
+            <p className="text-center text-slate-500">Carregando tarefas...</p>
+          ) : (
+            <div className="space-y-10">
+              {filtroAtivo === 'vencidas' ? (
+                <TaskSection
+                  title="VENCIDAS"
+                  variant="vencidas"
+                  todos={vencidas}
+                  isOpen={secoesAbertas.vencidas}
+                  onToggle={() => toggleSecao('vencidas')}
+                  onEdit={openEditForm}
+                  onDelete={handleDelete}
+                  onToggleStatus={handleToggleStatus}
+                />
+              ) : (
+                secoesVisiveis.map((status) => (
+                  <TaskSection
+                    key={status}
+                    title={TODO_STATUS_CONFIG[status].sectionTitle}
+                    variant={status}
+                    todos={porStatus[status]}
+                    isOpen={secoesAbertas[status]}
+                    onToggle={() => toggleSecao(status)}
+                    onEdit={openEditForm}
+                    onDelete={handleDelete}
+                    onToggleStatus={handleToggleStatus}
+                  />
+                ))
+              )}
+            </div>
+          )}
+        </main>
+
+        <button
+          type="button"
+          onClick={openNewTaskForm}
+          aria-label="Nova tarefa"
+          className="fixed bottom-6 right-4 z-20 flex items-center gap-2 rounded-full bg-blue-600 p-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 transition hover:bg-blue-700 sm:bottom-8 sm:right-6 sm:px-6 sm:py-3.5 sm:text-base"
+        >
+          <PlusIcon className="h-5 w-5" />
+          <span className="hidden sm:inline">Nova tarefa</span>
+        </button>
+      </div>
 
       {showForm && (
         <div
