@@ -41,7 +41,7 @@ function App() {
 
   return (
     <TodosScreen
-      userEmail={session.user.email ?? 'Usuário'}
+      user={session.user}
       onLogout={handleLogout}
     />
   )

@@ -14,7 +14,7 @@ import {
   XCircleIcon,
 } from './TodosUi'
 
-export type AppView = 'tarefas' | 'dashboard'
+export type AppView = 'tarefas' | 'dashboard' | 'perfil'
 
 export type FiltroTarefas = 'todas' | TodoStatus | 'vencidas'
 
@@ -301,8 +301,8 @@ export default function FilterSidebar({
   onDeleteCategoria,
 }: FilterSidebarProps) {
   const filtersMuted = view === 'dashboard'
-  const [statusOpen, setStatusOpen] = useState(true)
-  const [categoriaOpen, setCategoriaOpen] = useState(true)
+  const [statusOpen, setStatusOpen] = useState(false)
+  const [categoriaOpen, setCategoriaOpen] = useState(false)
 
   return (
     <nav aria-label="Navegação e filtros" className="space-y-6 px-3 py-6">

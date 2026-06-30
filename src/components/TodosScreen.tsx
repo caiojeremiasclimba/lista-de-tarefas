@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import type { User } from '@supabase/supabase-js'
 import { TODO_STATUS_CONFIG, TODO_STATUSES, getNextStatusOnToggle } from '../constants/todoStatus'
 import { supabase } from '../lib/supabase'
 import type { Categoria } from '../types/categoria'
@@ -14,16 +15,19 @@ import {
   mergeTodoSubtarefas,
   syncSubtarefas,
 } from '../utils/subtarefaSync'
+import { getUserDisplayName } from '../utils/userDisplay'
 import CategoriaForm from './CategoriaForm'
 import FilterSidebar, { type AppView, type FiltroCounts, type FiltroTarefas } from './FilterSidebar'
 import ProductivityDashboard from './ProductivityDashboard'
+import ProfileScreen from './ProfileScreen'
+import UserAvatar from './UserAvatar'
 import SearchBar from './SearchBar'
 import TaskSection from './TaskSection'
 import TodoForm from './TodoForm'
 import { LogOutIcon, PlusIcon } from './TodosUi'
 
 interface TodosScreenProps {
-  userEmail: string
+  user: User
   onLogout: () => void
 }
 
@@ -37,7 +41,7 @@ const SECOES_INICIAIS: SecoesAbertas = {
   vencidas: true,
 }
 
-export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
+export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
   const [todos, setTodos] = useState<Todo[]>([])
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [busca, setBusca] = useState('')
@@ -383,7 +387,7 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
     setSecoesAbertas((prev) => ({ ...prev, [key]: !prev[key] }))
   }
 
-  const userInitial = userEmail ? userEmail.charAt(0).toUpperCase() : 'U'
+  const displayName = getUserDisplayName(user)
 
   const categoriaAtivaNome = filtroCategoria
     ? categorias.find((c) => c.id === filtroCategoria)?.nome
@@ -430,15 +434,15 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
         </div>
 
         <div className="shrink-0 border-t border-slate-200/60 px-4 py-4">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <div
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600"
-              aria-hidden
-            >
-              {userInitial}
-            </div>
-            <p className="min-w-0 truncate text-sm text-slate-500">{userEmail}</p>
-          </div>
+          <button
+            type="button"
+            onClick={() => setView('perfil')}
+            aria-label="Abrir perfil"
+            className="flex min-w-0 w-full items-center gap-2.5 rounded-xl px-1 py-1 transition hover:bg-slate-50"
+          >
+            <UserAvatar user={user} size="sm" />
+            <p className="min-w-0 truncate text-sm text-slate-500">{displayName}</p>
+          </button>
           <button
             type="button"
             onClick={onLogout}
@@ -454,6 +458,8 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
         <main className="min-h-0 flex-1 space-y-6 overflow-x-hidden overflow-y-auto px-3 py-6 pb-24 sm:px-6">
           {view === 'dashboard' ? (
             <ProductivityDashboard todos={todos} loading={loading} />
+          ) : view === 'perfil' ? (
+            <ProfileScreen user={user} />
           ) : (
             <>
           <header className="text-left">
