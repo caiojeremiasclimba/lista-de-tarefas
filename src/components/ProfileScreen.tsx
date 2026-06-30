@@ -3,7 +3,7 @@ import type { SubmitEvent, ChangeEvent } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { removeAvatar, uploadAvatar } from '../utils/avatarStorage'
-import { getUserAvatarUrl } from '../utils/userDisplay'
+import { getUserAvatarUrl, hasEmailPasswordIdentity } from '../utils/userDisplay'
 import {
   AuthAlert,
   AuthField,
@@ -232,6 +232,7 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
 
   const cardClass =
     'space-y-5 rounded-2xl border border-slate-200/60 bg-white/80 p-6 shadow-sm backdrop-blur-sm'
+  const canChangePassword = hasEmailPasswordIdentity(user)
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
@@ -328,70 +329,79 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
         </button>
       </form>
 
-      <form onSubmit={handlePasswordSubmit} className={cardClass}>
-        <h2 className="text-lg font-semibold text-slate-800">Alterar senha</h2>
+      {canChangePassword ? (
+        <form onSubmit={handlePasswordSubmit} className={cardClass}>
+          <h2 className="text-lg font-semibold text-slate-800">Alterar senha</h2>
 
-        <AuthField
-          id="profile-senha-atual"
-          label="Senha atual"
-          type={showSenhaAtual ? 'text' : 'password'}
-          value={senhaAtual}
-          onChange={setSenhaAtual}
-          placeholder="Sua senha atual"
-          icon={<LockIcon />}
-          rightSlot={
-            <PasswordToggle
-              visible={showSenhaAtual}
-              onToggle={() => setShowSenhaAtual((prev) => !prev)}
-            />
-          }
-        />
+          <AuthField
+            id="profile-senha-atual"
+            label="Senha atual"
+            type={showSenhaAtual ? 'text' : 'password'}
+            value={senhaAtual}
+            onChange={setSenhaAtual}
+            placeholder="Sua senha atual"
+            icon={<LockIcon />}
+            rightSlot={
+              <PasswordToggle
+                visible={showSenhaAtual}
+                onToggle={() => setShowSenhaAtual((prev) => !prev)}
+              />
+            }
+          />
 
-        <AuthField
-          id="profile-nova-senha"
-          label="Nova senha"
-          type={showNovaSenha ? 'text' : 'password'}
-          value={novaSenha}
-          onChange={setNovaSenha}
-          placeholder="Mínimo 6 caracteres"
-          icon={<LockIcon />}
-          minLength={6}
-          rightSlot={
-            <PasswordToggle
-              visible={showNovaSenha}
-              onToggle={() => setShowNovaSenha((prev) => !prev)}
-            />
-          }
-        />
+          <AuthField
+            id="profile-nova-senha"
+            label="Nova senha"
+            type={showNovaSenha ? 'text' : 'password'}
+            value={novaSenha}
+            onChange={setNovaSenha}
+            placeholder="Mínimo 6 caracteres"
+            icon={<LockIcon />}
+            minLength={6}
+            rightSlot={
+              <PasswordToggle
+                visible={showNovaSenha}
+                onToggle={() => setShowNovaSenha((prev) => !prev)}
+              />
+            }
+          />
 
-        <AuthField
-          id="profile-confirmar-senha"
-          label="Confirmar nova senha"
-          type={showConfirmarSenha ? 'text' : 'password'}
-          value={confirmarSenha}
-          onChange={setConfirmarSenha}
-          placeholder="Repita a nova senha"
-          icon={<LockIcon />}
-          minLength={6}
-          rightSlot={
-            <PasswordToggle
-              visible={showConfirmarSenha}
-              onToggle={() => setShowConfirmarSenha((prev) => !prev)}
-            />
-          }
-        />
+          <AuthField
+            id="profile-confirmar-senha"
+            label="Confirmar nova senha"
+            type={showConfirmarSenha ? 'text' : 'password'}
+            value={confirmarSenha}
+            onChange={setConfirmarSenha}
+            placeholder="Repita a nova senha"
+            icon={<LockIcon />}
+            minLength={6}
+            rightSlot={
+              <PasswordToggle
+                visible={showConfirmarSenha}
+                onToggle={() => setShowConfirmarSenha((prev) => !prev)}
+              />
+            }
+          />
 
-        {passwordError && <AuthAlert type="error">{passwordError}</AuthAlert>}
-        {passwordSuccess && <AuthAlert type="success">{passwordSuccess}</AuthAlert>}
+          {passwordError && <AuthAlert type="error">{passwordError}</AuthAlert>}
+          {passwordSuccess && <AuthAlert type="success">{passwordSuccess}</AuthAlert>}
 
-        <button
-          type="submit"
-          disabled={savingPassword}
-          className="rounded-xl bg-blue-600 px-6 py-2.5 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-        >
-          {savingPassword ? 'Alterando...' : 'Alterar senha'}
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={savingPassword}
+            className="rounded-xl bg-blue-600 px-6 py-2.5 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          >
+            {savingPassword ? 'Alterando...' : 'Alterar senha'}
+          </button>
+        </form>
+      ) : (
+        <section className={cardClass}>
+          <h2 className="text-lg font-semibold text-slate-800">Senha</h2>
+          <p className="text-sm text-slate-500">
+            Sua conta usa login com Google. A senha é gerenciada pela sua conta Google.
+          </p>
+        </section>
+      )}
     </div>
   )
 }

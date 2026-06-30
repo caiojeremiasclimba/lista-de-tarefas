@@ -17,3 +17,7 @@ export function getUserAvatarUrl(user: User): string | null {
   if (typeof url === 'string' && url.trim()) return url.trim()
   return null
 }
+
+export function hasEmailPasswordIdentity(user: User): boolean {
+  return user.identities?.some((identity) => identity.provider === 'email') ?? false
+}
