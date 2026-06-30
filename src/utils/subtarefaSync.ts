@@ -22,6 +22,7 @@ export async function insertSubtarefas(
         user_id: userId,
         titulo: d.titulo.trim(),
         ordem: i,
+        concluida: d.concluida ?? false,
       }))
     )
     .select()
@@ -49,16 +50,19 @@ export async function syncSubtarefas(
   for (let index = 0; index < validDrafts.length; index++) {
     const draft = validDrafts[index]
     const titulo = draft.titulo.trim()
+    const concluida = draft.concluida ?? false
 
     if (draft.id) {
       const original = existingList.find((s) => s.id === draft.id)
       if (!original) continue
 
-      if (original.titulo !== titulo || original.ordem !== index) {
-        const { error } = await supabase
-          .from('subtarefas')
-          .update({ titulo, ordem: index })
-          .eq('id', draft.id)
+      const updates: { titulo?: string; ordem?: number; concluida?: boolean } = {}
+      if (original.titulo !== titulo) updates.titulo = titulo
+      if (original.ordem !== index) updates.ordem = index
+      if (original.concluida !== concluida) updates.concluida = concluida
+
+      if (Object.keys(updates).length > 0) {
+        const { error } = await supabase.from('subtarefas').update(updates).eq('id', draft.id)
         if (error) throw new Error(error.message)
       }
     } else {
@@ -67,6 +71,7 @@ export async function syncSubtarefas(
         user_id: userId,
         titulo,
         ordem: index,
+        concluida,
       })
       if (error) throw new Error(error.message)
     }

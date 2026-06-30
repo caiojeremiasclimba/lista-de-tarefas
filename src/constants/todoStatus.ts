@@ -49,3 +49,17 @@ export const TODO_STATUS_CONFIG: Record<TodoStatus, TodoStatusConfig> = {
 export function isFinalStatus(status: TodoStatus): boolean {
   return TODO_STATUS_CONFIG[status].isFinal
 }
+
+/** Next status when the user clicks the quick-toggle control on a task card. */
+export function getNextStatusOnToggle(status: TodoStatus): TodoStatus {
+  switch (status) {
+    case 'pendente':
+      return 'em_andamento'
+    case 'em_andamento':
+      return 'concluida'
+    case 'concluida':
+      return 'pendente'
+    default:
+      return status
+  }
+}

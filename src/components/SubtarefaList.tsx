@@ -68,6 +68,14 @@ export default function SubtarefaList(props: SubtarefaListProps) {
     )
   }
 
+  function toggleConcluida(index: number) {
+    onChange(
+      subtarefas.map((s, i) =>
+        i === index ? { ...s, concluida: !(s.concluida ?? false) } : s
+      )
+    )
+  }
+
   function removeItem(index: number) {
     onChange(subtarefas.filter((_, i) => i !== index))
   }
@@ -80,6 +88,22 @@ export default function SubtarefaList(props: SubtarefaListProps) {
     <div className="space-y-2">
       {subtarefas.map((sub, index) => (
         <div key={getSubtarefaDraftKey(sub)} className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => toggleConcluida(index)}
+            aria-label={sub.concluida ? 'Desmarcar subtarefa' : 'Marcar subtarefa'}
+            className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
+              sub.concluida
+                ? 'border-green-500 bg-green-500 text-white'
+                : 'border-slate-300 bg-white hover:border-blue-400'
+            }`}
+          >
+            {sub.concluida && (
+              <svg className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            )}
+          </button>
           <input
             type="text"
             value={sub.titulo}
