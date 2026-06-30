@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { TODO_STATUS_CONFIG, TODO_STATUSES } from '../constants/todoStatus'
+import { TODO_STATUS_CONFIG, TODO_STATUSES, getNextStatusOnToggle } from '../constants/todoStatus'
 import { supabase } from '../lib/supabase'
 import type { Categoria } from '../types/categoria'
 import type { Subtarefa } from '../types/subtarefa'
@@ -252,7 +252,7 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
   async function handleToggleStatus(todo: Todo) {
     if (todo.status === 'cancelada') return
 
-    const newStatus = todo.status === 'concluida' ? 'pendente' : 'concluida'
+    const newStatus = getNextStatusOnToggle(todo.status)
 
     const { data: updated, error: updateError } = await supabase
       .from('tarefas')

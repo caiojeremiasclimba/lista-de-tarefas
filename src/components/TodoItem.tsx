@@ -29,6 +29,7 @@ export default function TodoItem({
   const [checklistOpen, setChecklistOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const isConcluida = todo.status === 'concluida'
+  const isEmAndamento = todo.status === 'em_andamento'
   const isCancelada = todo.status === 'cancelada'
   const overdue = isTodoOverdue(todo)
   const dateLabel = formatTodoDate(todo.data_prevista)
@@ -73,18 +74,31 @@ export default function TodoItem({
           type="button"
           onClick={() => !isCancelada && onToggleStatus(todo)}
           disabled={isCancelada}
-          aria-label={isConcluida ? 'Marcar como pendente' : 'Marcar como concluída'}
+          aria-label={
+            isConcluida
+              ? 'Marcar como pendente'
+              : isEmAndamento
+                ? 'Marcar como concluída'
+                : 'Marcar como em andamento'
+          }
           className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded border-2 transition-colors ${
             isCancelada
               ? 'cursor-not-allowed border-slate-200 bg-slate-50 opacity-50'
               : isConcluida
                 ? 'border-green-500 bg-green-500 text-white'
-                : 'border-slate-300 bg-white hover:border-blue-400'
+                : isEmAndamento
+                  ? 'border-blue-500 bg-blue-500 text-white'
+                  : 'border-slate-300 bg-white hover:border-blue-400'
           }`}
         >
           {isConcluida && (
             <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          )}
+          {isEmAndamento && (
+            <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="4" />
             </svg>
           )}
         </button>
