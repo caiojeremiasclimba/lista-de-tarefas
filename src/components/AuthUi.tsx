@@ -70,6 +70,7 @@ interface AuthFieldProps {
   rightSlot?: ReactNode
   minLength?: number
   required?: boolean
+  readOnly?: boolean
 }
 
 export function AuthField({
@@ -83,6 +84,7 @@ export function AuthField({
   rightSlot,
   minLength,
   required = true,
+  readOnly = false,
 }: AuthFieldProps) {
   return (
     <div>
@@ -97,9 +99,10 @@ export function AuthField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           required={required}
+          readOnly={readOnly}
           minLength={minLength}
           placeholder={placeholder}
-          className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-10 text-slate-800 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          className={`w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-10 text-slate-800 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${readOnly ? 'cursor-default bg-slate-50 text-slate-500' : ''}`}
         />
         {rightSlot && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">{rightSlot}</div>
