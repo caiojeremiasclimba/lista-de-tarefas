@@ -141,10 +141,12 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
       .single()
 
     if (insertError) throw new Error(insertError.message)
+    if (!created) throw new Error('Categoria criada, mas não foi possível carregá-la.')
+
+    closeCategoriaForm()
 
     setCategorias((prev) => [...prev, created].sort((a, b) => a.nome.localeCompare(b.nome)))
     setFiltroCategoria(created.id)
-    closeCategoriaForm()
   }
 
   async function handleUpdateCategoria(id: string, nome: string) {
@@ -156,11 +158,13 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
       .single()
 
     if (updateError) throw new Error(updateError.message)
+    if (!updated) throw new Error('Categoria atualizada, mas não foi possível carregá-la.')
+
+    closeCategoriaForm()
 
     setCategorias((prev) =>
       prev.map((c) => (c.id === id ? updated : c)).sort((a, b) => a.nome.localeCompare(b.nome))
     )
-    closeCategoriaForm()
   }
 
   async function handleDeleteCategoria(id: string) {
@@ -591,7 +595,7 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
 
       {showCategoriaForm && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-4 sm:items-center"
+          className="fixed inset-y-0 left-56 right-0 z-50 flex items-end justify-center bg-black/30 p-4 sm:items-center"
           onClick={closeCategoriaForm}
         >
           <div
@@ -609,7 +613,7 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
 
       {showForm && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-4 sm:items-center"
+          className="fixed inset-y-0 left-56 right-0 z-50 flex items-end justify-center bg-black/30 p-4 sm:items-center"
           onClick={closeForm}
         >
           <div

@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import LoginForm from './LoginForm'
 import SignUpForm from './SignUpForm'
-import { ClipboardIcon, UserIcon, UserPlusIcon } from './AuthUi'
+import { AuthDivider, ClipboardIcon, UserIcon, UserPlusIcon } from './AuthUi'
+import GoogleSignInButton from './GoogleSignInButton'
 
 type AuthMode = 'login' | 'signup'
 
@@ -61,6 +62,9 @@ export default function AuthScreen() {
         </div>
 
         {mode === 'login' ? <LoginForm /> : <SignUpForm />}
+
+        <AuthDivider />
+        <GoogleSignInButton />
       </div>
     </div>
   )
