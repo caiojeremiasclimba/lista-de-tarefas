@@ -15,6 +15,11 @@ import {
   mergeTodoSubtarefas,
   syncSubtarefas,
 } from '../utils/subtarefaSync'
+import {
+  ATTACHMENT_DB_FIELDS,
+  removeAttachment,
+  uploadAttachment,
+} from '../utils/attachmentStorage'
 import { getUserDisplayName } from '../utils/userDisplay'
 import CategoriaForm from './CategoriaForm'
 import FilterSidebar, { type AppView, type FiltroCounts, type FiltroTarefas } from './FilterSidebar'
@@ -202,6 +207,47 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
     }
   }
 
+  async function syncTodoAnexo(
+    tarefaId: string,
+    userId: string,
+    data: TodoFormData,
+    existing?: Todo | null
+  ) {
+    if (data.removerAnexo && existing?.anexo_path) {
+      await removeAttachment(existing.anexo_path)
+
+      const { error } = await supabase
+        .from('tarefas')
+        .update(ATTACHMENT_DB_FIELDS)
+        .eq('id', tarefaId)
+
+      if (error) throw new Error(error.message)
+      return
+    }
+
+    if (!data.anexoFile) return
+
+    const metadata = await uploadAttachment(userId, tarefaId, data.anexoFile)
+
+    const { error } = await supabase
+      .from('tarefas')
+      .update({
+        anexo_path: metadata.path,
+        anexo_nome: metadata.nome,
+        anexo_mime: metadata.mime,
+      })
+      .eq('id', tarefaId)
+
+    if (error) {
+      await removeAttachment(metadata.path)
+      throw new Error(error.message)
+    }
+
+    if (existing?.anexo_path && existing.anexo_path !== metadata.path) {
+      await removeAttachment(existing.anexo_path)
+    }
+  }
+
   async function handleSubmit(data: TodoFormData) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Usuário não autenticado')
@@ -228,6 +274,7 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
       if (updateError) throw new Error(updateError.message)
 
       await syncSubtarefas(editingTodo.id, user.id, data.subtarefas, editingTodo.subtarefas)
+      await syncTodoAnexo(editingTodo.id, user.id, data, editingTodo)
       const refreshed = await fetchTodoWithSubtarefas(editingTodo.id)
 
       setTodos((prev) => prev.map((t) => (t.id === editingTodo.id ? refreshed : t)))
@@ -241,13 +288,25 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
       if (insertError) throw new Error(insertError.message)
 
       const subtarefas = await insertSubtarefas(created.id, user.id, data.subtarefas)
-      setTodos((prev) => [{ ...created, subtarefas }, ...prev])
+
+      if (data.anexoFile) {
+        await syncTodoAnexo(created.id, user.id, data)
+        const refreshed = await fetchTodoWithSubtarefas(created.id)
+        setTodos((prev) => [refreshed, ...prev])
+      } else {
+        setTodos((prev) => [{ ...created, subtarefas }, ...prev])
+      }
     }
 
     closeForm()
   }
 
   async function handleDelete(id: string) {
+    const todo = todos.find((t) => t.id === id)
+    if (todo?.anexo_path) {
+      await removeAttachment(todo.anexo_path)
+    }
+
     const { error: deleteError } = await supabase.from('tarefas').delete().eq('id', id)
 
     if (deleteError) {
@@ -554,7 +613,7 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
           onClick={closeForm}
         >
           <div
-            className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+            className="w-full max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-2xl bg-white p-6 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <TodoForm

@@ -12,6 +12,9 @@ export interface Todo {
   categoria_id: string | null
   created_at: string
   completed_at: string | null
+  anexo_path?: string | null
+  anexo_nome?: string | null
+  anexo_mime?: string | null
   subtarefas?: Subtarefa[]
 }
 
@@ -22,6 +25,8 @@ export interface TodoFormData {
   status: TodoStatus
   categoria_id: string
   subtarefas: SubtarefaDraft[]
+  anexoFile?: File | null
+  removerAnexo?: boolean
 }
 
 export interface TodoValidationErrors {
