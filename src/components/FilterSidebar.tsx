@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { Categoria } from '../types/categoria'
 import type { TodoStatus } from '../types/todo'
 import {
   AlertIcon,
+  ChartBarIcon,
   CheckCircleIcon,
+  ChevronIcon,
   ClockIcon,
   DotsVerticalIcon,
   ListIcon,
@@ -12,11 +14,15 @@ import {
   XCircleIcon,
 } from './TodosUi'
 
+export type AppView = 'tarefas' | 'dashboard'
+
 export type FiltroTarefas = 'todas' | TodoStatus | 'vencidas'
 
 export type FiltroCounts = Record<FiltroTarefas, number>
 
 interface FilterSidebarProps {
+  view: AppView
+  onViewChange: (view: AppView) => void
   active: FiltroTarefas
   onChange: (filtro: FiltroTarefas) => void
   counts: FiltroCounts
@@ -28,6 +34,13 @@ interface FilterSidebarProps {
   onEditCategoria: (categoria: Categoria) => void
   onDeleteCategoria: (id: string) => void
 }
+
+type ViewItem = { id: AppView; label: string; Icon: typeof ListIcon }
+
+const viewItems: ViewItem[] = [
+  { id: 'dashboard', label: 'Dashboard', Icon: ChartBarIcon },
+  { id: 'tarefas', label: 'Tarefas', Icon: ListIcon },
+]
 
 type FilterItem = { id: FiltroTarefas; label: string; Icon: typeof ListIcon }
 
@@ -42,6 +55,35 @@ const statusFilters: FilterItem[] = [
   { id: 'concluida', label: 'Concluídas', Icon: CheckCircleIcon },
   { id: 'cancelada', label: 'Canceladas', Icon: XCircleIcon },
 ]
+
+function ViewButton({
+  id,
+  label,
+  Icon,
+  active,
+  onChange,
+}: ViewItem & {
+  active: AppView
+  onChange: (view: AppView) => void
+}) {
+  const isActive = active === id
+
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(id)}
+      aria-current={isActive ? 'page' : undefined}
+      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
+        isActive
+          ? 'bg-blue-50 font-medium text-blue-700'
+          : 'text-slate-600 hover:bg-slate-50'
+      }`}
+    >
+      <Icon className="h-4 w-4 shrink-0" />
+      <span className="truncate">{label}</span>
+    </button>
+  )
+}
 
 function FilterButton({
   id,
@@ -186,6 +228,33 @@ function CategoryFilterButton({
   )
 }
 
+function CollapsibleFilterSection({
+  title,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string
+  open: boolean
+  onToggle: () => void
+  children: ReactNode
+}) {
+  return (
+    <div className="space-y-1">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-400 hover:text-slate-600"
+      >
+        <span>{title}</span>
+        <ChevronIcon up={open} className="h-3.5 w-3.5" />
+      </button>
+      {open && children}
+    </div>
+  )
+}
+
 function FilterGroup({
   title,
   items,
@@ -218,6 +287,8 @@ function FilterGroup({
 }
 
 export default function FilterSidebar({
+  view,
+  onViewChange,
   active,
   onChange,
   counts,
@@ -229,11 +300,35 @@ export default function FilterSidebar({
   onEditCategoria,
   onDeleteCategoria,
 }: FilterSidebarProps) {
+  const filtersMuted = view === 'dashboard'
+  const [statusOpen, setStatusOpen] = useState(true)
+  const [categoriaOpen, setCategoriaOpen] = useState(true)
+
   return (
-    <nav aria-label="Filtros de tarefas" className="space-y-6 px-3 py-6">
-      <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-        Filtros
-      </p>
+    <nav aria-label="Navegação e filtros" className="space-y-6 px-3 py-6">
+      <div className="space-y-1">
+        <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+          Navegação
+        </p>
+        {viewItems.map((item) => (
+          <ViewButton
+            key={item.id}
+            {...item}
+            active={view}
+            onChange={onViewChange}
+          />
+        ))}
+      </div>
+
+      <div className={filtersMuted ? 'opacity-50' : undefined}>
+        <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+          Filtros
+        </p>
+        {filtersMuted && (
+          <p className="px-3 pb-2 text-xs text-slate-400">Aplicam-se à visão Tarefas</p>
+        )}
+      </div>
+      <div className={filtersMuted ? 'pointer-events-none space-y-6 opacity-50' : 'space-y-6'}>
       <FilterGroup
         title="Visão geral"
         items={overviewFilters}
@@ -241,17 +336,26 @@ export default function FilterSidebar({
         counts={counts}
         onChange={onChange}
       />
-      <FilterGroup
+      <CollapsibleFilterSection
         title="Por status"
-        items={statusFilters}
-        active={active}
-        counts={counts}
-        onChange={onChange}
-      />
-      <div className="space-y-1">
-        <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Por categoria
-        </p>
+        open={statusOpen}
+        onToggle={() => setStatusOpen((o) => !o)}
+      >
+        {statusFilters.map((item) => (
+          <FilterButton
+            key={item.id}
+            {...item}
+            active={active}
+            count={counts[item.id]}
+            onChange={onChange}
+          />
+        ))}
+      </CollapsibleFilterSection>
+      <CollapsibleFilterSection
+        title="Por categoria"
+        open={categoriaOpen}
+        onToggle={() => setCategoriaOpen((o) => !o)}
+      >
         {categorias.length === 0 ? (
           <p className="px-3 py-2 text-sm text-slate-500">Nenhuma categoria ainda</p>
         ) : (
@@ -275,6 +379,7 @@ export default function FilterSidebar({
           <span aria-hidden>+</span>
           Nova categoria
         </button>
+      </CollapsibleFilterSection>
       </div>
     </nav>
   )

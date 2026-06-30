@@ -5,6 +5,7 @@ import type { Categoria } from '../types/categoria'
 import type { Subtarefa } from '../types/subtarefa'
 import type { Todo, TodoFormData, TodoStatus } from '../types/todo'
 import { sortActiveTodos, sortFinalTodos } from '../utils/sortTodos'
+import { completedAtForStatusChange } from '../utils/todoCompletedAt'
 import { formatTodayHeader } from '../utils/formatTodoDate'
 import { isTodoOverdue } from '../utils/todoDue'
 import {
@@ -14,7 +15,8 @@ import {
   syncSubtarefas,
 } from '../utils/subtarefaSync'
 import CategoriaForm from './CategoriaForm'
-import FilterSidebar, { type FiltroCounts, type FiltroTarefas } from './FilterSidebar'
+import FilterSidebar, { type AppView, type FiltroCounts, type FiltroTarefas } from './FilterSidebar'
+import ProductivityDashboard from './ProductivityDashboard'
 import SearchBar from './SearchBar'
 import TaskSection from './TaskSection'
 import TodoForm from './TodoForm'
@@ -40,6 +42,7 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [busca, setBusca] = useState('')
   const [filtroAtivo, setFiltroAtivo] = useState<FiltroTarefas>('todas')
+  const [view, setView] = useState<AppView>('tarefas')
   const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [showCategoriaForm, setShowCategoriaForm] = useState(false)
@@ -205,6 +208,11 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
       data_prevista: data.data_prevista || null,
       status: data.status,
       categoria_id: data.categoria_id || null,
+      completed_at: completedAtForStatusChange(
+        data.status,
+        editingTodo?.status,
+        editingTodo?.completed_at
+      ),
     }
 
     if (editingTodo) {
@@ -253,10 +261,15 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
     if (todo.status === 'cancelada') return
 
     const newStatus = getNextStatusOnToggle(todo.status)
+    const completed_at = completedAtForStatusChange(
+      newStatus,
+      todo.status,
+      todo.completed_at
+    )
 
     const { data: updated, error: updateError } = await supabase
       .from('tarefas')
-      .update({ status: newStatus })
+      .update({ status: newStatus, completed_at })
       .eq('id', todo.id)
       .select()
       .single()
@@ -401,6 +414,8 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
       <aside className="fixed inset-y-0 left-0 z-10 flex h-dvh w-56 flex-col overflow-hidden border-r border-slate-200/60 bg-white/70 backdrop-blur-md">
         <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
           <FilterSidebar
+            view={view}
+            onViewChange={setView}
             active={filtroAtivo}
             onChange={setFiltroAtivo}
             counts={counts}
@@ -437,6 +452,10 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
 
       <div className="relative ml-56 flex h-dvh w-[calc(100%-14rem)] min-w-0 flex-col overflow-hidden">
         <main className="min-h-0 flex-1 space-y-6 overflow-x-hidden overflow-y-auto px-3 py-6 pb-24 sm:px-6">
+          {view === 'dashboard' ? (
+            <ProductivityDashboard todos={todos} loading={loading} />
+          ) : (
+            <>
           <header className="text-left">
             <h1 className="text-2xl font-bold text-slate-800 sm:text-3xl">{title}</h1>
             <p className="mt-1 text-sm text-slate-500 sm:text-base">{subtitle}</p>
@@ -488,8 +507,11 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
               )}
             </div>
           )}
+            </>
+          )}
         </main>
 
+        {view === 'tarefas' && (
         <button
           type="button"
           onClick={openNewTaskForm}
@@ -499,6 +521,7 @@ export default function TodosScreen({ userEmail, onLogout }: TodosScreenProps) {
           <PlusIcon className="h-5 w-5" />
           <span className="hidden sm:inline">Nova tarefa</span>
         </button>
+        )}
       </div>
 
       {showCategoriaForm && (

@@ -11,6 +11,7 @@ export interface Todo {
   status: TodoStatus
   categoria_id: string | null
   created_at: string
+  completed_at: string | null
   subtarefas?: Subtarefa[]
 }
 
