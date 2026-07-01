@@ -1,4 +1,4 @@
-import { TODO_STATUSES } from '../constants/todoStatus'
+import { TODO_STATUSES, TODO_STATUS_CONFIG } from '../constants/todoStatus'
 import type { FiltroCounts } from '../components/FilterSidebar'
 import type { Categoria } from '../types/categoria'
 import type { Todo, TodoStatus } from '../types/todo'
@@ -17,6 +17,7 @@ export interface TodoFiltersInput {
 
 export interface TodoFiltersResult {
   filtradosPorBusca: Todo[]
+  tarefasVisiveis: Todo[]
   porStatus: Record<TodoStatus, Todo[]>
   vencidas: Todo[]
   counts: FiltroCounts
@@ -24,6 +25,17 @@ export interface TodoFiltersResult {
   categoriasPorId: Record<string, string>
   categoriaAtivaNome: string | null
   secoesVisiveis: TodoStatus[]
+}
+
+export function getTarefasVisiveis(
+  filtroAtivo: TodoFiltersInput['filtroAtivo'],
+  filtradosPorBusca: Todo[],
+  porStatus: Record<TodoStatus, Todo[]>,
+  vencidas: Todo[]
+): Todo[] {
+  if (filtroAtivo === 'todas') return filtradosPorBusca
+  if (filtroAtivo === 'vencidas') return vencidas
+  return porStatus[filtroAtivo]
 }
 
 function matchesSearch(todo: Todo, termo: string): boolean {
@@ -89,8 +101,11 @@ export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
         ? []
         : [filtroAtivo]
 
+  const tarefasVisiveis = getTarefasVisiveis(filtroAtivo, filtradosPorBusca, grouped, vencidas)
+
   return {
     filtradosPorBusca,
+    tarefasVisiveis,
     porStatus: grouped,
     vencidas,
     counts,
@@ -101,19 +116,47 @@ export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
   }
 }
 
+function getFiltroNome(filtroAtivo: TodoFiltersInput['filtroAtivo']): string | null {
+  if (filtroAtivo === 'todas') return null
+  if (filtroAtivo === 'vencidas') return 'Vencidas'
+  return TODO_STATUS_CONFIG[filtroAtivo].label
+}
+
+function getFiltroVazioFrase(filtroAtivo: TodoFiltersInput['filtroAtivo']): string | null {
+  if (filtroAtivo === 'todas') return null
+  if (filtroAtivo === 'vencidas') return 'vencida'
+  return TODO_STATUS_CONFIG[filtroAtivo].label.toLowerCase()
+}
+
 export function getListaVaziaMensagem(
   buscaTermo: string,
   categoriaAtivaNome: string | null,
-  totalTodos: number
+  totalTodos: number,
+  filtroAtivo: TodoFiltersInput['filtroAtivo'] = 'todas'
 ): string {
+  const filtroNome = getFiltroNome(filtroAtivo)
+  const filtroFrase = getFiltroVazioFrase(filtroAtivo)
+
+  if (buscaTermo && categoriaAtivaNome && filtroNome) {
+    return `Nenhum resultado para "${buscaTermo}" em ${filtroNome} ("${categoriaAtivaNome}")`
+  }
   if (buscaTermo && categoriaAtivaNome) {
     return `Nenhum resultado para "${buscaTermo}" em "${categoriaAtivaNome}"`
+  }
+  if (buscaTermo && filtroNome) {
+    return `Nenhum resultado para "${buscaTermo}" em ${filtroNome}`
   }
   if (buscaTermo) {
     return `Nenhum resultado para "${buscaTermo}"`
   }
+  if (categoriaAtivaNome && filtroFrase) {
+    return `Nenhuma tarefa ${filtroFrase} em "${categoriaAtivaNome}"`
+  }
   if (categoriaAtivaNome) {
     return `Nenhuma tarefa em "${categoriaAtivaNome}"`
+  }
+  if (filtroFrase) {
+    return `Nenhuma tarefa ${filtroFrase}`
   }
   if (totalTodos === 0) {
     return 'Nenhuma tarefa ainda. Toque em "Nova tarefa" para começar.'

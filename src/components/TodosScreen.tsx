@@ -153,7 +153,7 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
             error={error}
             loading={loading}
             filtroAtivo={shell.filtroAtivo}
-            filtradosPorBusca={filters.filtradosPorBusca}
+            tarefasVisiveis={filters.tarefasVisiveis}
             listaVaziaMensagem={filters.listaVaziaMensagem}
             porStatus={filters.porStatus}
             vencidas={filters.vencidas}
