@@ -1,0 +1,139 @@
+import { useCallback, useEffect, useState } from 'react'
+import type { Categoria } from '../types/categoria'
+import type { Todo, TodoStatus } from '../types/todo'
+import type { AppView, FiltroTarefas } from '../components/FilterSidebar'
+import type { SecoesAbertas } from '../utils/todoFilters'
+
+const SECOES_INICIAIS: SecoesAbertas = {
+  pendente: true,
+  em_andamento: true,
+  concluida: true,
+  cancelada: true,
+  vencidas: true,
+}
+
+export function useAppShell() {
+  const [busca, setBusca] = useState('')
+  const [filtroAtivo, setFiltroAtivo] = useState<FiltroTarefas>('todas')
+  const [view, setView] = useState<AppView>('tarefas')
+  const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null)
+  const [showForm, setShowForm] = useState(false)
+  const [showCategoriaForm, setShowCategoriaForm] = useState(false)
+  const [editingCategoria, setEditingCategoria] = useState<Categoria | null>(null)
+  const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
+  const [newTaskCategoriaId, setNewTaskCategoriaId] = useState<string | null>(null)
+  const [secoesAbertas, setSecoesAbertas] = useState<SecoesAbertas>(SECOES_INICIAIS)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  const closeSidebar = useCallback(() => setSidebarOpen(false), [])
+
+  useEffect(() => {
+    if (!sidebarOpen) return
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') closeSidebar()
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [sidebarOpen, closeSidebar])
+
+  const handleViewChange = useCallback(
+    (next: AppView) => {
+      setView(next)
+      closeSidebar()
+    },
+    [closeSidebar]
+  )
+
+  const handleFiltroChange = useCallback(
+    (filtro: FiltroTarefas) => {
+      setFiltroAtivo(filtro)
+      closeSidebar()
+    },
+    [closeSidebar]
+  )
+
+  const handleCategoriaChange = useCallback(
+    (id: string | null) => {
+      setFiltroCategoria(id)
+      closeSidebar()
+    },
+    [closeSidebar]
+  )
+
+  const openNewTaskForm = useCallback(() => {
+    setNewTaskCategoriaId(filtroCategoria)
+    setEditingTodo(null)
+    setShowForm(true)
+    closeSidebar()
+  }, [filtroCategoria, closeSidebar])
+
+  const openEditForm = useCallback(
+    (todo: Todo) => {
+      setEditingTodo(todo)
+      setShowForm(true)
+      closeSidebar()
+    },
+    [closeSidebar]
+  )
+
+  const closeForm = useCallback(() => {
+    setShowForm(false)
+    setEditingTodo(null)
+    setNewTaskCategoriaId(null)
+  }, [])
+
+  const openNovaCategoriaForm = useCallback(() => {
+    setEditingCategoria(null)
+    setShowCategoriaForm(true)
+    closeSidebar()
+  }, [closeSidebar])
+
+  const openEditCategoriaForm = useCallback(
+    (categoria: Categoria) => {
+      setEditingCategoria(categoria)
+      setShowCategoriaForm(true)
+      closeSidebar()
+    },
+    [closeSidebar]
+  )
+
+  const closeCategoriaForm = useCallback(() => {
+    setShowCategoriaForm(false)
+    setEditingCategoria(null)
+  }, [])
+
+  const toggleSecao = useCallback((key: TodoStatus | 'vencidas') => {
+    setSecoesAbertas((prev) => ({ ...prev, [key]: !prev[key] }))
+  }, [])
+
+  return {
+    busca,
+    setBusca,
+    filtroAtivo,
+    view,
+    setView,
+    filtroCategoria,
+    setFiltroCategoria,
+    showForm,
+    showCategoriaForm,
+    editingCategoria,
+    editingTodo,
+    newTaskCategoriaId,
+    secoesAbertas,
+    sidebarOpen,
+    setSidebarOpen,
+    closeSidebar,
+    handleViewChange,
+    handleFiltroChange,
+    handleCategoriaChange,
+    openNewTaskForm,
+    openEditForm,
+    closeForm,
+    openNovaCategoriaForm,
+    openEditCategoriaForm,
+    closeCategoriaForm,
+    toggleSecao,
+  }
+}
