@@ -251,7 +251,7 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
     existing?: Todo | null
   ) {
     if (data.removerAnexo && existing?.anexo_path) {
-      await removeAttachment(existing.anexo_path)
+      const anexoPath = existing.anexo_path
 
       const { error } = await supabase
         .from('tarefas')
@@ -259,6 +259,12 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
         .eq('id', tarefaId)
 
       if (error) throw new Error(error.message)
+
+      try {
+        await removeAttachment(anexoPath)
+      } catch {
+        // Referência já removida no banco; arquivo pode permanecer no Storage.
+      }
       return
     }
 
@@ -276,12 +282,20 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
       .eq('id', tarefaId)
 
     if (error) {
-      await removeAttachment(metadata.path)
+      try {
+        await removeAttachment(metadata.path)
+      } catch {
+        // Upload órfão se o rollback no Storage falhar.
+      }
       throw new Error(error.message)
     }
 
     if (existing?.anexo_path && existing.anexo_path !== metadata.path) {
-      await removeAttachment(existing.anexo_path)
+      try {
+        await removeAttachment(existing.anexo_path)
+      } catch {
+        // Anexo antigo pode permanecer no Storage.
+      }
     }
   }
 
@@ -350,7 +364,11 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
     }
 
     if (anexoPath) {
-      await removeAttachment(anexoPath)
+      try {
+        await removeAttachment(anexoPath)
+      } catch {
+        // Tarefa já excluída do banco; arquivo pode permanecer no Storage.
+      }
     }
 
     setTodos((prev) => prev.filter((t) => t.id !== id))

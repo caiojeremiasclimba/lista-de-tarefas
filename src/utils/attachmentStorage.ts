@@ -71,7 +71,9 @@ export async function uploadAttachment(
 export async function removeAttachment(path: string | null | undefined): Promise<void> {
   if (!path) return
 
-  await supabase.storage.from(ATTACHMENT_BUCKET).remove([path])
+  const { error } = await supabase.storage.from(ATTACHMENT_BUCKET).remove([path])
+
+  if (error) throw error
 }
 
 export async function getAttachmentSignedUrl(
