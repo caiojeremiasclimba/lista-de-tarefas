@@ -27,12 +27,18 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
   const {
     todos,
     loading,
+    loadTodos,
     submitTodo,
     deleteTodo,
     handleToggleStatus,
     handleToggleSubtarefa,
     unlinkCategoriaFromTodos,
   } = useTodos({ onError })
+
+  const reloadTodos = useCallback(
+    () => loadTodos({ clearError: false }),
+    [loadTodos]
+  )
 
   const {
     categorias,
@@ -45,6 +51,7 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
     unlinkCategoriaFromTodos,
     filtroCategoria: shell.filtroCategoria,
     setFiltroCategoria: shell.setFiltroCategoria,
+    reloadTodos,
   })
 
   const filters = useTodoFilters({

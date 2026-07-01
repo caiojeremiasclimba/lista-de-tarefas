@@ -96,6 +96,15 @@ function buildTodoPayload(data: TodoFormData, editingTodo?: Todo | null) {
   }
 }
 
+async function rollbackCreatedTodo(id: string): Promise<void> {
+  const { error } = await supabase.from('tarefas').delete().eq('id', id)
+  if (error) {
+    throw new Error(
+      `Não foi possível concluir o salvamento e a tarefa parcial pode ter ficado no banco. Recarregue a lista. (${error.message})`
+    )
+  }
+}
+
 export async function saveTodo(
   data: TodoFormData,
   editingTodo?: Todo | null
@@ -116,7 +125,14 @@ export async function saveTodo(
     if (updateError) throw new Error(updateError.message)
 
     await syncSubtarefas(editingTodo.id, user.id, data.subtarefas, editingTodo.subtarefas)
-    await syncTodoAnexo(editingTodo.id, user.id, data, editingTodo)
+
+    try {
+      await syncTodoAnexo(editingTodo.id, user.id, data, editingTodo)
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : 'erro desconhecido'
+      throw new Error(`Tarefa salva, mas o anexo não pôde ser enviado: ${detail}`)
+    }
+
     return fetchTodoWithSubtarefas(editingTodo.id)
   }
 
@@ -128,14 +144,23 @@ export async function saveTodo(
 
   if (insertError) throw new Error(insertError.message)
 
-  const subtarefas = await insertSubtarefas(created.id, user.id, data.subtarefas)
+  try {
+    const subtarefas = await insertSubtarefas(created.id, user.id, data.subtarefas)
 
-  if (data.anexoFile) {
-    await syncTodoAnexo(created.id, user.id, data)
-    return fetchTodoWithSubtarefas(created.id)
+    if (data.anexoFile) {
+      await syncTodoAnexo(created.id, user.id, data)
+      return fetchTodoWithSubtarefas(created.id)
+    }
+
+    return { ...created, subtarefas }
+  } catch (err) {
+    try {
+      await rollbackCreatedTodo(created.id)
+    } catch (rollbackErr) {
+      throw rollbackErr
+    }
+    throw err instanceof Error ? err : new Error('Erro ao salvar tarefa.')
   }
-
-  return { ...created, subtarefas }
 }
 
 export async function deleteTodo(id: string, anexoPath?: string | null): Promise<void> {

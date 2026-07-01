@@ -17,8 +17,10 @@ export function useTodos({ onError }: UseTodosOptions) {
   const [todos, setTodos] = useState<Todo[]>([])
   const [loading, setLoading] = useState(true)
 
-  const loadTodos = useCallback(async () => {
-    onError(null)
+  const loadTodos = useCallback(async (options?: { clearError?: boolean }) => {
+    if (options?.clearError !== false) {
+      onError(null)
+    }
     try {
       const data = await fetchTodosService()
       setTodos(data)
@@ -114,6 +116,7 @@ export function useTodos({ onError }: UseTodosOptions) {
     todos,
     setTodos,
     loading,
+    loadTodos,
     submitTodo,
     deleteTodo,
     handleToggleStatus,
