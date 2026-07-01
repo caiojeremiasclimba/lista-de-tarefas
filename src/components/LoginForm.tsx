@@ -77,6 +77,7 @@ export default function LoginForm() {
     setLoading(true)
 
     setRememberMePreference(rememberMe)
+    migrateSessionStorage(rememberMe)
 
     const { error: authError } = await supabase.auth.signInWithPassword({
       email: email.trim(),

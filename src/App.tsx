@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
 import {
@@ -13,22 +13,31 @@ import ResetPasswordForm from './components/ResetPasswordForm'
 import TodosScreen from './components/TodosScreen'
 
 function App() {
+  const recoveryFlowRef = useRef(isRecoveryCallback())
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
-  const [needsPasswordReset, setNeedsPasswordReset] = useState(
-    () => isRecoveryCallback() || hasPendingPasswordReset()
-  )
+  const [needsPasswordReset, setNeedsPasswordReset] = useState(() => isRecoveryCallback())
 
   useEffect(() => {
     if (isRecoveryCallback()) {
+      recoveryFlowRef.current = true
       markPendingPasswordReset()
     }
 
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession)
-      if (currentSession && hasPendingPasswordReset()) {
-        setNeedsPasswordReset(true)
+      if (isRecoveryCallback()) {
+        recoveryFlowRef.current = true
+        markPendingPasswordReset()
+      } else if (hasPendingPasswordReset()) {
+        if (currentSession) {
+          recoveryFlowRef.current = true
+        } else {
+          clearPendingPasswordReset()
+        }
       }
+
+      setSession(currentSession)
+      setNeedsPasswordReset(recoveryFlowRef.current && Boolean(currentSession))
       clearRecoveryCallbackFromUrl()
       setLoading(false)
     })
@@ -36,10 +45,19 @@ function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
         if (event === 'PASSWORD_RECOVERY') {
+          recoveryFlowRef.current = true
           markPendingPasswordReset()
           setNeedsPasswordReset(true)
           clearRecoveryCallbackFromUrl()
+        } else if (event === 'SIGNED_IN' && !recoveryFlowRef.current) {
+          clearPendingPasswordReset()
+          setNeedsPasswordReset(false)
+        } else if (event === 'SIGNED_OUT') {
+          recoveryFlowRef.current = false
+          clearPendingPasswordReset()
+          setNeedsPasswordReset(false)
         }
+
         setSession(newSession)
       }
     )
@@ -48,11 +66,13 @@ function App() {
   }, [])
 
   async function handleLogout() {
+    recoveryFlowRef.current = false
     clearPendingPasswordReset()
     await supabase.auth.signOut()
   }
 
   function handlePasswordResetSuccess() {
+    recoveryFlowRef.current = false
     clearPendingPasswordReset()
     clearRecoveryCallbackFromUrl()
     setNeedsPasswordReset(false)
