@@ -15,6 +15,7 @@ interface UseCategoriasOptions {
   unlinkCategoriaFromTodos: (categoriaId: string) => void
   filtroCategoria: string | null
   setFiltroCategoria: (id: string | null) => void
+  reloadTodos?: () => Promise<void>
 }
 
 export function useCategorias({
@@ -23,6 +24,7 @@ export function useCategorias({
   unlinkCategoriaFromTodos,
   filtroCategoria,
   setFiltroCategoria,
+  reloadTodos,
 }: UseCategoriasOptions) {
   const [categorias, setCategorias] = useState<Categoria[]>([])
 
@@ -80,9 +82,11 @@ export function useCategorias({
         unlinkCategoriaFromTodos(id)
       } catch (err) {
         onError(err instanceof Error ? err.message : 'Erro ao excluir categoria.')
+        await loadCategorias()
+        await reloadTodos?.()
       }
     },
-    [todos, filtroCategoria, setFiltroCategoria, unlinkCategoriaFromTodos, onError]
+    [todos, filtroCategoria, setFiltroCategoria, unlinkCategoriaFromTodos, onError, reloadTodos, loadCategorias]
   )
 
   return {
