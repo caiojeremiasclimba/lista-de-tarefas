@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { SubmitEvent } from 'react'
+import { clearRecoveryCallbackFromUrl } from '../lib/authPreferences'
 import { supabase } from '../lib/supabase'
 import {
   AuthAlert,
@@ -46,6 +47,7 @@ export default function ResetPasswordForm({ onSuccess }: ResetPasswordFormProps)
     if (updateError) {
       setError(updateError.message)
     } else {
+      clearRecoveryCallbackFromUrl()
       setSuccess('Senha atualizada com sucesso! Redirecionando...')
       setTimeout(onSuccess, 1500)
     }

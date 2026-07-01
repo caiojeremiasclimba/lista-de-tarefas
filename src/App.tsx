@@ -3,6 +3,7 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
 import {
   clearPendingPasswordReset,
+  clearRecoveryCallbackFromUrl,
   hasPendingPasswordReset,
   isRecoveryCallback,
   markPendingPasswordReset,
@@ -28,6 +29,7 @@ function App() {
       if (currentSession && hasPendingPasswordReset()) {
         setNeedsPasswordReset(true)
       }
+      clearRecoveryCallbackFromUrl()
       setLoading(false)
     })
 
@@ -36,6 +38,7 @@ function App() {
         if (event === 'PASSWORD_RECOVERY') {
           markPendingPasswordReset()
           setNeedsPasswordReset(true)
+          clearRecoveryCallbackFromUrl()
         }
         setSession(newSession)
       }
@@ -51,6 +54,7 @@ function App() {
 
   function handlePasswordResetSuccess() {
     clearPendingPasswordReset()
+    clearRecoveryCallbackFromUrl()
     setNeedsPasswordReset(false)
   }
 

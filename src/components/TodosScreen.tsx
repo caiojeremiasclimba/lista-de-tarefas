@@ -340,15 +340,17 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
 
   async function handleDelete(id: string) {
     const todo = todos.find((t) => t.id === id)
-    if (todo?.anexo_path) {
-      await removeAttachment(todo.anexo_path)
-    }
+    const anexoPath = todo?.anexo_path
 
     const { error: deleteError } = await supabase.from('tarefas').delete().eq('id', id)
 
     if (deleteError) {
       setError(deleteError.message)
       return
+    }
+
+    if (anexoPath) {
+      await removeAttachment(anexoPath)
     }
 
     setTodos((prev) => prev.filter((t) => t.id !== id))
