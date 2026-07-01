@@ -13,7 +13,7 @@ interface TasksViewProps {
   error: string | null
   loading: boolean
   filtroAtivo: FiltroTarefas
-  filtradosPorBusca: Todo[]
+  tarefasVisiveis: Todo[]
   listaVaziaMensagem: string
   porStatus: Record<TodoStatus, Todo[]>
   vencidas: Todo[]
@@ -33,7 +33,7 @@ export default function TasksView({
   error,
   loading,
   filtroAtivo,
-  filtradosPorBusca,
+  tarefasVisiveis,
   listaVaziaMensagem,
   porStatus,
   vencidas,
@@ -63,7 +63,7 @@ export default function TasksView({
 
       {loading ? (
         <p className="text-center text-slate-500">Carregando tarefas...</p>
-      ) : filtradosPorBusca.length === 0 ? (
+      ) : tarefasVisiveis.length === 0 ? (
         <p className="text-center text-slate-500">{listaVaziaMensagem}</p>
       ) : (
         <div className="space-y-10">
