@@ -60,3 +60,10 @@ export function isRecoveryCallback(): boolean {
   const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
   return hashParams.get('type') === 'recovery'
 }
+
+/** Removes Supabase recovery tokens from the URL after the session is established. */
+export function clearRecoveryCallbackFromUrl(): void {
+  if (!isRecoveryCallback()) return
+
+  window.history.replaceState(null, '', window.location.pathname + window.location.search)
+}
