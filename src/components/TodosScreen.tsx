@@ -29,7 +29,7 @@ import UserAvatar from './UserAvatar'
 import SearchBar from './SearchBar'
 import TaskSection from './TaskSection'
 import TodoForm from './TodoForm'
-import { LogOutIcon, PlusIcon } from './TodosUi'
+import { LogOutIcon, MenuIcon, PlusIcon, XIcon } from './TodosUi'
 
 interface TodosScreenProps {
   user: User
@@ -59,8 +59,11 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
   const [newTaskCategoriaId, setNewTaskCategoriaId] = useState<string | null>(null)
   const [secoesAbertas, setSecoesAbertas] = useState<SecoesAbertas>(SECOES_INICIAIS)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const closeSidebar = useCallback(() => setSidebarOpen(false), [])
 
   const { title, subtitle } = formatTodayHeader()
 
@@ -98,15 +101,43 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
     fetchCategorias()
   }, [fetchTodos, fetchCategorias])
 
+  useEffect(() => {
+    if (!sidebarOpen) return
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') closeSidebar()
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [sidebarOpen, closeSidebar])
+
+  function handleViewChange(next: AppView) {
+    setView(next)
+    closeSidebar()
+  }
+
+  function handleFiltroChange(filtro: FiltroTarefas) {
+    setFiltroAtivo(filtro)
+    closeSidebar()
+  }
+
+  function handleCategoriaChange(id: string | null) {
+    setFiltroCategoria(id)
+    closeSidebar()
+  }
+
   function openNewTaskForm() {
     setNewTaskCategoriaId(filtroCategoria)
     setEditingTodo(null)
     setShowForm(true)
+    closeSidebar()
   }
 
   function openEditForm(todo: Todo) {
     setEditingTodo(todo)
     setShowForm(true)
+    closeSidebar()
   }
 
   function closeForm() {
@@ -118,11 +149,13 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
   function openNovaCategoriaForm() {
     setEditingCategoria(null)
     setShowCategoriaForm(true)
+    closeSidebar()
   }
 
   function openEditCategoriaForm(categoria: Categoria) {
     setEditingCategoria(categoria)
     setShowCategoriaForm(true)
+    closeSidebar()
   }
 
   function closeCategoriaForm() {
@@ -463,6 +496,17 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
         ? []
         : [filtroAtivo]
 
+  const mobileHeaderTitle =
+    view === 'dashboard' ? 'Dashboard' : view === 'perfil' ? 'Meu perfil' : title
+
+  const mobileHeaderSubtitle = useMemo(() => {
+    if (view !== 'tarefas') return null
+    if (filtroCategoria && categoriaAtivaNome) return categoriaAtivaNome
+    if (filtroAtivo === 'vencidas') return 'Vencidas'
+    if (filtroAtivo !== 'todas') return TODO_STATUS_CONFIG[filtroAtivo].label
+    return subtitle
+  }, [view, filtroCategoria, categoriaAtivaNome, filtroAtivo, subtitle])
+
   return (
     <div className="relative h-dvh overflow-hidden bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100">
       <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-blue-300/20 blur-3xl" />
@@ -478,18 +522,43 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
         ))}
       </div>
 
-      <aside className="fixed inset-y-0 left-0 z-10 flex h-dvh w-56 flex-col overflow-hidden border-r border-slate-200/60 bg-white/70 backdrop-blur-md">
+      {sidebarOpen && (
+        <button
+          type="button"
+          aria-label="Fechar menu"
+          className="fixed inset-0 z-30 bg-black/40 md:hidden"
+          onClick={closeSidebar}
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 flex h-dvh w-72 max-w-[85vw] flex-col overflow-hidden border-r border-slate-200/60 bg-white/95 backdrop-blur-md transition-transform duration-300 ease-out md:z-10 md:w-56 md:max-w-none md:translate-x-0 ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}
+      >
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200/60 px-3 py-3 md:hidden">
+          <span className="text-sm font-semibold text-slate-800">Menu</span>
+          <button
+            type="button"
+            onClick={closeSidebar}
+            aria-label="Fechar menu"
+            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+          >
+            <XIcon className="h-5 w-5" />
+          </button>
+        </div>
+
         <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
           <FilterSidebar
             view={view}
-            onViewChange={setView}
+            onViewChange={handleViewChange}
             active={filtroAtivo}
-            onChange={setFiltroAtivo}
+            onChange={handleFiltroChange}
             counts={counts}
             categorias={categorias}
             categoriaAtiva={filtroCategoria}
             countsPorCategoria={countsPorCategoria}
-            onCategoriaChange={setFiltroCategoria}
+            onCategoriaChange={handleCategoriaChange}
             onNovaCategoria={openNovaCategoriaForm}
             onEditCategoria={openEditCategoriaForm}
             onDeleteCategoria={handleDeleteCategoria}
@@ -499,7 +568,7 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
         <div className="shrink-0 border-t border-slate-200/60 px-4 py-4">
           <button
             type="button"
-            onClick={() => setView('perfil')}
+            onClick={() => handleViewChange('perfil')}
             aria-label="Abrir perfil"
             className="flex min-w-0 w-full items-center gap-2.5 rounded-xl px-1 py-1 transition hover:bg-slate-50"
           >
@@ -517,7 +586,33 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
         </div>
       </aside>
 
-      <div className="relative ml-56 flex h-dvh w-[calc(100%-14rem)] min-w-0 flex-col overflow-hidden">
+      <div className="relative flex h-dvh w-full min-w-0 flex-col overflow-hidden md:ml-56 md:w-[calc(100%-14rem)]">
+        <header className="flex shrink-0 items-center gap-3 border-b border-slate-200/60 bg-white/70 px-3 py-3 backdrop-blur-md md:hidden">
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Abrir menu"
+            aria-expanded={sidebarOpen}
+            className="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100"
+          >
+            <MenuIcon />
+          </button>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-slate-800">{mobileHeaderTitle}</p>
+            {mobileHeaderSubtitle && (
+              <p className="truncate text-xs text-slate-500">{mobileHeaderSubtitle}</p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setView('perfil')}
+            aria-label="Abrir perfil"
+            className="shrink-0 rounded-full transition hover:ring-2 hover:ring-blue-200"
+          >
+            <UserAvatar user={user} size="sm" />
+          </button>
+        </header>
+
         <main className="min-h-0 flex-1 space-y-6 overflow-x-hidden overflow-y-auto px-3 py-6 pb-24 sm:px-6">
           {view === 'dashboard' ? (
             <ProductivityDashboard todos={todos} loading={loading} />
@@ -585,7 +680,7 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
           type="button"
           onClick={openNewTaskForm}
           aria-label="Nova tarefa"
-          className="fixed bottom-6 right-4 z-20 flex items-center gap-2 rounded-full bg-blue-600 p-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 transition hover:bg-blue-700 sm:bottom-8 sm:right-6 sm:px-6 sm:py-3.5 sm:text-base"
+          className="fixed bottom-6 right-4 z-20 flex items-center gap-2 rounded-full bg-blue-600 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm font-semibold text-white shadow-lg shadow-blue-600/30 transition hover:bg-blue-700 sm:bottom-8 sm:right-6 sm:px-6 sm:py-3.5 sm:pb-3.5 sm:text-base"
         >
           <PlusIcon className="h-5 w-5" />
           <span className="hidden sm:inline">Nova tarefa</span>
@@ -595,7 +690,7 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
 
       {showCategoriaForm && (
         <div
-          className="fixed inset-y-0 left-56 right-0 z-50 flex items-end justify-center bg-black/30 p-4 sm:items-center"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-4 sm:items-center md:inset-y-0 md:left-56 md:right-0"
           onClick={closeCategoriaForm}
         >
           <div
@@ -613,7 +708,7 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
 
       {showForm && (
         <div
-          className="fixed inset-y-0 left-56 right-0 z-50 flex items-end justify-center bg-black/30 p-4 sm:items-center"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-4 sm:items-center md:inset-y-0 md:left-56 md:right-0"
           onClick={closeForm}
         >
           <div
