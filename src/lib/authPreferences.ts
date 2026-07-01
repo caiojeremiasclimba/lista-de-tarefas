@@ -14,22 +14,57 @@ export function getAuthStorage(): Storage {
   return getRememberMePreference() ? localStorage : sessionStorage
 }
 
-function getSupabaseAuthStorageKey(): string {
-  const url = import.meta.env.VITE_SUPABASE_URL as string
-  const projectRef = new URL(url).hostname.split('.')[0]
-  return `sb-${projectRef}-auth-token`
+/** Storage adapter that follows the current "Lembrar-me" preference on every read/write. */
+export function createAuthStorageAdapter(): Storage {
+  return {
+    get length() {
+      return getAuthStorage().length
+    },
+    clear() {
+      getAuthStorage().clear()
+    },
+    getItem(key: string) {
+      return getAuthStorage().getItem(key)
+    },
+    setItem(key: string, value: string) {
+      getAuthStorage().setItem(key, value)
+    },
+    removeItem(key: string) {
+      getAuthStorage().removeItem(key)
+    },
+    key(index: number) {
+      return getAuthStorage().key(index)
+    },
+  }
 }
 
+export function getSupabaseAuthStorageKey(): string | null {
+  try {
+    const url = import.meta.env.VITE_SUPABASE_URL
+    if (!url || typeof url !== 'string') return null
+    const projectRef = new URL(url).hostname.split('.')[0]
+    return `sb-${projectRef}-auth-token`
+  } catch {
+    return null
+  }
+}
+
+/** Moves or clears the Supabase session token across storages when "Lembrar-me" changes. */
 export function migrateSessionStorage(remember: boolean) {
   const key = getSupabaseAuthStorageKey()
+  if (!key) return
+
   const target = remember ? localStorage : sessionStorage
   const source = remember ? sessionStorage : localStorage
-  const data = source.getItem(key)
 
-  if (data) {
-    target.setItem(key, data)
-    source.removeItem(key)
+  if (!target.getItem(key)) {
+    const data = source.getItem(key)
+    if (data) {
+      target.setItem(key, data)
+    }
   }
+
+  source.removeItem(key)
 }
 
 export function getRememberedEmail(): string | null {
