@@ -42,6 +42,7 @@ export default function TodoItem({
   const { concluidas, total } = getSubtarefaProgress(subtarefas)
   const progressPercent = total > 0 ? Math.round((concluidas / total) * 100) : 0
   const isImageAnexo = todo.anexo_mime?.startsWith('image/') ?? false
+  const descricao = todo.descricao?.trim()
 
   useEffect(() => {
     if (!todo.anexo_path) {
@@ -148,6 +149,20 @@ export default function TodoItem({
           >
             {todo.titulo}
           </h3>
+
+          {descricao && (
+            <p
+              className={`mt-0.5 line-clamp-2 text-xs sm:text-sm ${
+                isConcluida
+                  ? 'line-through text-slate-400'
+                  : isCancelada
+                    ? 'text-slate-400'
+                    : 'text-slate-600'
+              }`}
+            >
+              {descricao}
+            </p>
+          )}
 
           <div className="mt-1 flex flex-wrap gap-1">
             <span

@@ -527,6 +527,24 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
     return subtitle
   }, [view, filtroCategoria, categoriaAtivaNome, filtroAtivo, subtitle])
 
+  const buscaTermo = busca.trim()
+
+  function getListaVaziaMensagem(): string {
+    if (buscaTermo && categoriaAtivaNome) {
+      return `Nenhum resultado para "${buscaTermo}" em "${categoriaAtivaNome}"`
+    }
+    if (buscaTermo) {
+      return `Nenhum resultado para "${buscaTermo}"`
+    }
+    if (categoriaAtivaNome) {
+      return `Nenhuma tarefa em "${categoriaAtivaNome}"`
+    }
+    if (todos.length === 0) {
+      return 'Nenhuma tarefa ainda. Toque em "Nova tarefa" para começar.'
+    }
+    return 'Nenhuma tarefa encontrada.'
+  }
+
   return (
     <div className="relative h-dvh overflow-hidden bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100">
       <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-blue-300/20 blur-3xl" />
@@ -653,10 +671,8 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
 
           {loading ? (
             <p className="text-center text-slate-500">Carregando tarefas...</p>
-          ) : filtradosPorBusca.length === 0 && filtroCategoria && categoriaAtivaNome ? (
-            <p className="text-center text-slate-500">
-              Nenhuma tarefa em &ldquo;{categoriaAtivaNome}&rdquo;
-            </p>
+          ) : filtradosPorBusca.length === 0 ? (
+            <p className="text-center text-slate-500">{getListaVaziaMensagem()}</p>
           ) : (
             <div className="space-y-10">
               {filtroAtivo === 'vencidas' ? (
