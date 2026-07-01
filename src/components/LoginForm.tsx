@@ -1,6 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { SubmitEvent } from 'react'
 import { supabase } from '../lib/supabase'
+import {
+  getRememberedEmail,
+  getRememberMePreference,
+  migrateSessionStorage,
+  setRememberedEmail,
+  setRememberMePreference,
+} from '../lib/authPreferences'
 import {
   AuthAlert,
   AuthField,
@@ -15,10 +22,19 @@ export default function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
+  const [rememberMe, setRememberMe] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [resetLoading, setResetLoading] = useState(false)
+
+  useEffect(() => {
+    setRememberMe(getRememberMePreference())
+    const savedEmail = getRememberedEmail()
+    if (savedEmail) {
+      setEmail(savedEmail)
+    }
+  }, [])
 
   function getLoginErrorMessage(message: string) {
     const lower = message.toLowerCase()
@@ -37,15 +53,21 @@ export default function LoginForm() {
       return
     }
 
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin,
+    setResetLoading(true)
+
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/`,
     })
 
     if (resetError) {
       setError(resetError.message)
     } else {
-      setSuccess('Enviamos um link de recuperação para seu e-mail.')
+      setSuccess(
+        'Se o e-mail estiver cadastrado, enviaremos um link de recuperação. Verifique sua caixa de entrada.'
+      )
     }
+
+    setResetLoading(false)
   }
 
   async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
@@ -54,14 +76,24 @@ export default function LoginForm() {
     setSuccess(null)
     setLoading(true)
 
+    setRememberMePreference(rememberMe)
+
     const { error: authError } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim(),
       password,
     })
 
     if (authError) {
       setError(getLoginErrorMessage(authError.message))
     } else {
+      migrateSessionStorage(rememberMe)
+
+      if (rememberMe) {
+        setRememberedEmail(email.trim())
+      } else {
+        setRememberedEmail(null)
+      }
+
       setSuccess('Login realizado com sucesso! Redirecionando...')
     }
 
@@ -114,9 +146,10 @@ export default function LoginForm() {
         <button
           type="button"
           onClick={handleForgotPassword}
-          className="font-medium text-blue-600 hover:text-blue-700"
+          disabled={resetLoading}
+          className="font-medium text-blue-600 hover:text-blue-700 disabled:opacity-50"
         >
-          Esqueceu sua senha?
+          {resetLoading ? 'Enviando...' : 'Esqueceu sua senha?'}
         </button>
       </div>
 

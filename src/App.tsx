@@ -1,21 +1,42 @@
 import { useState, useEffect } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
+import {
+  clearPendingPasswordReset,
+  hasPendingPasswordReset,
+  isRecoveryCallback,
+  markPendingPasswordReset,
+} from './lib/authPreferences'
 import AuthScreen from './components/AuthScreen'
+import ResetPasswordForm from './components/ResetPasswordForm'
 import TodosScreen from './components/TodosScreen'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [needsPasswordReset, setNeedsPasswordReset] = useState(
+    () => isRecoveryCallback() || hasPendingPasswordReset()
+  )
 
   useEffect(() => {
+    if (isRecoveryCallback()) {
+      markPendingPasswordReset()
+    }
+
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession)
+      if (currentSession && hasPendingPasswordReset()) {
+        setNeedsPasswordReset(true)
+      }
       setLoading(false)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, newSession) => {
+      (event, newSession) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          markPendingPasswordReset()
+          setNeedsPasswordReset(true)
+        }
         setSession(newSession)
       }
     )
@@ -24,7 +45,13 @@ function App() {
   }, [])
 
   async function handleLogout() {
+    clearPendingPasswordReset()
     await supabase.auth.signOut()
+  }
+
+  function handlePasswordResetSuccess() {
+    clearPendingPasswordReset()
+    setNeedsPasswordReset(false)
   }
 
   if (loading) {
@@ -37,6 +64,10 @@ function App() {
 
   if (!session) {
     return <AuthScreen />
+  }
+
+  if (needsPasswordReset) {
+    return <ResetPasswordForm onSuccess={handlePasswordResetSuccess} />
   }
 
   return (
