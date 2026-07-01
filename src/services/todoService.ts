@@ -105,6 +105,86 @@ async function rollbackCreatedTodo(id: string): Promise<void> {
   }
 }
 
+async function restoreSubtarefas(
+  tarefaId: string,
+  userId: string,
+  original: Subtarefa[]
+): Promise<void> {
+  const { data: current, error: fetchError } = await supabase
+    .from('subtarefas')
+    .select('*')
+    .eq('tarefa_id', tarefaId)
+
+  if (fetchError) throw new Error(fetchError.message)
+
+  const currentList = current ?? []
+  const originalIds = new Set(original.map((s) => s.id))
+
+  const toDelete = currentList.filter((s) => !originalIds.has(s.id)).map((s) => s.id)
+  if (toDelete.length > 0) {
+    const { error } = await supabase.from('subtarefas').delete().in('id', toDelete)
+    if (error) throw new Error(error.message)
+  }
+
+  for (const sub of original) {
+    const existing = currentList.find((s) => s.id === sub.id)
+
+    if (existing) {
+      const updates: { titulo?: string; ordem?: number; concluida?: boolean } = {}
+      if (existing.titulo !== sub.titulo) updates.titulo = sub.titulo
+      if (existing.ordem !== sub.ordem) updates.ordem = sub.ordem
+      if (existing.concluida !== sub.concluida) updates.concluida = sub.concluida
+
+      if (Object.keys(updates).length > 0) {
+        const { error } = await supabase.from('subtarefas').update(updates).eq('id', sub.id)
+        if (error) throw new Error(error.message)
+      }
+    } else {
+      const { error } = await supabase.from('subtarefas').insert({
+        id: sub.id,
+        tarefa_id: tarefaId,
+        user_id: userId,
+        titulo: sub.titulo,
+        ordem: sub.ordem,
+        concluida: sub.concluida,
+      })
+      if (error) throw new Error(error.message)
+    }
+  }
+}
+
+async function rollbackEditedTodo(editingTodo: Todo, userId: string): Promise<void> {
+  const { error: updateError } = await supabase
+    .from('tarefas')
+    .update({
+      titulo: editingTodo.titulo,
+      descricao: editingTodo.descricao,
+      data_prevista: editingTodo.data_prevista,
+      status: editingTodo.status,
+      categoria_id: editingTodo.categoria_id,
+      completed_at: editingTodo.completed_at,
+      anexo_path: editingTodo.anexo_path ?? null,
+      anexo_nome: editingTodo.anexo_nome ?? null,
+      anexo_mime: editingTodo.anexo_mime ?? null,
+    })
+    .eq('id', editingTodo.id)
+
+  if (updateError) {
+    throw new Error(
+      `Não foi possível desfazer o salvamento; a tarefa pode estar inconsistente. Recarregue a lista. (${updateError.message})`
+    )
+  }
+
+  try {
+    await restoreSubtarefas(editingTodo.id, userId, editingTodo.subtarefas ?? [])
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : 'erro desconhecido'
+    throw new Error(
+      `Não foi possível desfazer as subtarefas; recarregue a lista. (${detail})`
+    )
+  }
+}
+
 export async function saveTodo(
   data: TodoFormData,
   editingTodo?: Todo | null
@@ -124,13 +204,16 @@ export async function saveTodo(
 
     if (updateError) throw new Error(updateError.message)
 
-    await syncSubtarefas(editingTodo.id, user.id, data.subtarefas, editingTodo.subtarefas)
-
     try {
+      await syncSubtarefas(editingTodo.id, user.id, data.subtarefas, editingTodo.subtarefas)
       await syncTodoAnexo(editingTodo.id, user.id, data, editingTodo)
     } catch (err) {
-      const detail = err instanceof Error ? err.message : 'erro desconhecido'
-      throw new Error(`Tarefa salva, mas o anexo não pôde ser enviado: ${detail}`)
+      try {
+        await rollbackEditedTodo(editingTodo, user.id)
+      } catch (rollbackErr) {
+        throw rollbackErr
+      }
+      throw err instanceof Error ? err : new Error('Erro ao salvar tarefa.')
     }
 
     return fetchTodoWithSubtarefas(editingTodo.id)
