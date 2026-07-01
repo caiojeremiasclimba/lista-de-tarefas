@@ -2,7 +2,8 @@ import { supabase } from '../lib/supabase'
 
 export const ATTACHMENT_BUCKET = 'task-attachments'
 export const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024
-const SIGNED_URL_EXPIRES_SECONDS = 3600
+export const SIGNED_URL_EXPIRES_SECONDS = 3600
+export const SIGNED_URL_REFRESH_MARGIN_SECONDS = 300
 
 const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',

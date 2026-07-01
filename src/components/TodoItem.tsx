@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { TODO_STATUS_CONFIG } from '../constants/todoStatus'
 import type { Subtarefa } from '../types/subtarefa'
 import type { Todo } from '../types/todo'
+import { useAttachmentSignedUrl } from '../hooks/useAttachmentSignedUrl'
 import { formatTodoDate } from '../utils/formatTodoDate'
-import { getAttachmentSignedUrl } from '../utils/attachmentStorage'
 import { getSubtarefaProgress } from '../utils/subtarefaProgress'
 import { isTodoOverdue } from '../utils/todoDue'
 import SubtarefaList from './SubtarefaList'
@@ -28,10 +28,14 @@ export default function TodoItem({
 }: TodoItemProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [checklistOpen, setChecklistOpen] = useState(false)
-  const [anexoUrl, setAnexoUrl] = useState<string | null>(null)
-  const [anexoLoading, setAnexoLoading] = useState(false)
-  const [anexoError, setAnexoError] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const {
+    url: anexoUrl,
+    loading: anexoLoading,
+    error: anexoError,
+    retry: retryAnexo,
+    openInNewTab: openAnexoInNewTab,
+  } = useAttachmentSignedUrl(todo.anexo_path)
   const isConcluida = todo.status === 'concluida'
   const isEmAndamento = todo.status === 'em_andamento'
   const isCancelada = todo.status === 'cancelada'
@@ -43,34 +47,6 @@ export default function TodoItem({
   const progressPercent = total > 0 ? Math.round((concluidas / total) * 100) : 0
   const isImageAnexo = todo.anexo_mime?.startsWith('image/') ?? false
   const descricao = todo.descricao?.trim()
-
-  useEffect(() => {
-    if (!todo.anexo_path) {
-      setAnexoUrl(null)
-      setAnexoLoading(false)
-      setAnexoError(false)
-      return
-    }
-
-    let cancelled = false
-    setAnexoLoading(true)
-    setAnexoError(false)
-
-    getAttachmentSignedUrl(todo.anexo_path)
-      .then((url) => {
-        if (!cancelled) setAnexoUrl(url)
-      })
-      .catch(() => {
-        if (!cancelled) setAnexoError(true)
-      })
-      .finally(() => {
-        if (!cancelled) setAnexoLoading(false)
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [todo.anexo_path])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -218,29 +194,29 @@ export default function TodoItem({
                 <p className="text-xs text-slate-500">Anexo indisponível</p>
               )}
               {!anexoLoading && !anexoError && anexoUrl && isImageAnexo && (
-                <a
-                  href={anexoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block"
+                <button
+                  type="button"
+                  onClick={() => void openAnexoInNewTab()}
+                  aria-label={`Abrir anexo ${todo.anexo_nome ?? 'da tarefa'} em nova aba`}
+                  className="inline-block cursor-pointer"
                 >
                   <img
                     src={anexoUrl}
                     alt={todo.anexo_nome ?? 'Anexo da tarefa'}
+                    onError={retryAnexo}
                     className="max-h-24 rounded-lg border border-slate-200 object-contain"
                   />
-                </a>
+                </button>
               )}
               {!anexoLoading && !anexoError && anexoUrl && !isImageAnexo && (
-                <a
-                  href={anexoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  type="button"
+                  onClick={() => void openAnexoInNewTab()}
                   className="inline-flex min-w-0 items-center gap-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 sm:text-sm"
                 >
                   <DocumentIcon className="h-4 w-4 shrink-0" />
                   <span className="truncate">{todo.anexo_nome ?? 'Abrir PDF'}</span>
-                </a>
+                </button>
               )}
             </div>
           )}
