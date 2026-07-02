@@ -65,6 +65,24 @@ describe('createCategoria', () => {
     expect(builder.insert).toHaveBeenCalledWith({ nome: 'Estudos', user_id: AUTH_USER.id })
     expect(result).toEqual(created)
   })
+
+  it('remove espaços extras do nome antes de criar', async () => {
+    mockAuthenticatedUser()
+    const created = makeCategoria({ id: 'cat-new', nome: 'Estudos' })
+    const builder = createMockQueryBuilder({ data: created, error: null })
+    mockFrom.mockReturnValue(builder)
+
+    await createCategoria('  Estudos  ')
+
+    expect(builder.insert).toHaveBeenCalledWith({ nome: 'Estudos', user_id: AUTH_USER.id })
+  })
+
+  it('lança erro quando nome fica vazio após trim', async () => {
+    mockAuthenticatedUser()
+
+    await expect(createCategoria('   ')).rejects.toThrow('Informe o nome da categoria.')
+    expect(mockFrom).not.toHaveBeenCalled()
+  })
 })
 
 describe('updateCategoria', () => {
@@ -82,6 +100,21 @@ describe('updateCategoria', () => {
     expect(builder.update).toHaveBeenCalledWith({ nome: 'Pessoal' })
     expect(builder.eq).toHaveBeenCalledWith('id', 'cat-1')
     expect(result).toEqual(updated)
+  })
+
+  it('remove espaços extras do nome antes de atualizar', async () => {
+    const updated = makeCategoria({ id: 'cat-1', nome: 'Pessoal' })
+    const builder = createMockQueryBuilder({ data: updated, error: null })
+    mockFrom.mockReturnValue(builder)
+
+    await updateCategoria('cat-1', '  Pessoal  ')
+
+    expect(builder.update).toHaveBeenCalledWith({ nome: 'Pessoal' })
+  })
+
+  it('lança erro quando nome fica vazio após trim', async () => {
+    await expect(updateCategoria('cat-1', '   ')).rejects.toThrow('Informe o nome da categoria.')
+    expect(mockFrom).not.toHaveBeenCalled()
   })
 })
 

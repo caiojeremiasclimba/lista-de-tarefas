@@ -14,9 +14,12 @@ export async function createCategoria(nome: string): Promise<Categoria> {
   } = await supabase.auth.getUser()
   if (!user) throw new Error('Usuário não autenticado')
 
+  const nomeNormalizado = nome.trim()
+  if (!nomeNormalizado) throw new Error('Informe o nome da categoria.')
+
   const { data: created, error: insertError } = await supabase
     .from('categorias')
-    .insert({ nome, user_id: user.id })
+    .insert({ nome: nomeNormalizado, user_id: user.id })
     .select()
     .single()
 
@@ -27,9 +30,12 @@ export async function createCategoria(nome: string): Promise<Categoria> {
 }
 
 export async function updateCategoria(id: string, nome: string): Promise<Categoria> {
+  const nomeNormalizado = nome.trim()
+  if (!nomeNormalizado) throw new Error('Informe o nome da categoria.')
+
   const { data: updated, error: updateError } = await supabase
     .from('categorias')
-    .update({ nome })
+    .update({ nome: nomeNormalizado })
     .eq('id', id)
     .select()
     .single()
