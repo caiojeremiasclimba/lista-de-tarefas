@@ -40,7 +40,6 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
 
   const { categorias, handleCreateCategoria, handleUpdateCategoria, executeDeleteCategoria } =
     useCategorias({
-      todos,
       unlinkCategoriaFromTodos,
       filtroCategoria: shell.filtroCategoria,
       setFiltroCategoria: shell.setFiltroCategoria,

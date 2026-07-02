@@ -46,17 +46,11 @@ export async function updateCategoria(id: string, nome: string): Promise<Categor
   return updated
 }
 
-export async function deleteCategoria(id: string): Promise<void> {
-  const { error: deleteError } = await supabase.from('categorias').delete().eq('id', id)
-
-  if (deleteError) throw new Error(deleteError.message)
-}
-
-export async function unlinkTodosFromCategoria(categoriaId: string): Promise<void> {
-  const { error } = await supabase
-    .from('tarefas')
-    .update({ categoria_id: null })
-    .eq('categoria_id', categoriaId)
+/** Desvincula tarefas e exclui a categoria numa única transação no banco (RPC). */
+export async function deleteCategoriaComTarefas(categoriaId: string): Promise<void> {
+  const { error } = await supabase.rpc('delete_categoria_com_tarefas', {
+    p_categoria_id: categoriaId,
+  })
 
   if (error) throw new Error(error.message)
 }

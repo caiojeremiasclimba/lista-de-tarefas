@@ -1,17 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from '../lib/toast'
 import type { Categoria } from '../types/categoria'
-import type { Todo } from '../types/todo'
 import {
   createCategoria,
-  deleteCategoria,
+  deleteCategoriaComTarefas,
   fetchCategorias,
-  unlinkTodosFromCategoria,
   updateCategoria,
 } from '../services/categoriaService'
 
 interface UseCategoriasOptions {
-  todos: Todo[]
   unlinkCategoriaFromTodos: (categoriaId: string) => void
   filtroCategoria: string | null
   setFiltroCategoria: (id: string | null) => void
@@ -19,7 +16,6 @@ interface UseCategoriasOptions {
 }
 
 export function useCategorias({
-  todos,
   unlinkCategoriaFromTodos,
   filtroCategoria,
   setFiltroCategoria,
@@ -60,14 +56,8 @@ export function useCategorias({
 
   const executeDeleteCategoria = useCallback(
     async (id: string): Promise<boolean> => {
-      const qtd = todos.filter((t) => t.categoria_id === id).length
-
       try {
-        if (qtd > 0) {
-          await unlinkTodosFromCategoria(id)
-        }
-
-        await deleteCategoria(id)
+        await deleteCategoriaComTarefas(id)
 
         setCategorias((prev) => prev.filter((c) => c.id !== id))
         if (filtroCategoria === id) setFiltroCategoria(null)
@@ -80,14 +70,7 @@ export function useCategorias({
         return false
       }
     },
-    [
-      todos,
-      filtroCategoria,
-      setFiltroCategoria,
-      unlinkCategoriaFromTodos,
-      reloadTodos,
-      loadCategorias,
-    ]
+    [filtroCategoria, setFiltroCategoria, unlinkCategoriaFromTodos, reloadTodos, loadCategorias]
   )
 
   return {

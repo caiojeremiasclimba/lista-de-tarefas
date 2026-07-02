@@ -5,13 +5,13 @@ import {
   mockAuthenticatedUser,
   mockFrom,
   mockGetUser,
+  mockRpc,
   mockUnauthenticatedUser,
 } from '../test/mocks/supabase'
 import {
   createCategoria,
-  deleteCategoria,
+  deleteCategoriaComTarefas,
   fetchCategorias,
-  unlinkTodosFromCategoria,
   updateCategoria,
 } from './categoriaService'
 
@@ -118,36 +118,24 @@ describe('updateCategoria', () => {
   })
 })
 
-describe('deleteCategoria', () => {
+describe('deleteCategoriaComTarefas', () => {
   beforeEach(() => {
-    mockFrom.mockReset()
+    mockRpc.mockReset()
   })
 
-  it('exclui categoria pelo id', async () => {
-    const builder = createMockQueryBuilder({ data: null, error: null })
-    mockFrom.mockReturnValue(builder)
+  it('chama RPC atômica de exclusão', async () => {
+    mockRpc.mockResolvedValue({ error: null })
 
-    await deleteCategoria('cat-1')
+    await deleteCategoriaComTarefas('cat-1')
 
-    expect(mockFrom).toHaveBeenCalledWith('categorias')
-    expect(builder.delete).toHaveBeenCalled()
-    expect(builder.eq).toHaveBeenCalledWith('id', 'cat-1')
-  })
-})
-
-describe('unlinkTodosFromCategoria', () => {
-  beforeEach(() => {
-    mockFrom.mockReset()
+    expect(mockRpc).toHaveBeenCalledWith('delete_categoria_com_tarefas', {
+      p_categoria_id: 'cat-1',
+    })
   })
 
-  it('define categoria_id como null nas tarefas vinculadas', async () => {
-    const builder = createMockQueryBuilder({ data: null, error: null })
-    mockFrom.mockReturnValue(builder)
+  it('lança erro quando RPC falha', async () => {
+    mockRpc.mockResolvedValue({ error: { message: 'Categoria não encontrada' } })
 
-    await unlinkTodosFromCategoria('cat-1')
-
-    expect(mockFrom).toHaveBeenCalledWith('tarefas')
-    expect(builder.update).toHaveBeenCalledWith({ categoria_id: null })
-    expect(builder.eq).toHaveBeenCalledWith('categoria_id', 'cat-1')
+    await expect(deleteCategoriaComTarefas('cat-1')).rejects.toThrow('Categoria não encontrada')
   })
 })
