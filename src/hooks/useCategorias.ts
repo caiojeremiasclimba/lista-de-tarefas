@@ -59,16 +59,9 @@ export function useCategorias({
     return updated
   }, [])
 
-  const handleDeleteCategoria = useCallback(
+  const executeDeleteCategoria = useCallback(
     async (id: string) => {
       const qtd = todos.filter((t) => t.categoria_id === id).length
-
-      const mensagem =
-        qtd > 0
-          ? `Excluir esta categoria? ${qtd} tarefa(s) ficarão sem categoria.`
-          : 'Deseja excluir esta categoria?'
-
-      if (!window.confirm(mensagem)) return
 
       try {
         if (qtd > 0) {
@@ -101,6 +94,6 @@ export function useCategorias({
     categorias,
     handleCreateCategoria,
     handleUpdateCategoria,
-    handleDeleteCategoria,
+    executeDeleteCategoria,
   }
 }
