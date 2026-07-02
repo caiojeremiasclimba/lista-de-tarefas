@@ -41,7 +41,57 @@ Não commite o arquivo `.env`.
 npm run dev
 ```
 
-Outros comandos: `npm run build` (build de produção), `npm run preview` (preview local), `npm run lint`, `npm run format` e `npm run test:run`.
+## Scripts
+
+| Comando | Descrição |
+|---------|-----------|
+| `npm run dev` | Servidor de desenvolvimento (Vite) |
+| `npm run build` | Build de produção |
+| `npm run preview` | Preview local do build |
+| `npm run lint` | ESLint |
+| `npm run lint:fix` | ESLint com correção automática |
+| `npm run format` | Prettier (formata arquivos) |
+| `npm run format:check` | Verifica formatação sem alterar arquivos |
+| `npm run test` | Vitest em modo watch |
+| `npm run test:run` | Testes unitários/integração (uma execução) |
+| `npm run test:coverage` | Testes com relatório de cobertura |
+| `npm run test:e2e` | Testes E2E com Playwright |
+| `npm run test:e2e:ui` | Playwright com interface visual |
+
+## Testes
+
+### Unitários e integração (Vitest)
+
+```bash
+npm run test:run
+```
+
+Cobertura de código:
+
+```bash
+npm run test:coverage
+```
+
+O relatório é gerado em `coverage/`.
+
+### E2E (Playwright)
+
+Os testes E2E mockam o Supabase no navegador — não é necessário `.env` real nem banco configurado. Na primeira execução, instale os browsers:
+
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
+
+Para depurar com a UI do Playwright:
+
+```bash
+npm run test:e2e:ui
+```
+
+### CI
+
+Em pull requests e pushes na `main`, o GitHub Actions (`.github/workflows/ci.yml`) executa lint, `format:check`, testes unitários, build e E2E.
 
 ## Deploy
 
@@ -56,23 +106,34 @@ No Supabase (Authentication → URL Configuration), cadastre:
 
 ## Supabase
 
-O schema do banco está versionado em `supabase/migrations/`. A migration inicial cria:
+O schema do banco está versionado em `supabase/migrations/`:
+
+| Migration | Conteúdo |
+|-----------|----------|
+| `20260702120000_initial_schema.sql` | Tabelas, RLS e buckets de Storage |
+| `20260702130000_delete_categoria_atomic.sql` | RPC `delete_categoria_com_tarefas` (exclusão atômica de categoria) |
+
+A migration inicial cria:
 
 - Tabelas `categorias`, `tarefas` e `subtarefas`
 - RLS para que cada usuário acesse apenas os próprios dados
 - Buckets `task-attachments` (privado) e `avatars` (público) com políticas de Storage
 
+A segunda migration adiciona a função usada pelo app para excluir categorias: desvincula as tarefas e remove a categoria numa única transação.
+
 ### Projeto Supabase novo
 
 1. Crie um projeto em [supabase.com](https://supabase.com).
-2. Aplique a migration:
-   - **SQL Editor:** copie e execute o conteúdo de `supabase/migrations/20260702120000_initial_schema.sql`
+2. Aplique as migrations **na ordem**:
+   - **SQL Editor:** execute o conteúdo de cada arquivo em `supabase/migrations/`
    - **CLI (opcional):** instale o [Supabase CLI](https://supabase.com/docs/guides/cli), execute `supabase link` e depois `supabase db push`
 3. Habilite autenticação por e-mail. Google OAuth é opcional.
 
 ### Projeto já existente (ex.: produção)
 
-Se as tabelas e buckets já foram criados manualmente, **não reaplique** a migration inteira. Use o arquivo SQL como referência do schema esperado e aplique apenas o que estiver faltando.
+Se as tabelas e buckets já foram criados manualmente, **não reaplique** a migration inicial inteira. Use os arquivos SQL como referência e aplique apenas o que estiver faltando.
+
+Se o app já está em produção e a exclusão de categorias foi implementada depois, aplique somente `20260702130000_delete_categoria_atomic.sql` no SQL Editor.
 
 ### Storage
 
@@ -94,8 +155,11 @@ src/
 ├── utils/        filtros, validação, estatísticas
 ├── types/        tipos TypeScript
 ├── constants/    status das tarefas
-└── lib/          cliente Supabase e auth
+├── lib/          cliente Supabase e auth
+└── test/         fixtures e mocks para testes
+
+e2e/              testes Playwright (auth, tarefas)
 
 supabase/
-└── migrations/   schema SQL versionado (tabelas, RLS, Storage)
+└── migrations/   schema SQL versionado (tabelas, RLS, Storage, RPCs)
 ```
