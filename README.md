@@ -43,20 +43,20 @@ npm run dev
 
 ## Scripts
 
-| Comando | Descrição |
-|---------|-----------|
-| `npm run dev` | Servidor de desenvolvimento (Vite) |
-| `npm run build` | Build de produção |
-| `npm run preview` | Preview local do build |
-| `npm run lint` | ESLint |
-| `npm run lint:fix` | ESLint com correção automática |
-| `npm run format` | Prettier (formata arquivos) |
-| `npm run format:check` | Verifica formatação sem alterar arquivos |
-| `npm run test` | Vitest em modo watch |
-| `npm run test:run` | Testes unitários/integração (uma execução) |
-| `npm run test:coverage` | Testes com relatório de cobertura |
-| `npm run test:e2e` | Testes E2E com Playwright |
-| `npm run test:e2e:ui` | Playwright com interface visual |
+| Comando                 | Descrição                                  |
+| ----------------------- | ------------------------------------------ |
+| `npm run dev`           | Servidor de desenvolvimento (Vite)         |
+| `npm run build`         | Build de produção                          |
+| `npm run preview`       | Preview local do build                     |
+| `npm run lint`          | ESLint                                     |
+| `npm run lint:fix`      | ESLint com correção automática             |
+| `npm run format`        | Prettier (formata arquivos)                |
+| `npm run format:check`  | Verifica formatação sem alterar arquivos   |
+| `npm run test`          | Vitest em modo watch                       |
+| `npm run test:run`      | Testes unitários/integração (uma execução) |
+| `npm run test:coverage` | Testes com relatório de cobertura          |
+| `npm run test:e2e`      | Testes E2E com Playwright                  |
+| `npm run test:e2e:ui`   | Playwright com interface visual            |
 
 ## Testes
 
@@ -108,9 +108,9 @@ No Supabase (Authentication → URL Configuration), cadastre:
 
 O schema do banco está versionado em `supabase/migrations/`:
 
-| Migration | Conteúdo |
-|-----------|----------|
-| `20260702120000_initial_schema.sql` | Tabelas, RLS e buckets de Storage |
+| Migration                                    | Conteúdo                                                           |
+| -------------------------------------------- | ------------------------------------------------------------------ |
+| `20260702120000_initial_schema.sql`          | Tabelas, RLS e buckets de Storage                                  |
 | `20260702130000_delete_categoria_atomic.sql` | RPC `delete_categoria_com_tarefas` (exclusão atômica de categoria) |
 
 A migration inicial cria:
