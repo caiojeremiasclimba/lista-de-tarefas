@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { toast } from '../lib/toast'
 import type { Categoria } from '../types/categoria'
 import type { Todo } from '../types/todo'
 import {
@@ -11,7 +12,6 @@ import {
 
 interface UseCategoriasOptions {
   todos: Todo[]
-  onError: (message: string | null) => void
   unlinkCategoriaFromTodos: (categoriaId: string) => void
   filtroCategoria: string | null
   setFiltroCategoria: (id: string | null) => void
@@ -20,7 +20,6 @@ interface UseCategoriasOptions {
 
 export function useCategorias({
   todos,
-  onError,
   unlinkCategoriaFromTodos,
   filtroCategoria,
   setFiltroCategoria,
@@ -33,9 +32,9 @@ export function useCategorias({
       const data = await fetchCategorias()
       setCategorias(data)
     } catch (err) {
-      onError(err instanceof Error ? err.message : 'Erro ao carregar categorias.')
+      toast.error(err instanceof Error ? err.message : 'Erro ao carregar categorias.')
     }
-  }, [onError])
+  }, [])
 
   useEffect(() => {
     void loadCategorias()
@@ -60,7 +59,7 @@ export function useCategorias({
   }, [])
 
   const executeDeleteCategoria = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<boolean> => {
       const qtd = todos.filter((t) => t.categoria_id === id).length
 
       try {
@@ -73,10 +72,12 @@ export function useCategorias({
         setCategorias((prev) => prev.filter((c) => c.id !== id))
         if (filtroCategoria === id) setFiltroCategoria(null)
         unlinkCategoriaFromTodos(id)
+        return true
       } catch (err) {
-        onError(err instanceof Error ? err.message : 'Erro ao excluir categoria.')
+        toast.error(err instanceof Error ? err.message : 'Erro ao excluir categoria.')
         await loadCategorias()
         await reloadTodos?.()
+        return false
       }
     },
     [
@@ -84,7 +85,6 @@ export function useCategorias({
       filtroCategoria,
       setFiltroCategoria,
       unlinkCategoriaFromTodos,
-      onError,
       reloadTodos,
       loadCategorias,
     ]

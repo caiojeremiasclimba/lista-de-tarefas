@@ -10,7 +10,6 @@ import TaskSection from '../TaskSection'
 interface TasksViewProps {
   busca: string
   onBuscaChange: (value: string) => void
-  error: string | null
   loading: boolean
   filtroAtivo: FiltroTarefas
   tarefasVisiveis: Todo[]
@@ -30,7 +29,6 @@ interface TasksViewProps {
 export default function TasksView({
   busca,
   onBuscaChange,
-  error,
   loading,
   filtroAtivo,
   tarefasVisiveis,
@@ -56,8 +54,6 @@ export default function TasksView({
       </header>
 
       <SearchBar value={busca} onChange={onBuscaChange} />
-
-      {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
       {loading ? (
         <p className="text-center text-slate-500">Carregando tarefas...</p>

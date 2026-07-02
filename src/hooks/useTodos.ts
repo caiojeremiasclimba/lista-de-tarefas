@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { toast } from '../lib/toast'
 import type { Subtarefa } from '../types/subtarefa'
 import type { Todo, TodoFormData } from '../types/todo'
 import {
@@ -9,30 +10,20 @@ import {
   toggleTodoStatus,
 } from '../services/todoService'
 
-interface UseTodosOptions {
-  onError: (message: string | null) => void
-}
-
-export function useTodos({ onError }: UseTodosOptions) {
+export function useTodos() {
   const [todos, setTodos] = useState<Todo[]>([])
   const [loading, setLoading] = useState(true)
 
-  const loadTodos = useCallback(
-    async (options?: { clearError?: boolean }) => {
-      if (options?.clearError !== false) {
-        onError(null)
-      }
-      try {
-        const data = await fetchTodosService()
-        setTodos(data)
-      } catch (err) {
-        onError(err instanceof Error ? err.message : 'Erro ao carregar tarefas.')
-      } finally {
-        setLoading(false)
-      }
-    },
-    [onError]
-  )
+  const loadTodos = useCallback(async () => {
+    try {
+      const data = await fetchTodosService()
+      setTodos(data)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro ao carregar tarefas.')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
     void loadTodos()
@@ -49,7 +40,10 @@ export function useTodos({ onError }: UseTodosOptions) {
   }, [])
 
   const deleteTodo = useCallback(
-    async (id: string, options?: { editingTodoId?: string | null; onCloseForm?: () => void }) => {
+    async (
+      id: string,
+      options?: { editingTodoId?: string | null; onCloseForm?: () => void }
+    ): Promise<boolean> => {
       const todo = todos.find((t) => t.id === id)
 
       try {
@@ -58,26 +52,25 @@ export function useTodos({ onError }: UseTodosOptions) {
         if (options?.editingTodoId === id) {
           options.onCloseForm?.()
         }
+        return true
       } catch (err) {
-        onError(err instanceof Error ? err.message : 'Erro ao excluir tarefa.')
+        toast.error(err instanceof Error ? err.message : 'Erro ao excluir tarefa.')
+        return false
       }
     },
-    [todos, onError]
+    [todos]
   )
 
-  const handleToggleStatus = useCallback(
-    async (todo: Todo) => {
-      if (todo.status === 'cancelada') return
+  const handleToggleStatus = useCallback(async (todo: Todo) => {
+    if (todo.status === 'cancelada') return
 
-      try {
-        const updated = await toggleTodoStatus(todo)
-        setTodos((prev) => prev.map((t) => (t.id === todo.id ? updated : t)))
-      } catch (err) {
-        onError(err instanceof Error ? err.message : 'Erro ao atualizar status.')
-      }
-    },
-    [onError]
-  )
+    try {
+      const updated = await toggleTodoStatus(todo)
+      setTodos((prev) => prev.map((t) => (t.id === todo.id ? updated : t)))
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro ao atualizar status.')
+    }
+  }, [])
 
   const handleToggleSubtarefa = useCallback(
     async (sub: Subtarefa) => {
@@ -97,10 +90,10 @@ export function useTodos({ onError }: UseTodosOptions) {
           )
         )
       } catch (err) {
-        onError(err instanceof Error ? err.message : 'Erro ao atualizar subtarefa.')
+        toast.error(err instanceof Error ? err.message : 'Erro ao atualizar subtarefa.')
       }
     },
-    [todos, onError]
+    [todos]
   )
 
   const unlinkCategoriaFromTodos = useCallback((categoriaId: string) => {

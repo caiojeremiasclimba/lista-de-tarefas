@@ -11,6 +11,10 @@ const { mockFetchTodos, mockSaveTodo, mockDeleteTodo, mockToggleTodoStatus, mock
     mockToggleSubtarefa: vi.fn(),
   }))
 
+const { mockToastError } = vi.hoisted(() => ({
+  mockToastError: vi.fn(),
+}))
+
 vi.mock('../services/todoService', () => ({
   fetchTodos: mockFetchTodos,
   saveTodo: mockSaveTodo,
@@ -19,16 +23,21 @@ vi.mock('../services/todoService', () => ({
   toggleSubtarefa: mockToggleSubtarefa,
 }))
 
-describe('useTodos', () => {
-  const onError = vi.fn()
+vi.mock('../lib/toast', () => ({
+  toast: {
+    success: vi.fn(),
+    error: mockToastError,
+  },
+}))
 
+describe('useTodos', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockFetchTodos.mockResolvedValue([makeTodo({ id: 'todo-1' })])
   })
 
   it('carrega tarefas ao montar', async () => {
-    const { result } = renderHook(() => useTodos({ onError }))
+    const { result } = renderHook(() => useTodos())
 
     expect(result.current.loading).toBe(true)
 
@@ -36,22 +45,21 @@ describe('useTodos', () => {
 
     expect(mockFetchTodos).toHaveBeenCalled()
     expect(result.current.todos).toHaveLength(1)
-    expect(onError).toHaveBeenCalledWith(null)
   })
 
-  it('chama onError quando fetch falha', async () => {
+  it('exibe toast de erro quando fetch falha', async () => {
     mockFetchTodos.mockRejectedValue(new Error('Falha na rede'))
 
-    renderHook(() => useTodos({ onError }))
+    renderHook(() => useTodos())
 
-    await waitFor(() => expect(onError).toHaveBeenCalledWith('Falha na rede'))
+    await waitFor(() => expect(mockToastError).toHaveBeenCalledWith('Falha na rede'))
   })
 
   it('adiciona tarefa nova após submitTodo', async () => {
     const saved = makeTodo({ id: 'new-todo', titulo: 'Nova' })
     mockSaveTodo.mockResolvedValue(saved)
 
-    const { result } = renderHook(() => useTodos({ onError }))
+    const { result } = renderHook(() => useTodos())
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     await act(async () => {
@@ -67,7 +75,7 @@ describe('useTodos', () => {
     mockFetchTodos.mockResolvedValue([existing])
     mockSaveTodo.mockResolvedValue(updated)
 
-    const { result } = renderHook(() => useTodos({ onError }))
+    const { result } = renderHook(() => useTodos())
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     await act(async () => {
@@ -83,16 +91,18 @@ describe('useTodos', () => {
     mockDeleteTodo.mockResolvedValue(undefined)
     const onCloseForm = vi.fn()
 
-    const { result } = renderHook(() => useTodos({ onError }))
+    const { result } = renderHook(() => useTodos())
     await waitFor(() => expect(result.current.loading).toBe(false))
 
+    let deleted = false
     await act(async () => {
-      await result.current.deleteTodo('todo-1', {
+      deleted = await result.current.deleteTodo('todo-1', {
         editingTodoId: 'todo-1',
         onCloseForm,
       })
     })
 
+    expect(deleted).toBe(true)
     expect(result.current.todos).toHaveLength(0)
     expect(onCloseForm).toHaveBeenCalled()
   })
@@ -101,7 +111,7 @@ describe('useTodos', () => {
     const cancelada = makeTodo({ id: 'todo-1', status: 'cancelada' })
     mockFetchTodos.mockResolvedValue([cancelada])
 
-    const { result } = renderHook(() => useTodos({ onError }))
+    const { result } = renderHook(() => useTodos())
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     await act(async () => {
@@ -115,7 +125,7 @@ describe('useTodos', () => {
     const todo = makeTodo({ id: 'todo-1', categoria_id: 'cat-1' })
     mockFetchTodos.mockResolvedValue([todo])
 
-    const { result } = renderHook(() => useTodos({ onError }))
+    const { result } = renderHook(() => useTodos())
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     act(() => {
@@ -125,28 +135,30 @@ describe('useTodos', () => {
     expect(result.current.todos[0].categoria_id).toBeNull()
   })
 
-  it('chama onError e mantém lista quando deleteTodo falha', async () => {
+  it('exibe toast de erro e mantém lista quando deleteTodo falha', async () => {
     const todo = makeTodo({ id: 'todo-1', anexo_path: 'path/file.pdf' })
     mockFetchTodos.mockResolvedValue([todo])
     mockDeleteTodo.mockRejectedValue(new Error('Erro ao excluir'))
 
-    const { result } = renderHook(() => useTodos({ onError }))
+    const { result } = renderHook(() => useTodos())
     await waitFor(() => expect(result.current.loading).toBe(false))
 
+    let deleted = true
     await act(async () => {
-      await result.current.deleteTodo('todo-1')
+      deleted = await result.current.deleteTodo('todo-1')
     })
 
+    expect(deleted).toBe(false)
     expect(result.current.todos).toHaveLength(1)
-    expect(onError).toHaveBeenCalledWith('Erro ao excluir')
+    expect(mockToastError).toHaveBeenCalledWith('Erro ao excluir')
   })
 
-  it('chama onError e não altera status quando toggle falha', async () => {
+  it('exibe toast de erro e não altera status quando toggle falha', async () => {
     const todo = makeTodo({ id: 'todo-1', status: 'pendente' })
     mockFetchTodos.mockResolvedValue([todo])
     mockToggleTodoStatus.mockRejectedValue(new Error('Erro ao atualizar status'))
 
-    const { result } = renderHook(() => useTodos({ onError }))
+    const { result } = renderHook(() => useTodos())
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     await act(async () => {
@@ -154,7 +166,7 @@ describe('useTodos', () => {
     })
 
     expect(result.current.todos[0].status).toBe('pendente')
-    expect(onError).toHaveBeenCalledWith('Erro ao atualizar status')
+    expect(mockToastError).toHaveBeenCalledWith('Erro ao atualizar status')
   })
 
   it('ignora toggle de subtarefa quando tarefa pai está cancelada', async () => {
@@ -162,7 +174,7 @@ describe('useTodos', () => {
     const cancelada = makeTodo({ id: 'todo-1', status: 'cancelada', subtarefas: [sub] })
     mockFetchTodos.mockResolvedValue([cancelada])
 
-    const { result } = renderHook(() => useTodos({ onError }))
+    const { result } = renderHook(() => useTodos())
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     await act(async () => {
@@ -179,7 +191,7 @@ describe('useTodos', () => {
     mockFetchTodos.mockResolvedValue([todo])
     mockToggleSubtarefa.mockResolvedValue(updatedSub)
 
-    const { result } = renderHook(() => useTodos({ onError }))
+    const { result } = renderHook(() => useTodos())
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     await act(async () => {
@@ -189,13 +201,13 @@ describe('useTodos', () => {
     expect(result.current.todos[0].subtarefas?.[0].concluida).toBe(true)
   })
 
-  it('chama onError quando toggle de subtarefa falha', async () => {
+  it('exibe toast de erro quando toggle de subtarefa falha', async () => {
     const sub = makeSubtarefa({ id: 'sub-1', tarefa_id: 'todo-1' })
     const todo = makeTodo({ id: 'todo-1', subtarefas: [sub] })
     mockFetchTodos.mockResolvedValue([todo])
     mockToggleSubtarefa.mockRejectedValue(new Error('Erro ao atualizar subtarefa'))
 
-    const { result } = renderHook(() => useTodos({ onError }))
+    const { result } = renderHook(() => useTodos())
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     await act(async () => {
@@ -203,6 +215,6 @@ describe('useTodos', () => {
     })
 
     expect(result.current.todos[0].subtarefas?.[0].concluida).toBe(false)
-    expect(onError).toHaveBeenCalledWith('Erro ao atualizar subtarefa')
+    expect(mockToastError).toHaveBeenCalledWith('Erro ao atualizar subtarefa')
   })
 })
