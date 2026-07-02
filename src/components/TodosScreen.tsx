@@ -34,12 +34,13 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
     handleToggleStatus,
     handleToggleSubtarefa,
     unlinkCategoriaFromTodos,
-  } = useTodos()
+  } = useTodos(user.id)
 
   const reloadTodos = useCallback(() => loadTodos(), [loadTodos])
 
   const { categorias, handleCreateCategoria, handleUpdateCategoria, executeDeleteCategoria } =
     useCategorias({
+      userId: user.id,
       unlinkCategoriaFromTodos,
       filtroCategoria: shell.filtroCategoria,
       setFiltroCategoria: shell.setFiltroCategoria,

@@ -9,8 +9,11 @@ import {
   toggleSubtarefa as toggleSubtarefaService,
   toggleTodoStatus,
 } from '../services/todoService'
+import { useSupabaseRealtime } from './useSupabaseRealtime'
 
-export function useTodos() {
+const TODOS_REALTIME_TABLES = ['tarefas', 'subtarefas'] as const
+
+export function useTodos(userId: string) {
   const [todos, setTodos] = useState<Todo[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -28,6 +31,8 @@ export function useTodos() {
   useEffect(() => {
     void loadTodos()
   }, [loadTodos])
+
+  useSupabaseRealtime(userId, TODOS_REALTIME_TABLES, loadTodos)
 
   const submitTodo = useCallback(async (data: TodoFormData, editingTodo?: Todo | null) => {
     try {

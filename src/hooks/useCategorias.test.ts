@@ -21,6 +21,12 @@ vi.mock('../services/categoriaService', () => ({
   deleteCategoriaComTarefas: mockDeleteCategoriaComTarefas,
 }))
 
+vi.mock('./useSupabaseRealtime', () => ({
+  useSupabaseRealtime: vi.fn(),
+}))
+
+const USER_ID = 'user-1'
+
 describe('useCategorias', () => {
   const unlinkCategoriaFromTodos = vi.fn()
   const setFiltroCategoria = vi.fn()
@@ -34,6 +40,7 @@ describe('useCategorias', () => {
   function renderUseCategorias(overrides: Partial<Parameters<typeof useCategorias>[0]> = {}) {
     return renderHook(() =>
       useCategorias({
+        userId: USER_ID,
         unlinkCategoriaFromTodos,
         filtroCategoria: null,
         setFiltroCategoria,

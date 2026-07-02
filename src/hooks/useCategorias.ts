@@ -7,8 +7,12 @@ import {
   fetchCategorias,
   updateCategoria,
 } from '../services/categoriaService'
+import { useSupabaseRealtime } from './useSupabaseRealtime'
+
+const CATEGORIAS_REALTIME_TABLES = ['categorias'] as const
 
 interface UseCategoriasOptions {
+  userId: string
   unlinkCategoriaFromTodos: (categoriaId: string) => void
   filtroCategoria: string | null
   setFiltroCategoria: (id: string | null) => void
@@ -16,6 +20,7 @@ interface UseCategoriasOptions {
 }
 
 export function useCategorias({
+  userId,
   unlinkCategoriaFromTodos,
   filtroCategoria,
   setFiltroCategoria,
@@ -35,6 +40,8 @@ export function useCategorias({
   useEffect(() => {
     void loadCategorias()
   }, [loadCategorias])
+
+  useSupabaseRealtime(userId, CATEGORIAS_REALTIME_TABLES, loadCategorias)
 
   const handleCreateCategoria = useCallback(
     async (nome: string) => {
