@@ -12,6 +12,7 @@ interface TodoFormProps {
   editingTodo?: Todo | null
   categorias: Categoria[]
   defaultCategoriaId?: string | null
+  titleId?: string
   onSubmit: (data: TodoFormData) => Promise<void>
   onClose?: () => void
 }
@@ -31,6 +32,7 @@ export default function TodoForm({
   editingTodo,
   categorias,
   defaultCategoriaId,
+  titleId,
   onSubmit,
   onClose,
 }: TodoFormProps) {
@@ -160,7 +162,7 @@ export default function TodoForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-lg font-semibold text-slate-800">
+      <h2 id={titleId} className="text-lg font-semibold text-slate-800">
         {isEditing ? 'Editar tarefa' : 'Nova tarefa'}
       </h2>
 
