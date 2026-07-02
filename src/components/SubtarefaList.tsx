@@ -40,7 +40,13 @@ export default function SubtarefaList(props: SubtarefaListProps) {
               }`}
             >
               {sub.concluida && (
-                <svg className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <svg
+                  className="h-2.5 w-2.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={3}
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               )}
@@ -70,9 +76,7 @@ export default function SubtarefaList(props: SubtarefaListProps) {
 
   function toggleConcluida(index: number) {
     onChange(
-      subtarefas.map((s, i) =>
-        i === index ? { ...s, concluida: !(s.concluida ?? false) } : s
-      )
+      subtarefas.map((s, i) => (i === index ? { ...s, concluida: !(s.concluida ?? false) } : s))
     )
   }
 
@@ -99,7 +103,13 @@ export default function SubtarefaList(props: SubtarefaListProps) {
             }`}
           >
             {sub.concluida && (
-              <svg className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <svg
+                className="h-2.5 w-2.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={3}
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             )}

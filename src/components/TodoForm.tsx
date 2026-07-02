@@ -45,8 +45,7 @@ export default function TodoForm({
   const [anexoError, setAnexoError] = useState<string | null>(null)
 
   const isEditing = Boolean(editingTodo)
-  const hasExistingAnexo =
-    Boolean(editingTodo?.anexo_path) && !form.removerAnexo && !form.anexoFile
+  const hasExistingAnexo = Boolean(editingTodo?.anexo_path) && !form.removerAnexo && !form.anexoFile
 
   useEffect(() => {
     if (editingTodo) {
@@ -79,6 +78,7 @@ export default function TodoForm({
     setSubmitError(null)
     // defaultCategoriaId omitido de propósito: é snapshot ao abrir "Nova tarefa".
     // Incluí-lo aqui resetaria título, subtarefas e demais campos.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- ver comentário acima
   }, [editingTodo])
 
   useEffect(() => {
@@ -285,9 +285,7 @@ export default function TodoForm({
       </div>
 
       <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700">
-          Subtarefas
-        </label>
+        <label className="mb-2 block text-sm font-medium text-slate-700">Subtarefas</label>
         <SubtarefaList
           mode="editable"
           subtarefas={form.subtarefas}

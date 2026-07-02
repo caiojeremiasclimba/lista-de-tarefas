@@ -139,9 +139,7 @@ export default function ProductivityDashboard({ todos, loading }: ProductivityDa
         </div>
 
         <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Por status
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Por status</p>
           <ul className="mt-3 space-y-2">
             {TODO_STATUSES.map((status) => (
               <li key={status} className="flex items-center justify-between text-sm">

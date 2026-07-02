@@ -17,42 +17,39 @@ export function useTodos({ onError }: UseTodosOptions) {
   const [todos, setTodos] = useState<Todo[]>([])
   const [loading, setLoading] = useState(true)
 
-  const loadTodos = useCallback(async (options?: { clearError?: boolean }) => {
-    if (options?.clearError !== false) {
-      onError(null)
-    }
-    try {
-      const data = await fetchTodosService()
-      setTodos(data)
-    } catch (err) {
-      onError(err instanceof Error ? err.message : 'Erro ao carregar tarefas.')
-    } finally {
-      setLoading(false)
-    }
-  }, [onError])
+  const loadTodos = useCallback(
+    async (options?: { clearError?: boolean }) => {
+      if (options?.clearError !== false) {
+        onError(null)
+      }
+      try {
+        const data = await fetchTodosService()
+        setTodos(data)
+      } catch (err) {
+        onError(err instanceof Error ? err.message : 'Erro ao carregar tarefas.')
+      } finally {
+        setLoading(false)
+      }
+    },
+    [onError]
+  )
 
   useEffect(() => {
     void loadTodos()
   }, [loadTodos])
 
-  const submitTodo = useCallback(
-    async (data: TodoFormData, editingTodo?: Todo | null) => {
-      const saved = await saveTodo(data, editingTodo)
+  const submitTodo = useCallback(async (data: TodoFormData, editingTodo?: Todo | null) => {
+    const saved = await saveTodo(data, editingTodo)
 
-      if (editingTodo) {
-        setTodos((prev) => prev.map((t) => (t.id === editingTodo.id ? saved : t)))
-      } else {
-        setTodos((prev) => [saved, ...prev])
-      }
-    },
-    []
-  )
+    if (editingTodo) {
+      setTodos((prev) => prev.map((t) => (t.id === editingTodo.id ? saved : t)))
+    } else {
+      setTodos((prev) => [saved, ...prev])
+    }
+  }, [])
 
   const deleteTodo = useCallback(
-    async (
-      id: string,
-      options?: { editingTodoId?: string | null; onCloseForm?: () => void }
-    ) => {
+    async (id: string, options?: { editingTodoId?: string | null; onCloseForm?: () => void }) => {
       const todo = todos.find((t) => t.id === id)
 
       try {

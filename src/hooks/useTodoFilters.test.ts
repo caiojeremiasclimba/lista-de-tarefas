@@ -46,9 +46,7 @@ describe('useTodoFilters', () => {
     )
 
     expect(result.current.filtradosPorBusca).toHaveLength(0)
-    expect(result.current.listaVaziaMensagem).toBe(
-      'Nenhum resultado para "inexistente"'
-    )
+    expect(result.current.listaVaziaMensagem).toBe('Nenhum resultado para "inexistente"')
   })
 
   it('recalcula ao mudar filtroAtivo', () => {

@@ -3,13 +3,7 @@ import { TODO_STATUS_CONFIG } from '../constants/todoStatus'
 import type { Todo } from '../types/todo'
 import type { Subtarefa } from '../types/subtarefa'
 import TodoItem from './TodoItem'
-import {
-  CheckCircleIcon,
-  ChevronIcon,
-  ClockIcon,
-  PlayCircleIcon,
-  XCircleIcon,
-} from './TodosUi'
+import { CheckCircleIcon, ChevronIcon, ClockIcon, PlayCircleIcon, XCircleIcon } from './TodosUi'
 
 interface TaskSectionProps {
   title: string
@@ -76,9 +70,7 @@ export default function TaskSection({
               <TodoItem
                 key={todo.id}
                 todo={todo}
-                categoriaNome={
-                  todo.categoria_id ? categoriasPorId[todo.categoria_id] : undefined
-                }
+                categoriaNome={todo.categoria_id ? categoriasPorId[todo.categoria_id] : undefined}
                 onEdit={onEdit}
                 onDelete={onDelete}
                 onToggleStatus={onToggleStatus}

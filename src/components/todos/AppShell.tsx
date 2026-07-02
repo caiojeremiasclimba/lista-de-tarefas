@@ -1,7 +1,11 @@
 import type { ReactNode } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { getUserDisplayName } from '../../utils/userDisplay'
-import FilterSidebar, { type AppView, type FiltroCounts, type FiltroTarefas } from '../FilterSidebar'
+import FilterSidebar, {
+  type AppView,
+  type FiltroCounts,
+  type FiltroTarefas,
+} from '../FilterSidebar'
 import UserAvatar from '../UserAvatar'
 import { LogOutIcon, MenuIcon, XIcon } from '../TodosUi'
 import type { Categoria } from '../../types/categoria'

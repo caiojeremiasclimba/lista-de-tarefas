@@ -47,10 +47,7 @@ export function calcTotaisPorStatus(todos: Todo[]): Record<TodoStatus, number> {
 
 export function calcConcluidasNaSemana(todos: Todo[]): number {
   return todos.filter(
-    (t) =>
-      t.status === 'concluida' &&
-      t.completed_at != null &&
-      isInCurrentWeek(t.completed_at)
+    (t) => t.status === 'concluida' && t.completed_at != null && isInCurrentWeek(t.completed_at)
   ).length
 }
 

@@ -1,9 +1,6 @@
 import { createSubtarefaDraft } from '../types/subtarefa'
 import { makeSubtarefa, makeTodo } from '../test/fixtures/todos'
-import {
-  createMockQueryBuilder,
-  mockFrom,
-} from '../test/mocks/supabase'
+import { createMockQueryBuilder, mockFrom } from '../test/mocks/supabase'
 import {
   fetchTodoWithSubtarefas,
   insertSubtarefas,
@@ -44,9 +41,7 @@ describe('insertSubtarefas', () => {
 
   it('insere drafts com título e retorna dados do banco', async () => {
     const inserted = [makeSubtarefa({ id: 'sub-new', titulo: 'Nova subtarefa' })]
-    mockFrom.mockReturnValue(
-      createMockQueryBuilder({ data: inserted, error: null })
-    )
+    mockFrom.mockReturnValue(createMockQueryBuilder({ data: inserted, error: null }))
 
     const result = await insertSubtarefas('todo-1', 'user-1', [
       createSubtarefaDraft({ titulo: 'Nova subtarefa' }),
@@ -62,9 +57,7 @@ describe('insertSubtarefas', () => {
     )
 
     await expect(
-      insertSubtarefas('todo-1', 'user-1', [
-        createSubtarefaDraft({ titulo: 'Subtarefa' }),
-      ])
+      insertSubtarefas('todo-1', 'user-1', [createSubtarefaDraft({ titulo: 'Subtarefa' })])
     ).rejects.toThrow('Falha no insert')
   })
 })
@@ -115,12 +108,7 @@ describe('syncSubtarefas', () => {
     const insertBuilder = createMockQueryBuilder({ data: null, error: null })
     mockFrom.mockReturnValue(insertBuilder)
 
-    await syncSubtarefas(
-      'todo-1',
-      'user-1',
-      [createSubtarefaDraft({ titulo: 'Nova' })],
-      []
-    )
+    await syncSubtarefas('todo-1', 'user-1', [createSubtarefaDraft({ titulo: 'Nova' })], [])
 
     expect(insertBuilder.insert).toHaveBeenCalledWith({
       tarefa_id: 'todo-1',

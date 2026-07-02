@@ -35,10 +35,7 @@ async function syncTodoAnexo(
   if (data.removerAnexo && existing?.anexo_path) {
     const anexoPath = existing.anexo_path
 
-    const { error } = await supabase
-      .from('tarefas')
-      .update(ATTACHMENT_DB_FIELDS)
-      .eq('id', tarefaId)
+    const { error } = await supabase.from('tarefas').update(ATTACHMENT_DB_FIELDS).eq('id', tarefaId)
 
     if (error) throw new Error(error.message)
 
@@ -179,16 +176,13 @@ async function rollbackEditedTodo(editingTodo: Todo, userId: string): Promise<vo
     await restoreSubtarefas(editingTodo.id, userId, editingTodo.subtarefas ?? [])
   } catch (err) {
     const detail = err instanceof Error ? err.message : 'erro desconhecido'
-    throw new Error(
-      `Não foi possível desfazer as subtarefas; recarregue a lista. (${detail})`
-    )
+    throw new Error(`Não foi possível desfazer as subtarefas; recarregue a lista. (${detail})`, {
+      cause: err,
+    })
   }
 }
 
-export async function saveTodo(
-  data: TodoFormData,
-  editingTodo?: Todo | null
-): Promise<Todo> {
+export async function saveTodo(data: TodoFormData, editingTodo?: Todo | null): Promise<Todo> {
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -208,11 +202,7 @@ export async function saveTodo(
       await syncSubtarefas(editingTodo.id, user.id, data.subtarefas, editingTodo.subtarefas)
       await syncTodoAnexo(editingTodo.id, user.id, data, editingTodo)
     } catch (err) {
-      try {
-        await rollbackEditedTodo(editingTodo, user.id)
-      } catch (rollbackErr) {
-        throw rollbackErr
-      }
+      await rollbackEditedTodo(editingTodo, user.id)
       throw err instanceof Error ? err : new Error('Erro ao salvar tarefa.')
     }
 
@@ -237,11 +227,7 @@ export async function saveTodo(
 
     return { ...created, subtarefas }
   } catch (err) {
-    try {
-      await rollbackCreatedTodo(created.id)
-    } catch (rollbackErr) {
-      throw rollbackErr
-    }
+    await rollbackCreatedTodo(created.id)
     throw err instanceof Error ? err : new Error('Erro ao salvar tarefa.')
   }
 }
@@ -266,11 +252,7 @@ export async function toggleTodoStatus(todo: Todo): Promise<Todo> {
   }
 
   const newStatus = getNextStatusOnToggle(todo.status)
-  const completed_at = completedAtForStatusChange(
-    newStatus,
-    todo.status,
-    todo.completed_at
-  )
+  const completed_at = completedAtForStatusChange(newStatus, todo.status, todo.completed_at)
 
   const { data: updated, error: updateError } = await supabase
     .from('tarefas')

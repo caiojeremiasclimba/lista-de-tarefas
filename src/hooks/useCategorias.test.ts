@@ -32,7 +32,10 @@ describe('useCategorias', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockFetchCategorias.mockResolvedValue([makeCategoria({ id: 'cat-1', nome: 'Trabalho' })])
-    vi.stubGlobal('confirm', vi.fn(() => true))
+    vi.stubGlobal(
+      'confirm',
+      vi.fn(() => true)
+    )
   })
 
   afterEach(() => {
@@ -104,7 +107,10 @@ describe('useCategorias', () => {
   })
 
   it('não exclui quando usuário cancela confirmação', async () => {
-    vi.stubGlobal('confirm', vi.fn(() => false))
+    vi.stubGlobal(
+      'confirm',
+      vi.fn(() => false)
+    )
 
     const { result } = renderUseCategorias()
     await waitFor(() => expect(result.current.categorias).toHaveLength(1))

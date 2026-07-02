@@ -57,9 +57,7 @@ describe('LoginForm', () => {
     fireEvent.change(screen.getByLabelText('Senha'), { target: { value: '123456' } })
     fireEvent.click(screen.getByRole('button', { name: /^entrar$/i }))
 
-    expect(
-      await screen.findByText(/e-mail ainda não confirmado/i)
-    ).toBeInTheDocument()
+    expect(await screen.findByText(/e-mail ainda não confirmado/i)).toBeInTheDocument()
   })
 
   it('exibe sucesso após login', async () => {
@@ -68,9 +66,7 @@ describe('LoginForm', () => {
     fireEvent.change(screen.getByLabelText('Senha'), { target: { value: '123456' } })
     fireEvent.click(screen.getByRole('button', { name: /^entrar$/i }))
 
-    expect(
-      await screen.findByText(/login realizado com sucesso/i)
-    ).toBeInTheDocument()
+    expect(await screen.findByText(/login realizado com sucesso/i)).toBeInTheDocument()
   })
 
   it('exige e-mail para recuperação de senha', async () => {
@@ -82,9 +78,7 @@ describe('LoginForm', () => {
     fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: '   ' } })
     fireEvent.click(screen.getByRole('button', { name: /esqueceu sua senha/i }))
 
-    expect(
-      await screen.findByText(/informe seu e-mail para recuperar/i)
-    ).toBeInTheDocument()
+    expect(await screen.findByText(/informe seu e-mail para recuperar/i)).toBeInTheDocument()
     expect(mockResetPassword).not.toHaveBeenCalled()
   })
 
@@ -99,9 +93,7 @@ describe('LoginForm', () => {
       'salvo@example.com',
       expect.objectContaining({ redirectTo: expect.stringContaining('/') })
     )
-    expect(
-      await screen.findByText(/enviaremos um link de recuperação/i)
-    ).toBeInTheDocument()
+    expect(await screen.findByText(/enviaremos um link de recuperação/i)).toBeInTheDocument()
   })
 
   it('alterna visibilidade da senha', () => {

@@ -42,25 +42,25 @@ function App() {
       setLoading(false)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
-        if (event === 'PASSWORD_RECOVERY') {
-          recoveryFlowRef.current = true
-          markPendingPasswordReset()
-          setNeedsPasswordReset(true)
-          clearRecoveryCallbackFromUrl()
-        } else if (event === 'SIGNED_IN' && !recoveryFlowRef.current) {
-          clearPendingPasswordReset()
-          setNeedsPasswordReset(false)
-        } else if (event === 'SIGNED_OUT') {
-          recoveryFlowRef.current = false
-          clearPendingPasswordReset()
-          setNeedsPasswordReset(false)
-        }
-
-        setSession(newSession)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, newSession) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        recoveryFlowRef.current = true
+        markPendingPasswordReset()
+        setNeedsPasswordReset(true)
+        clearRecoveryCallbackFromUrl()
+      } else if (event === 'SIGNED_IN' && !recoveryFlowRef.current) {
+        clearPendingPasswordReset()
+        setNeedsPasswordReset(false)
+      } else if (event === 'SIGNED_OUT') {
+        recoveryFlowRef.current = false
+        clearPendingPasswordReset()
+        setNeedsPasswordReset(false)
       }
-    )
+
+      setSession(newSession)
+    })
 
     return () => subscription.unsubscribe()
   }, [])
@@ -94,12 +94,7 @@ function App() {
     return <ResetPasswordForm onSuccess={handlePasswordResetSuccess} />
   }
 
-  return (
-    <TodosScreen
-      user={session.user}
-      onLogout={handleLogout}
-    />
-  )
+  return <TodosScreen user={session.user} onLogout={handleLogout} />
 }
 
 export default App

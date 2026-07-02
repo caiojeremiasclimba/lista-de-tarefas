@@ -86,7 +86,15 @@ export function useCategorias({
         await reloadTodos?.()
       }
     },
-    [todos, filtroCategoria, setFiltroCategoria, unlinkCategoriaFromTodos, onError, reloadTodos, loadCategorias]
+    [
+      todos,
+      filtroCategoria,
+      setFiltroCategoria,
+      unlinkCategoriaFromTodos,
+      onError,
+      reloadTodos,
+      loadCategorias,
+    ]
   )
 
   return {

@@ -58,9 +58,7 @@ describe('useAttachmentSignedUrl', () => {
       result.current.retry()
     })
 
-    await waitFor(() =>
-      expect(result.current.url).toBe('https://signed.example/retry.pdf')
-    )
+    await waitFor(() => expect(result.current.url).toBe('https://signed.example/retry.pdf'))
 
     expect(result.current.error).toBe(false)
   })

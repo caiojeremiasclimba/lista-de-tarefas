@@ -66,12 +66,10 @@ export async function uploadAvatar(userId: string, file: File): Promise<string> 
 
   await removeAvatarFiles(userId)
 
-  const { error: uploadError } = await supabase.storage
-    .from(AVATAR_BUCKET)
-    .upload(path, file, {
-      upsert: true,
-      contentType: file.type,
-    })
+  const { error: uploadError } = await supabase.storage.from(AVATAR_BUCKET).upload(path, file, {
+    upsert: true,
+    contentType: file.type,
+  })
 
   if (uploadError) throw uploadError
 

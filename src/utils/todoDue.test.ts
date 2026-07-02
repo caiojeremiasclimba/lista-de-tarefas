@@ -16,9 +16,7 @@ describe('isTodoOverdue', () => {
   })
 
   it('retorna true para data de ontem com status pendente', () => {
-    expect(
-      isTodoOverdue(makeTodo({ data_prevista: '2026-07-01', status: 'pendente' }))
-    ).toBe(true)
+    expect(isTodoOverdue(makeTodo({ data_prevista: '2026-07-01', status: 'pendente' }))).toBe(true)
   })
 
   it('retorna false para data de hoje', () => {
@@ -32,14 +30,18 @@ describe('isTodoOverdue', () => {
   it('retorna false para data passada com status concluída', () => {
     expect(
       isTodoOverdue(
-        makeTodo({ data_prevista: '2026-07-01', status: 'concluida', completed_at: '2026-07-01T10:00:00.000Z' })
+        makeTodo({
+          data_prevista: '2026-07-01',
+          status: 'concluida',
+          completed_at: '2026-07-01T10:00:00.000Z',
+        })
       )
     ).toBe(false)
   })
 
   it('retorna false para data passada com status cancelada', () => {
-    expect(
-      isTodoOverdue(makeTodo({ data_prevista: '2026-07-01', status: 'cancelada' }))
-    ).toBe(false)
+    expect(isTodoOverdue(makeTodo({ data_prevista: '2026-07-01', status: 'cancelada' }))).toBe(
+      false
+    )
   })
 })

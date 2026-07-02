@@ -132,10 +132,7 @@ describe('calcConcluidasNaSemana', () => {
 
 describe('buildStatusChartData', () => {
   it('monta fatias do gráfico com label, valor e cor por status', () => {
-    const todos = [
-      makeTodo({ status: 'pendente' }),
-      makeTodo({ status: 'concluida' }),
-    ]
+    const todos = [makeTodo({ status: 'pendente' }), makeTodo({ status: 'concluida' })]
 
     const chart = buildStatusChartData(todos)
 

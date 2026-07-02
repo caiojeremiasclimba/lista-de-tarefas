@@ -5,12 +5,7 @@ export const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024
 export const SIGNED_URL_EXPIRES_SECONDS = 3600
 export const SIGNED_URL_REFRESH_MARGIN_SECONDS = 300
 
-const ALLOWED_MIME_TYPES = new Set([
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'application/pdf',
-])
+const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'application/pdf'])
 
 const MIME_TO_EXT: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -54,11 +49,9 @@ export async function uploadAttachment(
   const ext = getExtFromFile(file)
   const path = getAttachmentPath(userId, tarefaId, ext)
 
-  const { error: uploadError } = await supabase.storage
-    .from(ATTACHMENT_BUCKET)
-    .upload(path, file, {
-      contentType: file.type,
-    })
+  const { error: uploadError } = await supabase.storage.from(ATTACHMENT_BUCKET).upload(path, file, {
+    contentType: file.type,
+  })
 
   if (uploadError) throw uploadError
 

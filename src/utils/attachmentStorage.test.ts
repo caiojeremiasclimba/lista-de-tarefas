@@ -1,5 +1,9 @@
 import { makeFile } from '../test/fixtures/user'
-import { getAttachmentPath, MAX_ATTACHMENT_BYTES, validateAttachmentFile } from './attachmentStorage'
+import {
+  getAttachmentPath,
+  MAX_ATTACHMENT_BYTES,
+  validateAttachmentFile,
+} from './attachmentStorage'
 
 describe('getAttachmentPath', () => {
   it('monta caminho userId/tarefaId/uuid.ext', () => {
@@ -25,9 +29,7 @@ describe('validateAttachmentFile', () => {
   it('rejeita MIME type não permitido', () => {
     const file = makeFile('doc.exe', 'application/x-msdownload', 1024)
 
-    expect(validateAttachmentFile(file)).toBe(
-      'Formato inválido. Use JPEG, PNG, WebP ou PDF.'
-    )
+    expect(validateAttachmentFile(file)).toBe('Formato inválido. Use JPEG, PNG, WebP ou PDF.')
   })
 
   it('rejeita arquivo maior que 5 MB', () => {

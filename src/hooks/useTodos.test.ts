@@ -1,20 +1,15 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
-import { makeTodo, makeTodoFormData } from '../test/fixtures/todos'
+import { makeSubtarefa, makeTodo, makeTodoFormData } from '../test/fixtures/todos'
 import { useTodos } from './useTodos'
 
-const {
-  mockFetchTodos,
-  mockSaveTodo,
-  mockDeleteTodo,
-  mockToggleTodoStatus,
-  mockToggleSubtarefa,
-} = vi.hoisted(() => ({
-  mockFetchTodos: vi.fn(),
-  mockSaveTodo: vi.fn(),
-  mockDeleteTodo: vi.fn(),
-  mockToggleTodoStatus: vi.fn(),
-  mockToggleSubtarefa: vi.fn(),
-}))
+const { mockFetchTodos, mockSaveTodo, mockDeleteTodo, mockToggleTodoStatus, mockToggleSubtarefa } =
+  vi.hoisted(() => ({
+    mockFetchTodos: vi.fn(),
+    mockSaveTodo: vi.fn(),
+    mockDeleteTodo: vi.fn(),
+    mockToggleTodoStatus: vi.fn(),
+    mockToggleSubtarefa: vi.fn(),
+  }))
 
 vi.mock('../services/todoService', () => ({
   fetchTodos: mockFetchTodos,
@@ -128,5 +123,86 @@ describe('useTodos', () => {
     })
 
     expect(result.current.todos[0].categoria_id).toBeNull()
+  })
+
+  it('chama onError e mantém lista quando deleteTodo falha', async () => {
+    const todo = makeTodo({ id: 'todo-1', anexo_path: 'path/file.pdf' })
+    mockFetchTodos.mockResolvedValue([todo])
+    mockDeleteTodo.mockRejectedValue(new Error('Erro ao excluir'))
+
+    const { result } = renderHook(() => useTodos({ onError }))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    await act(async () => {
+      await result.current.deleteTodo('todo-1')
+    })
+
+    expect(result.current.todos).toHaveLength(1)
+    expect(onError).toHaveBeenCalledWith('Erro ao excluir')
+  })
+
+  it('chama onError e não altera status quando toggle falha', async () => {
+    const todo = makeTodo({ id: 'todo-1', status: 'pendente' })
+    mockFetchTodos.mockResolvedValue([todo])
+    mockToggleTodoStatus.mockRejectedValue(new Error('Erro ao atualizar status'))
+
+    const { result } = renderHook(() => useTodos({ onError }))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    await act(async () => {
+      await result.current.handleToggleStatus(todo)
+    })
+
+    expect(result.current.todos[0].status).toBe('pendente')
+    expect(onError).toHaveBeenCalledWith('Erro ao atualizar status')
+  })
+
+  it('ignora toggle de subtarefa quando tarefa pai está cancelada', async () => {
+    const sub = makeSubtarefa({ id: 'sub-1', tarefa_id: 'todo-1' })
+    const cancelada = makeTodo({ id: 'todo-1', status: 'cancelada', subtarefas: [sub] })
+    mockFetchTodos.mockResolvedValue([cancelada])
+
+    const { result } = renderHook(() => useTodos({ onError }))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    await act(async () => {
+      await result.current.handleToggleSubtarefa(sub)
+    })
+
+    expect(mockToggleSubtarefa).not.toHaveBeenCalled()
+  })
+
+  it('atualiza subtarefa localmente após toggle bem-sucedido', async () => {
+    const sub = makeSubtarefa({ id: 'sub-1', tarefa_id: 'todo-1', concluida: false })
+    const updatedSub = makeSubtarefa({ id: 'sub-1', tarefa_id: 'todo-1', concluida: true })
+    const todo = makeTodo({ id: 'todo-1', subtarefas: [sub] })
+    mockFetchTodos.mockResolvedValue([todo])
+    mockToggleSubtarefa.mockResolvedValue(updatedSub)
+
+    const { result } = renderHook(() => useTodos({ onError }))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    await act(async () => {
+      await result.current.handleToggleSubtarefa(sub)
+    })
+
+    expect(result.current.todos[0].subtarefas?.[0].concluida).toBe(true)
+  })
+
+  it('chama onError quando toggle de subtarefa falha', async () => {
+    const sub = makeSubtarefa({ id: 'sub-1', tarefa_id: 'todo-1' })
+    const todo = makeTodo({ id: 'todo-1', subtarefas: [sub] })
+    mockFetchTodos.mockResolvedValue([todo])
+    mockToggleSubtarefa.mockRejectedValue(new Error('Erro ao atualizar subtarefa'))
+
+    const { result } = renderHook(() => useTodos({ onError }))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    await act(async () => {
+      await result.current.handleToggleSubtarefa(sub)
+    })
+
+    expect(result.current.todos[0].subtarefas?.[0].concluida).toBe(false)
+    expect(onError).toHaveBeenCalledWith('Erro ao atualizar subtarefa')
   })
 })

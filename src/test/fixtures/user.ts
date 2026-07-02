@@ -13,11 +13,7 @@ export function makeUser(overrides: Partial<User> = {}): User {
   } as User
 }
 
-export function makeFile(
-  name: string,
-  type: string,
-  sizeBytes: number
-): File {
+export function makeFile(name: string, type: string, sizeBytes: number): File {
   const content = new Uint8Array(sizeBytes)
   return new File([content], name, { type })
 }

@@ -102,7 +102,13 @@ export default function TodoItem({
           }`}
         >
           {isConcluida && (
-            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <svg
+              className="h-3 w-3"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={3}
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           )}
@@ -179,20 +185,14 @@ export default function TodoItem({
               }`}
             >
               <CalendarIcon className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
-              <span className="truncate">
-                {overdue ? `Vencida · ${dateLabel}` : dateLabel}
-              </span>
+              <span className="truncate">{overdue ? `Vencida · ${dateLabel}` : dateLabel}</span>
             </p>
           )}
 
           {todo.anexo_path && (
             <div className="mt-2">
-              {anexoLoading && (
-                <p className="text-xs text-slate-500">Carregando anexo...</p>
-              )}
-              {anexoError && (
-                <p className="text-xs text-slate-500">Anexo indisponível</p>
-              )}
+              {anexoLoading && <p className="text-xs text-slate-500">Carregando anexo...</p>}
+              {anexoError && <p className="text-xs text-slate-500">Anexo indisponível</p>}
               {!anexoLoading && !anexoError && anexoUrl && isImageAnexo && (
                 <button
                   type="button"

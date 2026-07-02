@@ -1,19 +1,15 @@
 import { makeSubtarefa, makeTodo, makeTodoFormData } from '../test/fixtures/todos'
+import { makeFile } from '../test/fixtures/user'
 import { createSubtarefaDraft } from '../types/subtarefa'
 import {
+  AUTH_USER,
   createMockQueryBuilder,
   mockAuthenticatedUser,
   mockFrom,
   mockGetUser,
   mockUnauthenticatedUser,
 } from '../test/mocks/supabase'
-import {
-  deleteTodo,
-  fetchTodos,
-  saveTodo,
-  toggleSubtarefa,
-  toggleTodoStatus,
-} from './todoService'
+import { deleteTodo, fetchTodos, saveTodo, toggleSubtarefa, toggleTodoStatus } from './todoService'
 
 const mockUploadAttachment = vi.hoisted(() => vi.fn())
 const mockRemoveAttachment = vi.hoisted(() => vi.fn())
@@ -214,11 +210,236 @@ describe('saveTodo', () => {
       return createMockQueryBuilder({ data: null, error: null })
     })
 
-    const result = await saveTodo(
-      makeTodoFormData({ titulo: 'Atualizado' }),
-      editingTodo
-    )
+    const result = await saveTodo(makeTodoFormData({ titulo: 'Atualizado' }), editingTodo)
 
     expect(result).toEqual(fetched)
+  })
+
+  it('cria nova tarefa com anexo e busca registro atualizado', async () => {
+    mockAuthenticatedUser()
+    const anexoFile = makeFile('relatorio.pdf', 'application/pdf', 1024)
+    const created = makeTodo({ id: 'new-todo', titulo: 'Com anexo' })
+    const fetched = makeTodo({
+      id: 'new-todo',
+      titulo: 'Com anexo',
+      anexo_path: 'user-1/new-todo/relatorio.pdf',
+      anexo_nome: 'relatorio.pdf',
+      anexo_mime: 'application/pdf',
+      subtarefas: [],
+    })
+
+    mockUploadAttachment.mockResolvedValue({
+      path: 'user-1/new-todo/relatorio.pdf',
+      nome: 'relatorio.pdf',
+      mime: 'application/pdf',
+    })
+
+    let tarefasCalls = 0
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'tarefas') {
+        tarefasCalls++
+        if (tarefasCalls === 1) {
+          return createMockQueryBuilder({ data: created, error: null })
+        }
+        if (tarefasCalls === 2) {
+          return createMockQueryBuilder({ data: null, error: null })
+        }
+        return createMockQueryBuilder({ data: fetched, error: null })
+      }
+      return createMockQueryBuilder({ data: [], error: null })
+    })
+
+    const result = await saveTodo(makeTodoFormData({ titulo: 'Com anexo', anexoFile }))
+
+    expect(mockUploadAttachment).toHaveBeenCalledWith(AUTH_USER.id, 'new-todo', anexoFile)
+    expect(result).toEqual(fetched)
+    expect(tarefasCalls).toBe(3)
+  })
+
+  it('faz rollback da tarefa criada quando upload do anexo falha', async () => {
+    mockAuthenticatedUser()
+    const created = makeTodo({ id: 'new-todo' })
+    const anexoFile = makeFile('falha.pdf', 'application/pdf', 1024)
+    let tarefasCalls = 0
+
+    mockUploadAttachment.mockRejectedValue(new Error('Falha no upload'))
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'tarefas') {
+        tarefasCalls++
+        if (tarefasCalls === 1) {
+          return createMockQueryBuilder({ data: created, error: null })
+        }
+        return createMockQueryBuilder({ data: null, error: null })
+      }
+      return createMockQueryBuilder({ data: [], error: null })
+    })
+
+    await expect(saveTodo(makeTodoFormData({ anexoFile }))).rejects.toThrow('Falha no upload')
+
+    expect(tarefasCalls).toBe(2)
+  })
+
+  it('remove anexo órfão quando update do banco falha após upload', async () => {
+    mockAuthenticatedUser()
+    const created = makeTodo({ id: 'new-todo' })
+    const anexoFile = makeFile('doc.pdf', 'application/pdf', 1024)
+    const orphanPath = 'user-1/new-todo/doc.pdf'
+    let tarefasCalls = 0
+
+    mockUploadAttachment.mockResolvedValue({
+      path: orphanPath,
+      nome: 'doc.pdf',
+      mime: 'application/pdf',
+    })
+    mockRemoveAttachment.mockResolvedValue(undefined)
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'tarefas') {
+        tarefasCalls++
+        if (tarefasCalls === 1) {
+          return createMockQueryBuilder({ data: created, error: null })
+        }
+        if (tarefasCalls === 2) {
+          return createMockQueryBuilder({
+            data: null,
+            error: { message: 'Falha ao salvar anexo' },
+          })
+        }
+        return createMockQueryBuilder({ data: null, error: null })
+      }
+      return createMockQueryBuilder({ data: [], error: null })
+    })
+
+    await expect(saveTodo(makeTodoFormData({ anexoFile }))).rejects.toThrow('Falha ao salvar anexo')
+
+    expect(mockRemoveAttachment).toHaveBeenCalledWith(orphanPath)
+    expect(tarefasCalls).toBe(3)
+  })
+
+  it('remove anexo ao editar com removerAnexo', async () => {
+    mockAuthenticatedUser()
+    const editingTodo = makeTodo({
+      id: 'todo-1',
+      anexo_path: 'user-1/todo-1/antigo.pdf',
+      anexo_nome: 'antigo.pdf',
+      anexo_mime: 'application/pdf',
+      subtarefas: [],
+    })
+    const fetched = makeTodo({ id: 'todo-1', subtarefas: [] })
+
+    mockRemoveAttachment.mockResolvedValue(undefined)
+
+    let tarefasCalls = 0
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'tarefas') {
+        tarefasCalls++
+        if (tarefasCalls === 1) {
+          return createMockQueryBuilder({ data: null, error: null })
+        }
+        if (tarefasCalls === 2) {
+          return createMockQueryBuilder({ data: null, error: null })
+        }
+        return createMockQueryBuilder({ data: fetched, error: null })
+      }
+      return createMockQueryBuilder({ data: null, error: null })
+    })
+
+    await saveTodo(makeTodoFormData({ removerAnexo: true }), editingTodo)
+
+    expect(mockRemoveAttachment).toHaveBeenCalledWith('user-1/todo-1/antigo.pdf')
+    expect(mockUploadAttachment).not.toHaveBeenCalled()
+  })
+
+  it('substitui anexo existente ao editar com novo arquivo', async () => {
+    mockAuthenticatedUser()
+    const anexoFile = makeFile('novo.pdf', 'application/pdf', 1024)
+    const editingTodo = makeTodo({
+      id: 'todo-1',
+      anexo_path: 'user-1/todo-1/antigo.pdf',
+      anexo_nome: 'antigo.pdf',
+      anexo_mime: 'application/pdf',
+      subtarefas: [],
+    })
+    const fetched = makeTodo({
+      id: 'todo-1',
+      anexo_path: 'user-1/todo-1/novo.pdf',
+      anexo_nome: 'novo.pdf',
+      anexo_mime: 'application/pdf',
+      subtarefas: [],
+    })
+
+    mockUploadAttachment.mockResolvedValue({
+      path: 'user-1/todo-1/novo.pdf',
+      nome: 'novo.pdf',
+      mime: 'application/pdf',
+    })
+    mockRemoveAttachment.mockResolvedValue(undefined)
+
+    let tarefasCalls = 0
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'tarefas') {
+        tarefasCalls++
+        if (tarefasCalls === 1) {
+          return createMockQueryBuilder({ data: null, error: null })
+        }
+        if (tarefasCalls === 2) {
+          return createMockQueryBuilder({ data: null, error: null })
+        }
+        return createMockQueryBuilder({ data: fetched, error: null })
+      }
+      return createMockQueryBuilder({ data: null, error: null })
+    })
+
+    const result = await saveTodo(makeTodoFormData({ anexoFile }), editingTodo)
+
+    expect(mockUploadAttachment).toHaveBeenCalledWith(AUTH_USER.id, 'todo-1', anexoFile)
+    expect(mockRemoveAttachment).toHaveBeenCalledWith('user-1/todo-1/antigo.pdf')
+    expect(result).toEqual(fetched)
+  })
+
+  it('faz rollback da edição quando sync de subtarefas falha', async () => {
+    mockAuthenticatedUser()
+    const editingTodo = makeTodo({
+      id: 'todo-1',
+      titulo: 'Original',
+      subtarefas: [makeSubtarefa({ id: 'sub-1', titulo: 'Sub original' })],
+    })
+
+    let tarefasUpdateCalls = 0
+    let subtarefasCalls = 0
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'tarefas') {
+        tarefasUpdateCalls++
+        return createMockQueryBuilder({ data: null, error: null })
+      }
+
+      subtarefasCalls++
+      if (subtarefasCalls === 1) {
+        return createMockQueryBuilder({
+          data: null,
+          error: { message: 'Falha ao sincronizar subtarefas' },
+        })
+      }
+
+      return createMockQueryBuilder({ data: [], error: null })
+    })
+
+    await expect(
+      saveTodo(
+        makeTodoFormData({
+          titulo: 'Alterado',
+          subtarefas: [
+            createSubtarefaDraft({ id: 'sub-1', titulo: 'Sub alterada' }),
+            createSubtarefaDraft({ titulo: 'Sub nova' }),
+          ],
+        }),
+        editingTodo
+      )
+    ).rejects.toThrow('Falha ao sincronizar subtarefas')
+
+    expect(tarefasUpdateCalls).toBe(2)
+    expect(subtarefasCalls).toBeGreaterThanOrEqual(1)
   })
 })
