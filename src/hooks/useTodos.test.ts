@@ -85,6 +85,24 @@ describe('useTodos', () => {
     expect(result.current.todos[0].titulo).toBe('Novo')
   })
 
+  it('exibe toast de erro, mantém lista e repassa erro quando submitTodo falha', async () => {
+    const existing = makeTodo({ id: 'todo-1', titulo: 'Antigo' })
+    mockFetchTodos.mockResolvedValue([existing])
+    mockSaveTodo.mockRejectedValue(new Error('Erro ao salvar'))
+
+    const { result } = renderHook(() => useTodos())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    await expect(
+      act(async () => {
+        await result.current.submitTodo(makeTodoFormData({ titulo: 'Novo' }), existing)
+      })
+    ).rejects.toThrow('Erro ao salvar')
+
+    expect(result.current.todos[0].titulo).toBe('Antigo')
+    expect(mockToastError).toHaveBeenCalledWith('Erro ao salvar')
+  })
+
   it('remove tarefa e chama onCloseForm quando aplicável', async () => {
     const todo = makeTodo({ id: 'todo-1' })
     mockFetchTodos.mockResolvedValue([todo])
