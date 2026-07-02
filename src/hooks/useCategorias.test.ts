@@ -1,27 +1,24 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
-import { makeCategoria, makeTodo } from '../test/fixtures/todos'
+import { makeCategoria } from '../test/fixtures/todos'
 import { useCategorias } from './useCategorias'
 
 const {
   mockFetchCategorias,
   mockCreateCategoria,
   mockUpdateCategoria,
-  mockDeleteCategoria,
-  mockUnlinkTodosFromCategoria,
+  mockDeleteCategoriaComTarefas,
 } = vi.hoisted(() => ({
   mockFetchCategorias: vi.fn(),
   mockCreateCategoria: vi.fn(),
   mockUpdateCategoria: vi.fn(),
-  mockDeleteCategoria: vi.fn(),
-  mockUnlinkTodosFromCategoria: vi.fn(),
+  mockDeleteCategoriaComTarefas: vi.fn(),
 }))
 
 vi.mock('../services/categoriaService', () => ({
   fetchCategorias: mockFetchCategorias,
   createCategoria: mockCreateCategoria,
   updateCategoria: mockUpdateCategoria,
-  deleteCategoria: mockDeleteCategoria,
-  unlinkTodosFromCategoria: mockUnlinkTodosFromCategoria,
+  deleteCategoriaComTarefas: mockDeleteCategoriaComTarefas,
 }))
 
 describe('useCategorias', () => {
@@ -31,12 +28,12 @@ describe('useCategorias', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockFetchCategorias.mockResolvedValue([makeCategoria({ id: 'cat-1', nome: 'Trabalho' })])
+    mockDeleteCategoriaComTarefas.mockResolvedValue(undefined)
   })
 
   function renderUseCategorias(overrides: Partial<Parameters<typeof useCategorias>[0]> = {}) {
     return renderHook(() =>
       useCategorias({
-        todos: [],
         unlinkCategoriaFromTodos,
         filtroCategoria: null,
         setFiltroCategoria,
@@ -83,7 +80,7 @@ describe('useCategorias', () => {
     expect(result.current.categorias[0].nome).toBe('Pessoal')
   })
 
-  it('exclui categoria', async () => {
+  it('exclui categoria via RPC atômica', async () => {
     const { result } = renderUseCategorias()
     await waitFor(() => expect(result.current.categorias).toHaveLength(1))
 
@@ -91,21 +88,8 @@ describe('useCategorias', () => {
       await result.current.executeDeleteCategoria('cat-1')
     })
 
-    expect(mockDeleteCategoria).toHaveBeenCalledWith('cat-1')
+    expect(mockDeleteCategoriaComTarefas).toHaveBeenCalledWith('cat-1')
     expect(result.current.categorias).toHaveLength(0)
     expect(unlinkCategoriaFromTodos).toHaveBeenCalledWith('cat-1')
-  })
-
-  it('desvincula tarefas no backend quando categoria tem tarefas', async () => {
-    const todos = [makeTodo({ categoria_id: 'cat-1' })]
-
-    const { result } = renderUseCategorias({ todos })
-    await waitFor(() => expect(result.current.categorias).toHaveLength(1))
-
-    await act(async () => {
-      await result.current.executeDeleteCategoria('cat-1')
-    })
-
-    expect(mockUnlinkTodosFromCategoria).toHaveBeenCalledWith('cat-1')
   })
 })

@@ -39,14 +39,17 @@ export function createMockQueryBuilder(result: MockQueryResult = { data: null, e
 const supabaseMocks = vi.hoisted(() => ({
   mockFrom: vi.fn(),
   mockGetUser: vi.fn(),
+  mockRpc: vi.fn(),
 }))
 
 export const mockFrom = supabaseMocks.mockFrom
 export const mockGetUser = supabaseMocks.mockGetUser
+export const mockRpc = supabaseMocks.mockRpc
 
 vi.mock('../../lib/supabase', () => ({
   supabase: {
     from: supabaseMocks.mockFrom,
+    rpc: supabaseMocks.mockRpc,
     auth: { getUser: supabaseMocks.mockGetUser },
     storage: {
       from: vi.fn(() => ({
