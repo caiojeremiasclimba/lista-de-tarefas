@@ -2,13 +2,17 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import { makeCategoria } from '../test/fixtures/todos'
 import { useCategorias } from './useCategorias'
 
-const { mockFetchCategorias, mockCreateCategoria, mockUpdateCategoria, mockDeleteCategoriaComTarefas } =
-  vi.hoisted(() => ({
-    mockFetchCategorias: vi.fn(),
-    mockCreateCategoria: vi.fn(),
-    mockUpdateCategoria: vi.fn(),
-    mockDeleteCategoriaComTarefas: vi.fn(),
-  }))
+const {
+  mockFetchCategorias,
+  mockCreateCategoria,
+  mockUpdateCategoria,
+  mockDeleteCategoriaComTarefas,
+} = vi.hoisted(() => ({
+  mockFetchCategorias: vi.fn(),
+  mockCreateCategoria: vi.fn(),
+  mockUpdateCategoria: vi.fn(),
+  mockDeleteCategoriaComTarefas: vi.fn(),
+}))
 
 vi.mock('../services/categoriaService', () => ({
   fetchCategorias: mockFetchCategorias,
