@@ -30,6 +30,12 @@ vi.mock('../lib/toast', () => ({
   },
 }))
 
+vi.mock('./useSupabaseRealtime', () => ({
+  useSupabaseRealtime: vi.fn(),
+}))
+
+const USER_ID = 'user-1'
+
 describe('useTodos', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -37,7 +43,7 @@ describe('useTodos', () => {
   })
 
   it('carrega tarefas ao montar', async () => {
-    const { result } = renderHook(() => useTodos())
+    const { result } = renderHook(() => useTodos(USER_ID))
 
     expect(result.current.loading).toBe(true)
 
@@ -50,7 +56,7 @@ describe('useTodos', () => {
   it('exibe toast de erro quando fetch falha', async () => {
     mockFetchTodos.mockRejectedValue(new Error('Falha na rede'))
 
-    renderHook(() => useTodos())
+    renderHook(() => useTodos(USER_ID))
 
     await waitFor(() => expect(mockToastError).toHaveBeenCalledWith('Falha na rede'))
   })
@@ -59,7 +65,7 @@ describe('useTodos', () => {
     const saved = makeTodo({ id: 'new-todo', titulo: 'Nova' })
     mockSaveTodo.mockResolvedValue(saved)
 
-    const { result } = renderHook(() => useTodos())
+    const { result } = renderHook(() => useTodos(USER_ID))
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     await act(async () => {
@@ -75,7 +81,7 @@ describe('useTodos', () => {
     mockFetchTodos.mockResolvedValue([existing])
     mockSaveTodo.mockResolvedValue(updated)
 
-    const { result } = renderHook(() => useTodos())
+    const { result } = renderHook(() => useTodos(USER_ID))
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     await act(async () => {
@@ -90,7 +96,7 @@ describe('useTodos', () => {
     mockFetchTodos.mockResolvedValue([existing])
     mockSaveTodo.mockRejectedValue(new Error('Erro ao salvar'))
 
-    const { result } = renderHook(() => useTodos())
+    const { result } = renderHook(() => useTodos(USER_ID))
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     await expect(
@@ -109,7 +115,7 @@ describe('useTodos', () => {
     mockDeleteTodo.mockResolvedValue(undefined)
     const onCloseForm = vi.fn()
 
-    const { result } = renderHook(() => useTodos())
+    const { result } = renderHook(() => useTodos(USER_ID))
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     let deleted = false
@@ -129,7 +135,7 @@ describe('useTodos', () => {
     const cancelada = makeTodo({ id: 'todo-1', status: 'cancelada' })
     mockFetchTodos.mockResolvedValue([cancelada])
 
-    const { result } = renderHook(() => useTodos())
+    const { result } = renderHook(() => useTodos(USER_ID))
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     await act(async () => {
@@ -143,7 +149,7 @@ describe('useTodos', () => {
     const todo = makeTodo({ id: 'todo-1', categoria_id: 'cat-1' })
     mockFetchTodos.mockResolvedValue([todo])
 
-    const { result } = renderHook(() => useTodos())
+    const { result } = renderHook(() => useTodos(USER_ID))
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     act(() => {
@@ -158,7 +164,7 @@ describe('useTodos', () => {
     mockFetchTodos.mockResolvedValue([todo])
     mockDeleteTodo.mockRejectedValue(new Error('Erro ao excluir'))
 
-    const { result } = renderHook(() => useTodos())
+    const { result } = renderHook(() => useTodos(USER_ID))
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     let deleted = true
@@ -176,7 +182,7 @@ describe('useTodos', () => {
     mockFetchTodos.mockResolvedValue([todo])
     mockToggleTodoStatus.mockRejectedValue(new Error('Erro ao atualizar status'))
 
-    const { result } = renderHook(() => useTodos())
+    const { result } = renderHook(() => useTodos(USER_ID))
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     await act(async () => {
@@ -192,7 +198,7 @@ describe('useTodos', () => {
     const cancelada = makeTodo({ id: 'todo-1', status: 'cancelada', subtarefas: [sub] })
     mockFetchTodos.mockResolvedValue([cancelada])
 
-    const { result } = renderHook(() => useTodos())
+    const { result } = renderHook(() => useTodos(USER_ID))
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     await act(async () => {
@@ -209,7 +215,7 @@ describe('useTodos', () => {
     mockFetchTodos.mockResolvedValue([todo])
     mockToggleSubtarefa.mockResolvedValue(updatedSub)
 
-    const { result } = renderHook(() => useTodos())
+    const { result } = renderHook(() => useTodos(USER_ID))
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     await act(async () => {
@@ -225,7 +231,7 @@ describe('useTodos', () => {
     mockFetchTodos.mockResolvedValue([todo])
     mockToggleSubtarefa.mockRejectedValue(new Error('Erro ao atualizar subtarefa'))
 
-    const { result } = renderHook(() => useTodos())
+    const { result } = renderHook(() => useTodos(USER_ID))
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     await act(async () => {

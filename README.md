@@ -14,6 +14,7 @@ Stack: React 19, Vite 8, TypeScript, Tailwind CSS 4 e Supabase.
 - Categorias com filtros na sidebar
 - Dashboard com indicadores de produtividade
 - Perfil com nome, avatar e troca de senha
+- Sincronização em tempo real entre abas (Supabase Realtime)
 
 ## Rodar localmente
 
@@ -112,6 +113,7 @@ O schema do banco está versionado em `supabase/migrations/`:
 | -------------------------------------------- | ------------------------------------------------------------------ |
 | `20260702120000_initial_schema.sql`          | Tabelas, RLS e buckets de Storage                                  |
 | `20260702130000_delete_categoria_atomic.sql` | RPC `delete_categoria_com_tarefas` (exclusão atômica de categoria) |
+| `20260702140000_enable_realtime.sql`         | Realtime nas tabelas `categorias`, `tarefas` e `subtarefas`        |
 
 A migration inicial cria:
 
