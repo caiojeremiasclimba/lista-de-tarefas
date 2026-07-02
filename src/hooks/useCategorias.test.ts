@@ -32,14 +32,6 @@ describe('useCategorias', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockFetchCategorias.mockResolvedValue([makeCategoria({ id: 'cat-1', nome: 'Trabalho' })])
-    vi.stubGlobal(
-      'confirm',
-      vi.fn(() => true)
-    )
-  })
-
-  afterEach(() => {
-    vi.unstubAllGlobals()
   })
 
   function renderUseCategorias(overrides: Partial<Parameters<typeof useCategorias>[0]> = {}) {
@@ -93,34 +85,17 @@ describe('useCategorias', () => {
     expect(result.current.categorias[0].nome).toBe('Pessoal')
   })
 
-  it('exclui categoria após confirmação', async () => {
+  it('exclui categoria', async () => {
     const { result } = renderUseCategorias()
     await waitFor(() => expect(result.current.categorias).toHaveLength(1))
 
     await act(async () => {
-      await result.current.handleDeleteCategoria('cat-1')
+      await result.current.executeDeleteCategoria('cat-1')
     })
 
     expect(mockDeleteCategoria).toHaveBeenCalledWith('cat-1')
     expect(result.current.categorias).toHaveLength(0)
     expect(unlinkCategoriaFromTodos).toHaveBeenCalledWith('cat-1')
-  })
-
-  it('não exclui quando usuário cancela confirmação', async () => {
-    vi.stubGlobal(
-      'confirm',
-      vi.fn(() => false)
-    )
-
-    const { result } = renderUseCategorias()
-    await waitFor(() => expect(result.current.categorias).toHaveLength(1))
-
-    await act(async () => {
-      await result.current.handleDeleteCategoria('cat-1')
-    })
-
-    expect(mockDeleteCategoria).not.toHaveBeenCalled()
-    expect(result.current.categorias).toHaveLength(1)
   })
 
   it('desvincula tarefas no backend quando categoria tem tarefas', async () => {
@@ -130,7 +105,7 @@ describe('useCategorias', () => {
     await waitFor(() => expect(result.current.categorias).toHaveLength(1))
 
     await act(async () => {
-      await result.current.handleDeleteCategoria('cat-1')
+      await result.current.executeDeleteCategoria('cat-1')
     })
 
     expect(mockUnlinkTodosFromCategoria).toHaveBeenCalledWith('cat-1')

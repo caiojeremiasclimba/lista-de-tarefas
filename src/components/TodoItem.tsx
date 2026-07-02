@@ -68,9 +68,7 @@ export default function TodoItem({
 
   function handleDelete() {
     setMenuOpen(false)
-    if (window.confirm('Deseja excluir esta tarefa?')) {
-      onDelete(todo.id)
-    }
+    onDelete(todo.id)
   }
 
   return (

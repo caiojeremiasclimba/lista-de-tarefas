@@ -3,6 +3,7 @@ import type { User } from '@supabase/supabase-js'
 import { TODO_STATUS_CONFIG } from '../constants/todoStatus'
 import { useAppShell } from '../hooks/useAppShell'
 import { useCategorias } from '../hooks/useCategorias'
+import { useConfirmDialog } from '../hooks/useConfirmDialog'
 import { useTodoFilters } from '../hooks/useTodoFilters'
 import { useTodos } from '../hooks/useTodos'
 import type { TodoFormData } from '../types/todo'
@@ -22,6 +23,7 @@ interface TodosScreenProps {
 export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
   const [error, setError] = useState<string | null>(null)
   const onError = useCallback((message: string | null) => setError(message), [])
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   const shell = useAppShell()
   const {
@@ -37,7 +39,7 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
 
   const reloadTodos = useCallback(() => loadTodos({ clearError: false }), [loadTodos])
 
-  const { categorias, handleCreateCategoria, handleUpdateCategoria, handleDeleteCategoria } =
+  const { categorias, handleCreateCategoria, handleUpdateCategoria, executeDeleteCategoria } =
     useCategorias({
       todos,
       onError,
@@ -82,11 +84,37 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
     shell.closeCategoriaForm()
   }
 
-  function handleDeleteTodo(id: string) {
+  async function handleDeleteTodo(id: string) {
+    const ok = await confirm({
+      title: 'Excluir tarefa',
+      description: 'Deseja excluir esta tarefa?',
+      confirmLabel: 'Excluir',
+      variant: 'danger',
+    })
+    if (!ok) return
+
     void deleteTodo(id, {
       editingTodoId: shell.editingTodo?.id,
       onCloseForm: shell.closeForm,
     })
+  }
+
+  async function handleDeleteCategoria(id: string) {
+    const qtd = todos.filter((t) => t.categoria_id === id).length
+    const description =
+      qtd > 0
+        ? `Excluir esta categoria? ${qtd} tarefa(s) ficarão sem categoria.`
+        : 'Deseja excluir esta categoria?'
+
+    const ok = await confirm({
+      title: 'Excluir categoria',
+      description,
+      confirmLabel: 'Excluir',
+      variant: 'danger',
+    })
+    if (!ok) return
+
+    await executeDeleteCategoria(id)
   }
 
   const fab =
@@ -166,6 +194,8 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
         onSubmitTodo={handleSubmitTodo}
         onSubmitCategoria={handleSubmitCategoria}
       />
+
+      {confirmDialog}
     </>
   )
 }
