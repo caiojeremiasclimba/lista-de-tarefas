@@ -41,7 +41,7 @@ Não commite o arquivo `.env`.
 npm run dev
 ```
 
-Outros comandos: `npm run build` (build de produção) e `npm run preview` (preview local).
+Outros comandos: `npm run build` (build de produção), `npm run preview` (preview local), `npm run lint`, `npm run format` e `npm run test:run`.
 
 ## Deploy
 
@@ -56,14 +56,33 @@ No Supabase (Authentication → URL Configuration), cadastre:
 
 ## Supabase
 
-O backend precisa das tabelas `categorias`, `tarefas` e `subtarefas`, com RLS habilitado para que cada usuário acesse apenas os próprios dados.
+O schema do banco está versionado em `supabase/migrations/`. A migration inicial cria:
 
-Buckets de Storage:
+- Tabelas `categorias`, `tarefas` e `subtarefas`
+- RLS para que cada usuário acesse apenas os próprios dados
+- Buckets `task-attachments` (privado) e `avatars` (público) com políticas de Storage
 
-- `task-attachments` — anexos das tarefas (privado)
-- `avatars` — fotos de perfil (público)
+### Projeto Supabase novo
 
-Habilite autenticação por e-mail. Google OAuth é opcional.
+1. Crie um projeto em [supabase.com](https://supabase.com).
+2. Aplique a migration:
+   - **SQL Editor:** copie e execute o conteúdo de `supabase/migrations/20260702120000_initial_schema.sql`
+   - **CLI (opcional):** instale o [Supabase CLI](https://supabase.com/docs/guides/cli), execute `supabase link` e depois `supabase db push`
+3. Habilite autenticação por e-mail. Google OAuth é opcional.
+
+### Projeto já existente (ex.: produção)
+
+Se as tabelas e buckets já foram criados manualmente, **não reaplique** a migration inteira. Use o arquivo SQL como referência do schema esperado e aplique apenas o que estiver faltando.
+
+### Storage
+
+- `task-attachments` — anexos das tarefas (privado, até 5 MB, JPEG/PNG/WebP/PDF)
+- `avatars` — fotos de perfil (público, até 2 MB, JPEG/PNG/WebP)
+
+Caminhos usados pelo app:
+
+- Anexos: `{user_id}/{tarefa_id}/{uuid}.{ext}`
+- Avatar: `{user_id}/avatar.{ext}`
 
 ## Estrutura
 
@@ -76,4 +95,7 @@ src/
 ├── types/        tipos TypeScript
 ├── constants/    status das tarefas
 └── lib/          cliente Supabase e auth
+
+supabase/
+└── migrations/   schema SQL versionado (tabelas, RLS, Storage)
 ```
