@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { TODO_STATUS_CONFIG } from '../constants/todoStatus'
 import { useAppShell } from '../hooks/useAppShell'
@@ -6,6 +6,7 @@ import { useCategorias } from '../hooks/useCategorias'
 import { useConfirmDialog } from '../hooks/useConfirmDialog'
 import { useTodoFilters } from '../hooks/useTodoFilters'
 import { useTodos } from '../hooks/useTodos'
+import { toast } from '../lib/toast'
 import type { TodoFormData } from '../types/todo'
 import { formatTodayHeader } from '../utils/formatTodoDate'
 import ProductivityDashboard from './ProductivityDashboard'
@@ -21,8 +22,6 @@ interface TodosScreenProps {
 }
 
 export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
-  const [error, setError] = useState<string | null>(null)
-  const onError = useCallback((message: string | null) => setError(message), [])
   const { confirm, confirmDialog } = useConfirmDialog()
 
   const shell = useAppShell()
@@ -35,14 +34,13 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
     handleToggleStatus,
     handleToggleSubtarefa,
     unlinkCategoriaFromTodos,
-  } = useTodos({ onError })
+  } = useTodos()
 
-  const reloadTodos = useCallback(() => loadTodos({ clearError: false }), [loadTodos])
+  const reloadTodos = useCallback(() => loadTodos(), [loadTodos])
 
   const { categorias, handleCreateCategoria, handleUpdateCategoria, executeDeleteCategoria } =
     useCategorias({
       todos,
-      onError,
       unlinkCategoriaFromTodos,
       filtroCategoria: shell.filtroCategoria,
       setFiltroCategoria: shell.setFiltroCategoria,
@@ -73,13 +71,18 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
   async function handleSubmitTodo(data: TodoFormData) {
     await submitTodo(data, shell.editingTodo)
     shell.closeForm()
+    toast.success(
+      shell.editingTodo ? 'Tarefa atualizada com sucesso.' : 'Tarefa criada com sucesso.'
+    )
   }
 
   async function handleSubmitCategoria(nome: string) {
     if (shell.editingCategoria) {
       await handleUpdateCategoria(shell.editingCategoria.id, nome)
+      toast.success('Categoria atualizada com sucesso.')
     } else {
       await handleCreateCategoria(nome)
+      toast.success('Categoria criada com sucesso.')
     }
     shell.closeCategoriaForm()
   }
@@ -93,10 +96,13 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
     })
     if (!ok) return
 
-    void deleteTodo(id, {
+    const deleted = await deleteTodo(id, {
       editingTodoId: shell.editingTodo?.id,
       onCloseForm: shell.closeForm,
     })
+    if (deleted) {
+      toast.success('Tarefa excluída com sucesso.')
+    }
   }
 
   async function handleDeleteCategoria(id: string) {
@@ -114,7 +120,10 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
     })
     if (!ok) return
 
-    await executeDeleteCategoria(id)
+    const deleted = await executeDeleteCategoria(id)
+    if (deleted) {
+      toast.success('Categoria excluída com sucesso.')
+    }
   }
 
   const fab =
@@ -163,7 +172,6 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
           <TasksView
             busca={shell.busca}
             onBuscaChange={shell.setBusca}
-            error={error}
             loading={loading}
             filtroAtivo={shell.filtroAtivo}
             tarefasVisiveis={filters.tarefasVisiveis}

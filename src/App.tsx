@@ -9,6 +9,7 @@ import {
   markPendingPasswordReset,
 } from './lib/authPreferences'
 import AuthScreen from './components/AuthScreen'
+import AppToaster from './components/AppToaster'
 import ResetPasswordForm from './components/ResetPasswordForm'
 import TodosScreen from './components/TodosScreen'
 
@@ -80,21 +81,39 @@ function App() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-gray-500">Carregando...</p>
-      </div>
+      <>
+        <div className="flex min-h-screen items-center justify-center">
+          <p className="text-gray-500">Carregando...</p>
+        </div>
+        <AppToaster />
+      </>
     )
   }
 
   if (!session) {
-    return <AuthScreen />
+    return (
+      <>
+        <AuthScreen />
+        <AppToaster />
+      </>
+    )
   }
 
   if (needsPasswordReset) {
-    return <ResetPasswordForm onSuccess={handlePasswordResetSuccess} />
+    return (
+      <>
+        <ResetPasswordForm onSuccess={handlePasswordResetSuccess} />
+        <AppToaster />
+      </>
+    )
   }
 
-  return <TodosScreen user={session.user} onLogout={handleLogout} />
+  return (
+    <>
+      <TodosScreen user={session.user} onLogout={handleLogout} />
+      <AppToaster />
+    </>
+  )
 }
 
 export default App

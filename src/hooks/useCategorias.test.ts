@@ -25,7 +25,6 @@ vi.mock('../services/categoriaService', () => ({
 }))
 
 describe('useCategorias', () => {
-  const onError = vi.fn()
   const unlinkCategoriaFromTodos = vi.fn()
   const setFiltroCategoria = vi.fn()
 
@@ -38,7 +37,6 @@ describe('useCategorias', () => {
     return renderHook(() =>
       useCategorias({
         todos: [],
-        onError,
         unlinkCategoriaFromTodos,
         filtroCategoria: null,
         setFiltroCategoria,
