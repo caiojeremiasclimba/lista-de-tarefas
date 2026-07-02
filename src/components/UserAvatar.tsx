@@ -18,11 +18,7 @@ export default function UserAvatar({ user, size = 'sm', previewUrl }: UserAvatar
 
   if (avatarUrl) {
     return (
-      <img
-        src={avatarUrl}
-        alt=""
-        className={`${sizeClass} shrink-0 rounded-full object-cover`}
-      />
+      <img src={avatarUrl} alt="" className={`${sizeClass} shrink-0 rounded-full object-cover`} />
     )
   }
 

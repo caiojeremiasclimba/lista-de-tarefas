@@ -74,9 +74,7 @@ function ViewButton({
       onClick={() => onChange(id)}
       aria-current={isActive ? 'page' : undefined}
       className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
-        isActive
-          ? 'bg-blue-50 font-medium text-blue-700'
-          : 'text-slate-600 hover:bg-slate-50'
+        isActive ? 'bg-blue-50 font-medium text-blue-700' : 'text-slate-600 hover:bg-slate-50'
       }`}
     >
       <Icon className="h-4 w-4 shrink-0" />
@@ -106,9 +104,7 @@ function FilterButton({
       onClick={() => onChange(id)}
       aria-current={isActive ? 'page' : undefined}
       className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
-        isActive
-          ? 'bg-blue-50 font-medium text-blue-700'
-          : 'text-slate-600 hover:bg-slate-50'
+        isActive ? 'bg-blue-50 font-medium text-blue-700' : 'text-slate-600 hover:bg-slate-50'
       }`}
     >
       <Icon className="h-4 w-4 shrink-0" />
@@ -270,9 +266,7 @@ function FilterGroup({
 }) {
   return (
     <div className="space-y-1">
-      <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-        {title}
-      </p>
+      <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">{title}</p>
       {items.map((item) => (
         <FilterButton
           key={item.id}
@@ -311,75 +305,68 @@ export default function FilterSidebar({
           Navegação
         </p>
         {viewItems.map((item) => (
-          <ViewButton
-            key={item.id}
-            {...item}
-            active={view}
-            onChange={onViewChange}
-          />
+          <ViewButton key={item.id} {...item} active={view} onChange={onViewChange} />
         ))}
       </div>
 
       <div className={filtersMuted ? 'opacity-50' : undefined}>
-        <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Filtros
-        </p>
+        <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Filtros</p>
         {filtersMuted && (
           <p className="px-3 pb-2 text-xs text-slate-400">Aplicam-se à visão Tarefas</p>
         )}
       </div>
       <div className={filtersMuted ? 'pointer-events-none space-y-6 opacity-50' : 'space-y-6'}>
-      <FilterGroup
-        title="Visão geral"
-        items={overviewFilters}
-        active={active}
-        counts={counts}
-        onChange={onChange}
-      />
-      <CollapsibleFilterSection
-        title="Por status"
-        open={statusOpen}
-        onToggle={() => setStatusOpen((o) => !o)}
-      >
-        {statusFilters.map((item) => (
-          <FilterButton
-            key={item.id}
-            {...item}
-            active={active}
-            count={counts[item.id]}
-            onChange={onChange}
-          />
-        ))}
-      </CollapsibleFilterSection>
-      <CollapsibleFilterSection
-        title="Por categoria"
-        open={categoriaOpen}
-        onToggle={() => setCategoriaOpen((o) => !o)}
-      >
-        {categorias.length === 0 ? (
-          <p className="px-3 py-2 text-sm text-slate-500">Nenhuma categoria ainda</p>
-        ) : (
-          categorias.map((cat) => (
-            <CategoryFilterButton
-              key={cat.id}
-              categoria={cat}
-              active={categoriaAtiva}
-              count={countsPorCategoria[cat.id] ?? 0}
-              onChange={onCategoriaChange}
-              onEdit={onEditCategoria}
-              onDelete={onDeleteCategoria}
-            />
-          ))
-        )}
-        <button
-          type="button"
-          onClick={onNovaCategoria}
-          className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50"
+        <FilterGroup
+          title="Visão geral"
+          items={overviewFilters}
+          active={active}
+          counts={counts}
+          onChange={onChange}
+        />
+        <CollapsibleFilterSection
+          title="Por status"
+          open={statusOpen}
+          onToggle={() => setStatusOpen((o) => !o)}
         >
-          <span aria-hidden>+</span>
-          Nova categoria
-        </button>
-      </CollapsibleFilterSection>
+          {statusFilters.map((item) => (
+            <FilterButton
+              key={item.id}
+              {...item}
+              active={active}
+              count={counts[item.id]}
+              onChange={onChange}
+            />
+          ))}
+        </CollapsibleFilterSection>
+        <CollapsibleFilterSection
+          title="Por categoria"
+          open={categoriaOpen}
+          onToggle={() => setCategoriaOpen((o) => !o)}
+        >
+          {categorias.length === 0 ? (
+            <p className="px-3 py-2 text-sm text-slate-500">Nenhuma categoria ainda</p>
+          ) : (
+            categorias.map((cat) => (
+              <CategoryFilterButton
+                key={cat.id}
+                categoria={cat}
+                active={categoriaAtiva}
+                count={countsPorCategoria[cat.id] ?? 0}
+                onChange={onCategoriaChange}
+                onEdit={onEditCategoria}
+                onDelete={onDeleteCategoria}
+              />
+            ))
+          )}
+          <button
+            type="button"
+            onClick={onNovaCategoria}
+            className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50"
+          >
+            <span aria-hidden>+</span>
+            Nova categoria
+          </button>
+        </CollapsibleFilterSection>
       </div>
     </nav>
   )

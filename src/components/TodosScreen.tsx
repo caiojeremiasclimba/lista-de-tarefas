@@ -35,24 +35,17 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
     unlinkCategoriaFromTodos,
   } = useTodos({ onError })
 
-  const reloadTodos = useCallback(
-    () => loadTodos({ clearError: false }),
-    [loadTodos]
-  )
+  const reloadTodos = useCallback(() => loadTodos({ clearError: false }), [loadTodos])
 
-  const {
-    categorias,
-    handleCreateCategoria,
-    handleUpdateCategoria,
-    handleDeleteCategoria,
-  } = useCategorias({
-    todos,
-    onError,
-    unlinkCategoriaFromTodos,
-    filtroCategoria: shell.filtroCategoria,
-    setFiltroCategoria: shell.setFiltroCategoria,
-    reloadTodos,
-  })
+  const { categorias, handleCreateCategoria, handleUpdateCategoria, handleDeleteCategoria } =
+    useCategorias({
+      todos,
+      onError,
+      unlinkCategoriaFromTodos,
+      filtroCategoria: shell.filtroCategoria,
+      setFiltroCategoria: shell.setFiltroCategoria,
+      reloadTodos,
+    })
 
   const filters = useTodoFilters({
     todos,
@@ -76,25 +69,17 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
   }, [shell.view, shell.filtroCategoria, shell.filtroAtivo, filters.categoriaAtivaNome, subtitle])
 
   async function handleSubmitTodo(data: TodoFormData) {
-    try {
-      await submitTodo(data, shell.editingTodo)
-      shell.closeForm()
-    } catch (err) {
-      throw err
-    }
+    await submitTodo(data, shell.editingTodo)
+    shell.closeForm()
   }
 
   async function handleSubmitCategoria(nome: string) {
-    try {
-      if (shell.editingCategoria) {
-        await handleUpdateCategoria(shell.editingCategoria.id, nome)
-      } else {
-        await handleCreateCategoria(nome)
-      }
-      shell.closeCategoriaForm()
-    } catch (err) {
-      throw err
+    if (shell.editingCategoria) {
+      await handleUpdateCategoria(shell.editingCategoria.id, nome)
+    } else {
+      await handleCreateCategoria(nome)
     }
+    shell.closeCategoriaForm()
   }
 
   function handleDeleteTodo(id: string) {

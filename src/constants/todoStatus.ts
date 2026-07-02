@@ -1,11 +1,6 @@
 import type { TodoStatus } from '../types/todo'
 
-export const TODO_STATUSES: TodoStatus[] = [
-  'pendente',
-  'em_andamento',
-  'concluida',
-  'cancelada',
-]
+export const TODO_STATUSES: TodoStatus[] = ['pendente', 'em_andamento', 'concluida', 'cancelada']
 
 export interface TodoStatusConfig {
   label: string

@@ -33,12 +33,7 @@ export function useTodoFilters({
 
   const listaVaziaMensagem = useMemo(
     () =>
-      getListaVaziaMensagem(
-        busca.trim(),
-        filters.categoriaAtivaNome,
-        todos.length,
-        filtroAtivo
-      ),
+      getListaVaziaMensagem(busca.trim(), filters.categoriaAtivaNome, todos.length, filtroAtivo),
     [busca, filters.categoriaAtivaNome, todos.length, filtroAtivo]
   )
 

@@ -52,13 +52,7 @@ describe('TodoForm', () => {
   })
 
   it('aplica defaultCategoriaId em nova tarefa', () => {
-    render(
-      <TodoForm
-        categorias={categorias}
-        defaultCategoriaId="cat-1"
-        onSubmit={vi.fn()}
-      />
-    )
+    render(<TodoForm categorias={categorias} defaultCategoriaId="cat-1" onSubmit={vi.fn()} />)
 
     expect(screen.getByLabelText(/categoria/i)).toHaveValue('cat-1')
   })

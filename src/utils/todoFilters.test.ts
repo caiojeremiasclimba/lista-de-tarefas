@@ -1,11 +1,7 @@
 import { TODO_STATUSES } from '../constants/todoStatus'
 import { makeCategoria, makeSubtarefa, makeTodo, FIXED_TODAY } from '../test/fixtures/todos'
 import type { Todo, TodoStatus } from '../types/todo'
-import {
-  computeTodoFilters,
-  getListaVaziaMensagem,
-  getTarefasVisiveis,
-} from './todoFilters'
+import { computeTodoFilters, getListaVaziaMensagem, getTarefasVisiveis } from './todoFilters'
 
 const categorias = [
   makeCategoria({ id: 'cat-1', nome: 'Trabalho' }),

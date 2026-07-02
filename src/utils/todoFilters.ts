@@ -59,10 +59,7 @@ export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
   const filtradosPorBusca = filtradosPorCategoria
 
   const grouped = Object.fromEntries(
-    TODO_STATUSES.map((status) => [
-      status,
-      filtradosPorBusca.filter((t) => t.status === status),
-    ])
+    TODO_STATUSES.map((status) => [status, filtradosPorBusca.filter((t) => t.status === status)])
   ) as Record<TodoStatus, Todo[]>
 
   grouped.pendente = sortActiveTodos(grouped.pendente)
@@ -95,11 +92,7 @@ export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
     : null
 
   const secoesVisiveis =
-    filtroAtivo === 'todas'
-      ? TODO_STATUSES
-      : filtroAtivo === 'vencidas'
-        ? []
-        : [filtroAtivo]
+    filtroAtivo === 'todas' ? TODO_STATUSES : filtroAtivo === 'vencidas' ? [] : [filtroAtivo]
 
   const tarefasVisiveis = getTarefasVisiveis(filtroAtivo, filtradosPorBusca, grouped, vencidas)
 

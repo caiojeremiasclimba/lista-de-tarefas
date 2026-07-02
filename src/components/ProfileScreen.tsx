@@ -4,28 +4,14 @@ import type { User } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { removeAvatar, uploadAvatar } from '../utils/avatarStorage'
 import { getUserAvatarUrl, hasEmailPasswordIdentity } from '../utils/userDisplay'
-import {
-  AuthAlert,
-  AuthField,
-  EyeIcon,
-  EyeOffIcon,
-  LockIcon,
-  MailIcon,
-  UserIcon,
-} from './AuthUi'
+import { AuthAlert, AuthField, EyeIcon, EyeOffIcon, LockIcon, MailIcon, UserIcon } from './AuthUi'
 import UserAvatar from './UserAvatar'
 
 interface ProfileScreenProps {
   user: User
 }
 
-function PasswordToggle({
-  visible,
-  onToggle,
-}: {
-  visible: boolean
-  onToggle: () => void
-}) {
+function PasswordToggle({ visible, onToggle }: { visible: boolean; onToggle: () => void }) {
   return (
     <button
       type="button"
@@ -74,7 +60,10 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
       setLoading(true)
       setError(null)
 
-      const { data: { user: currentUser }, error: fetchError } = await supabase.auth.getUser()
+      const {
+        data: { user: currentUser },
+        error: fetchError,
+      } = await supabase.auth.getUser()
 
       if (cancelled) return
 
@@ -93,7 +82,9 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
     }
 
     loadProfile()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [user.id, user.user_metadata?.avatar_url])
 
   async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
@@ -243,9 +234,7 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
         </p>
       </header>
 
-      {error && !loading && (
-        <AuthAlert type="error">{error}</AuthAlert>
-      )}
+      {error && !loading && <AuthAlert type="error">{error}</AuthAlert>}
 
       <section className={cardClass}>
         <h2 className="text-lg font-semibold text-slate-800">Foto de perfil</h2>
@@ -313,9 +302,7 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
             icon={<MailIcon />}
             readOnly
           />
-          <p className="mt-1.5 text-xs text-slate-400">
-            O e-mail não pode ser alterado aqui.
-          </p>
+          <p className="mt-1.5 text-xs text-slate-400">O e-mail não pode ser alterado aqui.</p>
         </div>
 
         {success && <AuthAlert type="success">{success}</AuthAlert>}
