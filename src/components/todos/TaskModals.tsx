@@ -1,7 +1,11 @@
 import type { Categoria } from '../../types/categoria'
 import type { Todo, TodoFormData } from '../../types/todo'
 import CategoriaForm from '../CategoriaForm'
+import Modal from '../Modal'
 import TodoForm from '../TodoForm'
+
+const TODO_FORM_TITLE_ID = 'todo-form-title'
+const CATEGORIA_FORM_TITLE_ID = 'categoria-form-title'
 
 interface TaskModalsProps {
   showForm: boolean
@@ -30,43 +34,35 @@ export default function TaskModals({
 }: TaskModalsProps) {
   return (
     <>
-      {showCategoriaForm && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-4 sm:items-center md:inset-y-0 md:left-56 md:right-0"
-          onClick={onCloseCategoriaForm}
-        >
-          <div
-            className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <CategoriaForm
-              editingCategoria={editingCategoria}
-              onSubmit={onSubmitCategoria}
-              onClose={onCloseCategoriaForm}
-            />
-          </div>
-        </div>
-      )}
+      <Modal
+        open={showCategoriaForm}
+        onClose={onCloseCategoriaForm}
+        ariaLabelledBy={CATEGORIA_FORM_TITLE_ID}
+        panelClassName="w-full max-w-sm"
+      >
+        <CategoriaForm
+          editingCategoria={editingCategoria}
+          titleId={CATEGORIA_FORM_TITLE_ID}
+          onSubmit={onSubmitCategoria}
+          onClose={onCloseCategoriaForm}
+        />
+      </Modal>
 
-      {showForm && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-4 sm:items-center md:inset-y-0 md:left-56 md:right-0"
-          onClick={onCloseForm}
-        >
-          <div
-            className="w-full max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-2xl bg-white p-6 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <TodoForm
-              editingTodo={editingTodo}
-              categorias={categorias}
-              defaultCategoriaId={newTaskCategoriaId}
-              onSubmit={onSubmitTodo}
-              onClose={onCloseForm}
-            />
-          </div>
-        </div>
-      )}
+      <Modal
+        open={showForm}
+        onClose={onCloseForm}
+        ariaLabelledBy={TODO_FORM_TITLE_ID}
+        panelClassName="w-full max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain"
+      >
+        <TodoForm
+          editingTodo={editingTodo}
+          categorias={categorias}
+          defaultCategoriaId={newTaskCategoriaId}
+          titleId={TODO_FORM_TITLE_ID}
+          onSubmit={onSubmitTodo}
+          onClose={onCloseForm}
+        />
+      </Modal>
     </>
   )
 }

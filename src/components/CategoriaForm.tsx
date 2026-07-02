@@ -4,12 +4,14 @@ import type { Categoria } from '../types/categoria'
 
 interface CategoriaFormProps {
   editingCategoria?: Categoria | null
+  titleId?: string
   onSubmit: (nome: string) => Promise<void>
   onClose?: () => void
 }
 
 export default function CategoriaForm({
   editingCategoria,
+  titleId,
   onSubmit,
   onClose,
 }: CategoriaFormProps) {
@@ -52,7 +54,7 @@ export default function CategoriaForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-lg font-semibold text-slate-800">
+      <h2 id={titleId} className="text-lg font-semibold text-slate-800">
         {isEditing ? 'Editar categoria' : 'Nova categoria'}
       </h2>
 
@@ -67,7 +69,6 @@ export default function CategoriaForm({
           onChange={(e) => setNome(e.target.value)}
           className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           placeholder="Ex: Trabalho"
-          autoFocus
         />
         {erro && <p className="mt-1 text-sm text-red-600">{erro}</p>}
       </div>
