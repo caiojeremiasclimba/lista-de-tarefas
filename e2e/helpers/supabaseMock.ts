@@ -9,15 +9,28 @@ export const E2E_USER = {
   email: 'e2e@test.com',
   email_confirmed_at: '2026-01-01T00:00:00.000Z',
   app_metadata: { provider: 'email', providers: ['email'] },
-  user_metadata: {},
+  user_metadata: {} as Record<string, unknown>,
+  identities: [
+    {
+      identity_id: 'e2e-identity-id',
+      id: 'e2e-identity-id',
+      user_id: 'e2e-user-id',
+      provider: 'email',
+      created_at: '2026-01-01T00:00:00.000Z',
+      last_sign_in_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-01-01T00:00:00.000Z',
+    },
+  ],
   created_at: '2026-01-01T00:00:00.000Z',
   updated_at: '2026-01-01T00:00:00.000Z',
 }
 
+export type MockUser = typeof E2E_USER
+
 const E2E_ACCESS_TOKEN = 'e2e-access-token'
 const E2E_REFRESH_TOKEN = 'e2e-refresh-token'
 
-interface MockTodo {
+export interface MockTodo {
   id: string
   user_id: string
   titulo: string
@@ -32,7 +45,7 @@ interface MockTodo {
   anexo_mime?: string | null
 }
 
-interface MockCategoria {
+export interface MockCategoria {
   id: string
   user_id: string
   nome: string
@@ -52,10 +65,16 @@ export interface SupabaseMockState {
   todos: MockTodo[]
   categorias: MockCategoria[]
   subtarefas: MockSubtarefa[]
+  user: MockUser
 }
 
 function createEmptyState(): SupabaseMockState {
-  return { todos: [], categorias: [], subtarefas: [] }
+  return {
+    todos: [],
+    categorias: [],
+    subtarefas: [],
+    user: structuredClone(E2E_USER),
+  }
 }
 
 function json(route: Route, body: unknown, status = 200) {
@@ -91,7 +110,31 @@ function withSubtarefas(state: SupabaseMockState, todo: MockTodo) {
   return { ...todo, subtarefas }
 }
 
-function handleAuth(route: Route, url: URL) {
+const E2E_VALID_PASSWORD = 'senha-e2e'
+
+function parseAuthBody(route: Route): Record<string, string> {
+  const postData = route.request().postData()
+  if (!postData) return {}
+
+  try {
+    const json = route.request().postDataJSON() as Record<string, string>
+    return Object.fromEntries(Object.entries(json).map(([k, v]) => [k, String(v)]))
+  } catch {
+    return Object.fromEntries(new URLSearchParams(postData))
+  }
+}
+
+function authSuccessResponse(state: SupabaseMockState) {
+  return {
+    access_token: E2E_ACCESS_TOKEN,
+    refresh_token: E2E_REFRESH_TOKEN,
+    expires_in: 3600,
+    token_type: 'bearer',
+    user: state.user,
+  }
+}
+
+function handleAuth(route: Route, url: URL, state: SupabaseMockState) {
   const method = route.request().method()
 
   if (method === 'OPTIONS') {
@@ -99,13 +142,39 @@ function handleAuth(route: Route, url: URL) {
   }
 
   if (url.pathname === '/auth/v1/token' && method === 'POST') {
+    const body = parseAuthBody(route)
+    const grantType = url.searchParams.get('grant_type') ?? body.grant_type
+
+    if (grantType === 'password' && body.password !== E2E_VALID_PASSWORD) {
+      return json(
+        route,
+        { error: 'invalid_grant', error_description: 'Invalid login credentials' },
+        400
+      )
+    }
+
+    return json(route, authSuccessResponse(state))
+  }
+
+  if (url.pathname === '/auth/v1/signup' && method === 'POST') {
+    const body = parseAuthBody(route)
+    const email = body.email ?? 'novo@test.com'
+    const newUser: MockUser = {
+      ...structuredClone(E2E_USER),
+      id: crypto.randomUUID(),
+      email,
+      user_metadata: {},
+    }
+    state.user = newUser
+
     return json(route, {
-      access_token: E2E_ACCESS_TOKEN,
-      refresh_token: E2E_REFRESH_TOKEN,
-      expires_in: 3600,
-      token_type: 'bearer',
-      user: E2E_USER,
+      ...authSuccessResponse(state),
+      user: newUser,
     })
+  }
+
+  if (url.pathname === '/auth/v1/recover' && method === 'POST') {
+    return json(route, {})
   }
 
   if (url.pathname === '/auth/v1/user' && method === 'GET') {
@@ -113,7 +182,29 @@ function handleAuth(route: Route, url: URL) {
     if (!auth?.startsWith('Bearer ')) {
       return json(route, { message: 'JWT expired' }, 401)
     }
-    return json(route, E2E_USER)
+    return json(route, state.user)
+  }
+
+  if (url.pathname === '/auth/v1/user' && method === 'PUT') {
+    const auth = route.request().headers()['authorization']
+    if (!auth?.startsWith('Bearer ')) {
+      return json(route, { message: 'JWT expired' }, 401)
+    }
+
+    const body = route.request().postDataJSON() as {
+      data?: Record<string, unknown>
+      password?: string
+    }
+
+    if (body.data) {
+      state.user = {
+        ...state.user,
+        user_metadata: { ...state.user.user_metadata, ...body.data },
+        updated_at: new Date().toISOString(),
+      }
+    }
+
+    return json(route, { user: state.user })
   }
 
   if (url.pathname === '/auth/v1/logout' && method === 'POST') {
@@ -133,6 +224,18 @@ function handleRest(route: Route, url: URL, state: SupabaseMockState) {
   const table = url.pathname.replace('/rest/v1/', '')
   const params = url.searchParams
   const wantsSingle = route.request().headers()['accept']?.includes('vnd.pgrst.object+json')
+
+  if (table === 'rpc/delete_categoria_com_tarefas' && method === 'POST') {
+    const body = route.request().postDataJSON() as { p_categoria_id?: string }
+    const categoriaId = body.p_categoria_id
+    if (!categoriaId) return json(route, { message: 'Missing p_categoria_id' }, 400)
+
+    state.todos = state.todos.map((todo) =>
+      todo.categoria_id === categoriaId ? { ...todo, categoria_id: null } : todo
+    )
+    state.categorias = state.categorias.filter((cat) => cat.id !== categoriaId)
+    return json(route, null)
+  }
 
   if (table === 'tarefas') {
     if (method === 'GET') {
@@ -312,13 +415,14 @@ export async function setupSupabaseMock(
     todos: [...(initialState.todos ?? [])],
     categorias: [...(initialState.categorias ?? [])],
     subtarefas: [...(initialState.subtarefas ?? [])],
+    user: initialState.user ? structuredClone(initialState.user) : structuredClone(E2E_USER),
   }
 
   await page.route(`**://${SUPABASE_HOST}/**`, async (route) => {
     const url = new URL(route.request().url())
 
     if (url.pathname.startsWith('/auth/v1/')) {
-      await handleAuth(route, url)
+      await handleAuth(route, url, state)
       return
     }
 
