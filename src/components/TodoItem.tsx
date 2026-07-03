@@ -6,7 +6,7 @@ import type { Todo } from '../types/todo'
 import { useAttachmentSignedUrl } from '../hooks/useAttachmentSignedUrl'
 import { formatTodoDate } from '../utils/formatTodoDate'
 import { getSubtarefaProgress } from '../utils/subtarefaProgress'
-import { isTodoOverdue } from '../utils/todoDue'
+import { isTodoDueToday, isTodoOverdue } from '../utils/todoDue'
 import SubtarefaList from './SubtarefaList'
 import { CalendarIcon, ChevronIcon, DocumentIcon, DotsVerticalIcon } from './TodosUi'
 
@@ -41,6 +41,7 @@ export default function TodoItem({
   const isEmAndamento = todo.status === 'em_andamento'
   const isCancelada = todo.status === 'cancelada'
   const overdue = isTodoOverdue(todo)
+  const dueToday = isTodoDueToday(todo)
   const dateLabel = formatTodoDate(todo.data_prevista)
   const statusConfig = TODO_STATUS_CONFIG[todo.status]
   const prioridadeConfig = TODO_PRIORIDADE_CONFIG[todo.prioridade]
@@ -76,7 +77,11 @@ export default function TodoItem({
   return (
     <li
       className={`min-w-0 rounded-2xl border bg-white px-3 py-3 shadow-sm sm:px-5 sm:py-4 ${
-        overdue ? 'border-red-300 bg-red-50/50' : 'border-slate-200'
+        overdue
+          ? 'border-red-300 bg-red-50/50'
+          : dueToday
+            ? 'border-amber-300 bg-amber-50/40'
+            : 'border-slate-200'
       }`}
     >
       <div className="flex min-w-0 items-start gap-2 sm:gap-4">
@@ -167,6 +172,11 @@ export default function TodoItem({
                 Vencida
               </span>
             )}
+            {dueToday && (
+              <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800 sm:px-2 sm:text-xs">
+                Vence hoje
+              </span>
+            )}
           </div>
 
           {total > 0 && (
@@ -186,11 +196,21 @@ export default function TodoItem({
           {dateLabel && (
             <p
               className={`mt-1.5 flex min-w-0 items-center gap-1 text-xs sm:gap-1.5 sm:text-sm ${
-                overdue ? 'font-medium text-red-600' : 'text-slate-500'
+                overdue
+                  ? 'font-medium text-red-600'
+                  : dueToday
+                    ? 'font-medium text-amber-700'
+                    : 'text-slate-500'
               }`}
             >
               <CalendarIcon className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
-              <span className="truncate">{overdue ? `Vencida · ${dateLabel}` : dateLabel}</span>
+              <span className="truncate">
+                {overdue
+                  ? `Vencida · ${dateLabel}`
+                  : dueToday
+                    ? `Vence hoje · ${dateLabel}`
+                    : dateLabel}
+              </span>
             </p>
           )}
 
