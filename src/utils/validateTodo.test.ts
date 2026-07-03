@@ -38,4 +38,39 @@ describe('validateTodo', () => {
     expect(erros.data_prevista).toBeUndefined()
     expect(erros.titulo).toBeUndefined()
   })
+
+  it('exige data prevista para tarefa recorrente', () => {
+    const erros = validateTodo(
+      makeTodoFormData({
+        data_prevista: '',
+        recorrencia_tipo: 'semanal',
+      })
+    )
+
+    expect(erros.data_prevista).toBe('Informe a data prevista para repetir a tarefa')
+  })
+
+  it('valida intervalo de recorrência', () => {
+    const erros = validateTodo(
+      makeTodoFormData({
+        data_prevista: '2026-07-10',
+        recorrencia_tipo: 'semanal',
+        recorrencia_intervalo: 0,
+      })
+    )
+
+    expect(erros.recorrencia_intervalo).toBe('Intervalo deve ser maior ou igual a 1')
+  })
+
+  it('valida data final de recorrência anterior à data prevista', () => {
+    const erros = validateTodo(
+      makeTodoFormData({
+        data_prevista: '2026-07-10',
+        recorrencia_tipo: 'mensal',
+        recorrencia_fim: '2026-07-01',
+      })
+    )
+
+    expect(erros.recorrencia_fim).toBe('Data final deve ser posterior à data prevista')
+  })
 })

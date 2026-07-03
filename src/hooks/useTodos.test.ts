@@ -145,6 +145,40 @@ describe('useTodos', () => {
     expect(mockToggleTodoStatus).not.toHaveBeenCalled()
   })
 
+  it('atualiza tarefa localmente após toggle de status', async () => {
+    const todo = makeTodo({ id: 'todo-1', status: 'pendente' })
+    const updated = makeTodo({ id: 'todo-1', status: 'em_andamento' })
+    mockFetchTodos.mockResolvedValue([todo])
+    mockToggleTodoStatus.mockResolvedValue({ updatedTodo: updated, createdNextTodo: null })
+
+    const { result } = renderHook(() => useTodos(USER_ID))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    await act(async () => {
+      await result.current.handleToggleStatus(todo)
+    })
+
+    expect(result.current.todos[0].status).toBe('em_andamento')
+  })
+
+  it('insere próxima ocorrência quando toggle cria tarefa recorrente', async () => {
+    const todo = makeTodo({ id: 'todo-1', status: 'em_andamento' })
+    const updated = makeTodo({ id: 'todo-1', status: 'concluida' })
+    const next = makeTodo({ id: 'todo-2', status: 'pendente', data_prevista: '2026-07-09' })
+    mockFetchTodos.mockResolvedValue([todo])
+    mockToggleTodoStatus.mockResolvedValue({ updatedTodo: updated, createdNextTodo: next })
+
+    const { result } = renderHook(() => useTodos(USER_ID))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    await act(async () => {
+      await result.current.handleToggleStatus(todo)
+    })
+
+    expect(result.current.todos.map((t) => t.id)).toEqual(['todo-2', 'todo-1'])
+    expect(result.current.todos[1].status).toBe('concluida')
+  })
+
   it('desvincula categoria das tarefas localmente', async () => {
     const todo = makeTodo({ id: 'todo-1', categoria_id: 'cat-1' })
     mockFetchTodos.mockResolvedValue([todo])

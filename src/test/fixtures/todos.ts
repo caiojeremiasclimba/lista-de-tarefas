@@ -14,6 +14,10 @@ export function makeTodo(overrides: Partial<Todo> = {}): Todo {
     categoria_id: null,
     created_at: '2026-01-01T00:00:00.000Z',
     completed_at: null,
+    recorrencia_tipo: 'nenhuma',
+    recorrencia_intervalo: 1,
+    recorrencia_fim: null,
+    recorrencia_origem_id: null,
     ...overrides,
   }
 }
@@ -50,6 +54,9 @@ export function makeTodoFormData(overrides: Partial<TodoFormData> = {}): TodoFor
     prioridade: 'media',
     categoria_id: '',
     subtarefas: [],
+    recorrencia_tipo: 'nenhuma',
+    recorrencia_intervalo: 1,
+    recorrencia_fim: '',
     ...overrides,
   }
 }

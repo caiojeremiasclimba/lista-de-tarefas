@@ -14,6 +14,12 @@ import {
   syncSubtarefas,
 } from '../utils/subtarefaSync'
 import { completedAtForStatusChange } from '../utils/todoCompletedAt'
+import { getNextRecurringDate, shouldCreateNextOccurrence } from '../utils/todoRecurrence'
+
+export interface ToggleTodoStatusResult {
+  updatedTodo: Todo
+  createdNextTodo: Todo | null
+}
 
 export async function fetchTodos(): Promise<Todo[]> {
   const { data, error } = await supabase
@@ -79,6 +85,8 @@ async function syncTodoAnexo(
 }
 
 function buildTodoPayload(data: TodoFormData, editingTodo?: Todo | null) {
+  const hasRecorrencia = data.recorrencia_tipo !== 'nenhuma'
+
   return {
     titulo: data.titulo.trim(),
     descricao: data.descricao.trim() || null,
@@ -86,6 +94,9 @@ function buildTodoPayload(data: TodoFormData, editingTodo?: Todo | null) {
     status: data.status,
     prioridade: data.prioridade,
     categoria_id: data.categoria_id || null,
+    recorrencia_tipo: data.recorrencia_tipo,
+    recorrencia_intervalo: hasRecorrencia ? data.recorrencia_intervalo : 1,
+    recorrencia_fim: hasRecorrencia ? data.recorrencia_fim || null : null,
     completed_at: completedAtForStatusChange(
       data.status,
       editingTodo?.status,
@@ -165,6 +176,10 @@ async function rollbackEditedTodo(editingTodo: Todo, userId: string): Promise<vo
       anexo_path: editingTodo.anexo_path ?? null,
       anexo_nome: editingTodo.anexo_nome ?? null,
       anexo_mime: editingTodo.anexo_mime ?? null,
+      recorrencia_tipo: editingTodo.recorrencia_tipo,
+      recorrencia_intervalo: editingTodo.recorrencia_intervalo,
+      recorrencia_fim: editingTodo.recorrencia_fim,
+      recorrencia_origem_id: editingTodo.recorrencia_origem_id,
     })
     .eq('id', editingTodo.id)
 
@@ -248,7 +263,53 @@ export async function deleteTodo(id: string, anexoPath?: string | null): Promise
   }
 }
 
-export async function toggleTodoStatus(todo: Todo): Promise<Todo> {
+async function createNextRecurringTodo(todo: Todo): Promise<Todo | null> {
+  const nextDate = getNextRecurringDate(
+    todo.data_prevista,
+    todo.recorrencia_tipo,
+    todo.recorrencia_intervalo
+  )
+  if (!nextDate) return null
+
+  const { data: created, error: insertError } = await supabase
+    .from('tarefas')
+    .insert({
+      user_id: todo.user_id,
+      titulo: todo.titulo,
+      descricao: todo.descricao,
+      data_prevista: nextDate,
+      status: 'pendente',
+      prioridade: todo.prioridade,
+      categoria_id: todo.categoria_id,
+      completed_at: null,
+      recorrencia_tipo: todo.recorrencia_tipo,
+      recorrencia_intervalo: todo.recorrencia_intervalo,
+      recorrencia_fim: todo.recorrencia_fim,
+      recorrencia_origem_id: todo.recorrencia_origem_id ?? todo.id,
+    })
+    .select()
+    .single()
+
+  if (insertError) throw new Error(insertError.message)
+
+  try {
+    const subtarefas = await insertSubtarefas(
+      created.id,
+      todo.user_id,
+      (todo.subtarefas ?? []).map((sub) => ({
+        clientKey: sub.id,
+        titulo: sub.titulo,
+        concluida: false,
+      }))
+    )
+    return { ...created, subtarefas }
+  } catch (err) {
+    await rollbackCreatedTodo(created.id)
+    throw err instanceof Error ? err : new Error('Erro ao criar próxima ocorrência.')
+  }
+}
+
+export async function toggleTodoStatus(todo: Todo): Promise<ToggleTodoStatusResult> {
   if (todo.status === 'cancelada') {
     throw new Error('Tarefa cancelada não pode mudar de status')
   }
@@ -264,7 +325,12 @@ export async function toggleTodoStatus(todo: Todo): Promise<Todo> {
     .single()
 
   if (updateError) throw new Error(updateError.message)
-  return mergeTodoSubtarefas(updated, todo)
+  const updatedTodo = mergeTodoSubtarefas(updated, todo)
+  const createdNextTodo = shouldCreateNextOccurrence(todo, newStatus)
+    ? await createNextRecurringTodo(todo)
+    : null
+
+  return { updatedTodo, createdNextTodo }
 }
 
 export async function toggleSubtarefa(sub: Subtarefa): Promise<Subtarefa> {

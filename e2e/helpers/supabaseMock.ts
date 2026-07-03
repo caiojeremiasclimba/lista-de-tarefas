@@ -44,6 +44,10 @@ export interface MockTodo {
   anexo_path?: string | null
   anexo_nome?: string | null
   anexo_mime?: string | null
+  recorrencia_tipo: string
+  recorrencia_intervalo: number
+  recorrencia_fim: string | null
+  recorrencia_origem_id: string | null
 }
 
 export interface MockCategoria {
@@ -359,6 +363,10 @@ function handleRest(route: Route, url: URL, state: SupabaseMockState) {
         anexo_path: null,
         anexo_nome: null,
         anexo_mime: null,
+        recorrencia_tipo: String(body.recorrencia_tipo ?? 'nenhuma'),
+        recorrencia_intervalo: Number(body.recorrencia_intervalo ?? 1),
+        recorrencia_fim: (body.recorrencia_fim as string | null) ?? null,
+        recorrencia_origem_id: (body.recorrencia_origem_id as string | null) ?? null,
       }
       state.todos.push(created)
       return json(route, created)

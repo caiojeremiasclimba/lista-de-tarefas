@@ -2,8 +2,15 @@ import { useState, useEffect, useRef } from 'react'
 import type { SubmitEvent, ChangeEvent } from 'react'
 import type { Categoria } from '../types/categoria'
 import { createSubtarefaDraft } from '../types/subtarefa'
-import type { Todo, TodoFormData, TodoPrioridade, TodoStatus } from '../types/todo'
+import type {
+  Todo,
+  TodoFormData,
+  TodoPrioridade,
+  TodoRecorrenciaTipo,
+  TodoStatus,
+} from '../types/todo'
 import { TODO_PRIORIDADE_CONFIG, TODO_PRIORIDADES } from '../constants/todoPrioridade'
+import { TODO_RECORRENCIA_CONFIG, TODO_RECORRENCIA_TIPOS } from '../constants/todoRecorrencia'
 import { TODO_STATUS_CONFIG, TODO_STATUSES } from '../constants/todoStatus'
 import { validateAttachmentFile } from '../utils/attachmentStorage'
 import { validateTodo } from '../utils/validateTodo'
@@ -28,6 +35,9 @@ const emptyForm: TodoFormData = {
   subtarefas: [],
   anexoFile: null,
   removerAnexo: false,
+  recorrencia_tipo: 'nenhuma',
+  recorrencia_intervalo: 1,
+  recorrencia_fim: '',
 }
 
 export default function TodoForm({
@@ -48,6 +58,8 @@ export default function TodoForm({
 
   const isEditing = Boolean(editingTodo)
   const hasExistingAnexo = Boolean(editingTodo?.anexo_path) && !form.removerAnexo && !form.anexoFile
+  const hasRecorrencia = form.recorrencia_tipo !== 'nenhuma'
+  const recorrenciaIntervalLabel = TODO_RECORRENCIA_CONFIG[form.recorrencia_tipo].intervalPlural
 
   useEffect(() => {
     if (editingTodo) {
@@ -68,6 +80,9 @@ export default function TodoForm({
         ),
         anexoFile: null,
         removerAnexo: false,
+        recorrencia_tipo: editingTodo.recorrencia_tipo,
+        recorrencia_intervalo: editingTodo.recorrencia_intervalo,
+        recorrencia_fim: editingTodo.recorrencia_fim ?? '',
       })
     } else {
       setForm({
@@ -128,6 +143,15 @@ export default function TodoForm({
       ...prev,
       anexoFile: null,
       removerAnexo: true,
+    }))
+  }
+
+  function handleToggleRecorrencia(enabled: boolean) {
+    setForm((prev) => ({
+      ...prev,
+      recorrencia_tipo: enabled ? 'semanal' : 'nenhuma',
+      recorrencia_intervalo: 1,
+      recorrencia_fim: enabled ? prev.recorrencia_fim : '',
     }))
   }
 
@@ -330,6 +354,88 @@ export default function TodoForm({
             ))}
           </select>
         </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-3">
+        <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+          <input
+            id="recorrencia_ativa"
+            type="checkbox"
+            checked={hasRecorrencia}
+            onChange={(e) => handleToggleRecorrencia(e.target.checked)}
+            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+          />
+          Repetir tarefa
+        </label>
+
+        {hasRecorrencia && (
+          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            <div>
+              <label
+                htmlFor="recorrencia_tipo"
+                className="mb-1 block text-sm font-medium text-slate-700"
+              >
+                Frequência
+              </label>
+              <select
+                id="recorrencia_tipo"
+                value={form.recorrencia_tipo}
+                onChange={(e) =>
+                  updateField('recorrencia_tipo', e.target.value as TodoRecorrenciaTipo)
+                }
+                className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              >
+                {TODO_RECORRENCIA_TIPOS.map((tipo) => (
+                  <option key={tipo} value={tipo}>
+                    {TODO_RECORRENCIA_CONFIG[tipo].label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label
+                htmlFor="recorrencia_intervalo"
+                className="mb-1 block text-sm font-medium text-slate-700"
+              >
+                Intervalo
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  id="recorrencia_intervalo"
+                  type="number"
+                  min={1}
+                  value={form.recorrencia_intervalo}
+                  onChange={(e) => updateField('recorrencia_intervalo', Number(e.target.value))}
+                  className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+                <span className="shrink-0 text-sm text-slate-500">{recorrenciaIntervalLabel}</span>
+              </div>
+              {erros.recorrencia_intervalo && (
+                <p className="mt-1 text-sm text-red-600">{erros.recorrencia_intervalo}</p>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="recorrencia_fim"
+                className="mb-1 block text-sm font-medium text-slate-700"
+              >
+                Repetir até
+              </label>
+              <input
+                id="recorrencia_fim"
+                type="date"
+                value={form.recorrencia_fim}
+                onChange={(e) => updateField('recorrencia_fim', e.target.value)}
+                className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
+              {erros.recorrencia_fim && (
+                <p className="mt-1 text-sm text-red-600">{erros.recorrencia_fim}</p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <div>
