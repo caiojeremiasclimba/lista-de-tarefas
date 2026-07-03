@@ -1,5 +1,11 @@
 import { test, expect } from './fixtures'
-import { createTask, filterByOverview, filterByPrioridade, filterByStatus, taskCard } from './helpers/tasks'
+import {
+  createTask,
+  filterByOverview,
+  filterByPrioridade,
+  filterByStatus,
+  taskCard,
+} from './helpers/tasks'
 
 test.describe('Tarefas — filtros e busca', () => {
   test('filtra tarefas concluídas na sidebar', async ({

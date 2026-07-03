@@ -60,7 +60,7 @@ describe('useTodoFilters', () => {
           busca: '',
           filtroAtivo,
           filtroCategoria: null,
-        filtroPrioridade: null,
+          filtroPrioridade: null,
         }),
       { initialProps: { filtroAtivo: 'todas' as FiltroTarefas } }
     )

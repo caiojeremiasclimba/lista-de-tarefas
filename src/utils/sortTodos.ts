@@ -11,8 +11,7 @@ function compareByDueDate(a: Todo, b: Todo): number {
 
 function compareByPrioridade(a: Todo, b: Todo): number {
   return (
-    TODO_PRIORIDADE_CONFIG[a.prioridade].sortOrder -
-    TODO_PRIORIDADE_CONFIG[b.prioridade].sortOrder
+    TODO_PRIORIDADE_CONFIG[a.prioridade].sortOrder - TODO_PRIORIDADE_CONFIG[b.prioridade].sortOrder
   )
 }
 

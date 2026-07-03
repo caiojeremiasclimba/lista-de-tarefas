@@ -64,8 +64,7 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
   const mobileHeaderSubtitle = useMemo(() => {
     if (shell.view !== 'tarefas') return null
     if (shell.filtroCategoria && filters.categoriaAtivaNome) return filters.categoriaAtivaNome
-    if (shell.filtroPrioridade && filters.prioridadeAtivaLabel)
-      return filters.prioridadeAtivaLabel
+    if (shell.filtroPrioridade && filters.prioridadeAtivaLabel) return filters.prioridadeAtivaLabel
     if (shell.filtroAtivo === 'vencidas') return 'Vencidas'
     if (shell.filtroAtivo !== 'todas') return TODO_STATUS_CONFIG[shell.filtroAtivo].label
     return subtitle
