@@ -1,9 +1,20 @@
 import { test as base } from '@playwright/test'
+import {
+  CANCELLED_TODOS,
+  MIXED_STATUS_TODOS,
+  OVERDUE_TODOS,
+  SEED_CATEGORIAS,
+  SEED_TODOS_WITH_CATEGORIES,
+} from './helpers/seed'
 import { login, setupSupabaseMock, type SupabaseMockState } from './helpers/supabaseMock'
 
 type Fixtures = {
   supabaseMock: SupabaseMockState
   authenticatedPage: void
+  authenticatedWithMixedTasks: SupabaseMockState
+  authenticatedWithCategories: SupabaseMockState
+  authenticatedWithOverdueTasks: SupabaseMockState
+  authenticatedWithCancelledTasks: SupabaseMockState
 }
 
 export const test = base.extend<Fixtures>({
@@ -16,6 +27,32 @@ export const test = base.extend<Fixtures>({
     await login(page)
     await use()
   },
-})
 
+  authenticatedWithMixedTasks: async ({ page }, use) => {
+    const state = await setupSupabaseMock(page, { todos: MIXED_STATUS_TODOS })
+    await login(page)
+    await use(state)
+  },
+
+  authenticatedWithCategories: async ({ page }, use) => {
+    const state = await setupSupabaseMock(page, {
+      categorias: SEED_CATEGORIAS,
+      todos: SEED_TODOS_WITH_CATEGORIES,
+    })
+    await login(page)
+    await use(state)
+  },
+
+  authenticatedWithOverdueTasks: async ({ page }, use) => {
+    const state = await setupSupabaseMock(page, { todos: OVERDUE_TODOS })
+    await login(page)
+    await use(state)
+  },
+
+  authenticatedWithCancelledTasks: async ({ page }, use) => {
+    const state = await setupSupabaseMock(page, { todos: CANCELLED_TODOS })
+    await login(page)
+    await use(state)
+  },
+})
 export { expect } from '@playwright/test'
