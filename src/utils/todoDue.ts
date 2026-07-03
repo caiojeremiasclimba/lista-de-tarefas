@@ -17,3 +17,14 @@ export function isTodoOverdue(todo: Todo): boolean {
 
   return due < startOfToday()
 }
+
+export function isTodoDueToday(todo: Todo): boolean {
+  if (!todo.data_prevista) return false
+  if (isFinalStatus(todo.status)) return false
+  if (isTodoOverdue(todo)) return false
+
+  const due = toDateOnly(todo.data_prevista)
+  due.setHours(0, 0, 0, 0)
+
+  return due.getTime() === startOfToday().getTime()
+}
