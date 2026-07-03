@@ -109,6 +109,7 @@ describe('computeTodoFilters', () => {
       busca: '',
       filtroAtivo: 'todas',
       filtroCategoria: null,
+      filtroPrioridade: null,
     })
 
     expect(result.counts.todas).toBe(6)
@@ -125,6 +126,7 @@ describe('computeTodoFilters', () => {
       busca: 'relatório',
       filtroAtivo: 'todas',
       filtroCategoria: null,
+      filtroPrioridade: null,
     })
 
     expect(result.filtradosPorBusca.map((t) => t.id)).toEqual(['pendente-vencida'])
@@ -139,6 +141,7 @@ describe('computeTodoFilters', () => {
       busca: 'pull request',
       filtroAtivo: 'todas',
       filtroCategoria: null,
+      filtroPrioridade: null,
     })
 
     expect(result.filtradosPorBusca.map((t) => t.id)).toEqual(['pendente-ok'])
@@ -152,6 +155,7 @@ describe('computeTodoFilters', () => {
       busca: 'documentação',
       filtroAtivo: 'todas',
       filtroCategoria: null,
+      filtroPrioridade: null,
     })
 
     expect(result.filtradosPorBusca.map((t) => t.id)).toEqual(['com-subtarefa'])
@@ -165,6 +169,7 @@ describe('computeTodoFilters', () => {
       busca: '',
       filtroAtivo: 'todas',
       filtroCategoria: 'cat-1',
+      filtroPrioridade: null,
     })
 
     expect(result.filtradosPorBusca.map((t) => t.id).sort()).toEqual(
@@ -182,6 +187,7 @@ describe('computeTodoFilters', () => {
       busca: '',
       filtroAtivo: 'todas',
       filtroCategoria: null,
+      filtroPrioridade: null,
     })
 
     expect(result.porStatus.pendente.map((t) => t.id).sort()).toEqual(
@@ -200,6 +206,7 @@ describe('computeTodoFilters', () => {
       busca: '',
       filtroAtivo: 'todas',
       filtroCategoria: null,
+      filtroPrioridade: null,
     })
 
     expect(result.counts).toMatchObject({
@@ -221,6 +228,7 @@ describe('computeTodoFilters', () => {
       busca: '',
       filtroAtivo: 'todas',
       filtroCategoria: null,
+      filtroPrioridade: null,
     })
 
     expect(result.countsPorCategoria).toEqual({
@@ -237,6 +245,7 @@ describe('computeTodoFilters', () => {
       busca: '',
       filtroAtivo: 'todas',
       filtroCategoria: null,
+      filtroPrioridade: null,
     })
 
     expect(result.categoriasPorId).toEqual({
@@ -247,7 +256,7 @@ describe('computeTodoFilters', () => {
 
   it('define secoesVisiveis conforme filtroAtivo', () => {
     const todos = buildFixtureTodos()
-    const base = { todos, categorias, busca: '', filtroCategoria: null }
+    const base = { todos, categorias, busca: '', filtroCategoria: null, filtroPrioridade: null }
 
     expect(computeTodoFilters({ ...base, filtroAtivo: 'todas' }).secoesVisiveis).toEqual(
       TODO_STATUSES
@@ -266,9 +275,29 @@ describe('computeTodoFilters', () => {
       busca: '',
       filtroAtivo: 'em_andamento',
       filtroCategoria: null,
+      filtroPrioridade: null,
     })
 
     expect(result.tarefasVisiveis.map((t) => t.id)).toEqual(['em-andamento'])
+  })
+
+  it('filtra por prioridade alta', () => {
+    const todos = [
+      makeTodo({ id: 'alta', titulo: 'Urgente', prioridade: 'alta' }),
+      makeTodo({ id: 'baixa', titulo: 'Depois', prioridade: 'baixa' }),
+    ]
+    const result = computeTodoFilters({
+      todos,
+      categorias,
+      busca: '',
+      filtroAtivo: 'todas',
+      filtroCategoria: null,
+      filtroPrioridade: 'alta',
+    })
+
+    expect(result.tarefasVisiveis.map((t) => t.id)).toEqual(['alta'])
+    expect(result.countsPorPrioridade).toEqual({ alta: 1, media: 0, baixa: 1 })
+    expect(result.prioridadeAtivaLabel).toBe('Alta')
   })
 })
 
@@ -317,5 +346,11 @@ describe('getListaVaziaMensagem', () => {
 
   it('retorna fallback genérico', () => {
     expect(getListaVaziaMensagem('', null, 5)).toBe('Nenhuma tarefa encontrada.')
+  })
+
+  it('retorna mensagem só com filtro de prioridade', () => {
+    expect(getListaVaziaMensagem('', null, 5, 'todas', 'Alta')).toBe(
+      'Nenhuma tarefa com prioridade alta'
+    )
   })
 })

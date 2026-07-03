@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { Categoria } from '../types/categoria'
-import type { Todo, TodoStatus } from '../types/todo'
+import type { Todo, TodoPrioridade, TodoStatus } from '../types/todo'
 import type { AppView, FiltroTarefas } from '../components/FilterSidebar'
 import type { SecoesAbertas } from '../utils/todoFilters'
 
@@ -17,6 +17,7 @@ export function useAppShell() {
   const [filtroAtivo, setFiltroAtivo] = useState<FiltroTarefas>('todas')
   const [view, setView] = useState<AppView>('tarefas')
   const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null)
+  const [filtroPrioridade, setFiltroPrioridade] = useState<TodoPrioridade | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [showCategoriaForm, setShowCategoriaForm] = useState(false)
   const [editingCategoria, setEditingCategoria] = useState<Categoria | null>(null)
@@ -57,6 +58,14 @@ export function useAppShell() {
   const handleCategoriaChange = useCallback(
     (id: string | null) => {
       setFiltroCategoria(id)
+      closeSidebar()
+    },
+    [closeSidebar]
+  )
+
+  const handlePrioridadeChange = useCallback(
+    (prioridade: TodoPrioridade | null) => {
+      setFiltroPrioridade(prioridade)
       closeSidebar()
     },
     [closeSidebar]
@@ -116,6 +125,8 @@ export function useAppShell() {
     setView,
     filtroCategoria,
     setFiltroCategoria,
+    filtroPrioridade,
+    setFiltroPrioridade,
     showForm,
     showCategoriaForm,
     editingCategoria,
@@ -128,6 +139,7 @@ export function useAppShell() {
     handleViewChange,
     handleFiltroChange,
     handleCategoriaChange,
+    handlePrioridadeChange,
     openNewTaskForm,
     openEditForm,
     closeForm,

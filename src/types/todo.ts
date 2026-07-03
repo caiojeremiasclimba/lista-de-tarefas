@@ -2,6 +2,8 @@ import type { Subtarefa, SubtarefaDraft } from './subtarefa'
 
 export type TodoStatus = 'pendente' | 'em_andamento' | 'concluida' | 'cancelada'
 
+export type TodoPrioridade = 'baixa' | 'media' | 'alta'
+
 export interface Todo {
   id: string
   user_id: string
@@ -9,6 +11,7 @@ export interface Todo {
   descricao: string | null
   data_prevista: string | null
   status: TodoStatus
+  prioridade: TodoPrioridade
   categoria_id: string | null
   created_at: string
   completed_at: string | null
@@ -23,6 +26,7 @@ export interface TodoFormData {
   descricao: string
   data_prevista: string
   status: TodoStatus
+  prioridade: TodoPrioridade
   categoria_id: string
   subtarefas: SubtarefaDraft[]
   anexoFile?: File | null

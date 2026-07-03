@@ -1,5 +1,11 @@
 import { test, expect } from './fixtures'
-import { createTask, filterByOverview, filterByStatus, taskCard } from './helpers/tasks'
+import {
+  createTask,
+  filterByOverview,
+  filterByPrioridade,
+  filterByStatus,
+  taskCard,
+} from './helpers/tasks'
 
 test.describe('Tarefas — filtros e busca', () => {
   test('filtra tarefas concluídas na sidebar', async ({
@@ -69,6 +75,17 @@ test.describe('Tarefas — filtros e busca', () => {
     await expect(cancelada.getByRole('heading', { name: 'Tarefa cancelada' })).toBeVisible()
     await expect(cancelada.getByText('Cancelada', { exact: true })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Tarefa ativa' })).not.toBeVisible()
+  })
+
+  test('filtra tarefas por prioridade alta', async ({
+    page,
+    authenticatedWithMixedPriorities: _state,
+  }) => {
+    await filterByPrioridade(page, 'Alta')
+
+    await expect(page.getByRole('heading', { name: 'Tarefa prioridade alta' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Tarefa prioridade média' })).not.toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Tarefa prioridade baixa' })).not.toBeVisible()
   })
 })
 

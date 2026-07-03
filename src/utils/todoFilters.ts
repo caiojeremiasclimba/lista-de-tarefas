@@ -1,7 +1,8 @@
 import { TODO_STATUSES, TODO_STATUS_CONFIG } from '../constants/todoStatus'
+import { TODO_PRIORIDADES, TODO_PRIORIDADE_CONFIG } from '../constants/todoPrioridade'
 import type { FiltroCounts } from '../components/FilterSidebar'
 import type { Categoria } from '../types/categoria'
-import type { Todo, TodoStatus } from '../types/todo'
+import type { Todo, TodoPrioridade, TodoStatus } from '../types/todo'
 import { sortActiveTodos, sortFinalTodos } from './sortTodos'
 import { isTodoOverdue } from './todoDue'
 
@@ -13,6 +14,7 @@ export interface TodoFiltersInput {
   busca: string
   filtroAtivo: 'todas' | TodoStatus | 'vencidas'
   filtroCategoria: string | null
+  filtroPrioridade: TodoPrioridade | null
 }
 
 export interface TodoFiltersResult {
@@ -22,8 +24,10 @@ export interface TodoFiltersResult {
   vencidas: Todo[]
   counts: FiltroCounts
   countsPorCategoria: Record<string, number>
+  countsPorPrioridade: Record<TodoPrioridade, number>
   categoriasPorId: Record<string, string>
   categoriaAtivaNome: string | null
+  prioridadeAtivaLabel: string | null
   secoesVisiveis: TodoStatus[]
 }
 
@@ -47,7 +51,7 @@ function matchesSearch(todo: Todo, termo: string): boolean {
 }
 
 export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
-  const { todos, categorias, busca, filtroAtivo, filtroCategoria } = input
+  const { todos, categorias, busca, filtroAtivo, filtroCategoria, filtroPrioridade } = input
   const termo = busca.toLowerCase()
 
   const filtradosParaContadores = todos.filter((t) => matchesSearch(t, termo))
@@ -56,7 +60,11 @@ export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
     ? filtradosParaContadores.filter((t) => t.categoria_id === filtroCategoria)
     : filtradosParaContadores
 
-  const filtradosPorBusca = filtradosPorCategoria
+  const filtradosPorPrioridade = filtroPrioridade
+    ? filtradosPorCategoria.filter((t) => t.prioridade === filtroPrioridade)
+    : filtradosPorCategoria
+
+  const filtradosPorBusca = filtradosPorPrioridade
 
   const grouped = Object.fromEntries(
     TODO_STATUSES.map((status) => [status, filtradosPorBusca.filter((t) => t.status === status)])
@@ -76,19 +84,30 @@ export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
     ])
   )
 
+  const countsPorPrioridade = Object.fromEntries(
+    TODO_PRIORIDADES.map((prioridade) => [
+      prioridade,
+      filtradosPorCategoria.filter((t) => t.prioridade === prioridade).length,
+    ])
+  ) as Record<TodoPrioridade, number>
+
   const counts: FiltroCounts = {
-    todas: filtradosPorCategoria.length,
-    pendente: filtradosPorCategoria.filter((t) => t.status === 'pendente').length,
-    em_andamento: filtradosPorCategoria.filter((t) => t.status === 'em_andamento').length,
-    concluida: filtradosPorCategoria.filter((t) => t.status === 'concluida').length,
-    cancelada: filtradosPorCategoria.filter((t) => t.status === 'cancelada').length,
-    vencidas: filtradosPorCategoria.filter((t) => isTodoOverdue(t)).length,
+    todas: filtradosPorPrioridade.length,
+    pendente: filtradosPorPrioridade.filter((t) => t.status === 'pendente').length,
+    em_andamento: filtradosPorPrioridade.filter((t) => t.status === 'em_andamento').length,
+    concluida: filtradosPorPrioridade.filter((t) => t.status === 'concluida').length,
+    cancelada: filtradosPorPrioridade.filter((t) => t.status === 'cancelada').length,
+    vencidas: filtradosPorPrioridade.filter((t) => isTodoOverdue(t)).length,
   }
 
   const categoriasPorId = Object.fromEntries(categorias.map((c) => [c.id, c.nome]))
 
   const categoriaAtivaNome = filtroCategoria
     ? (categorias.find((c) => c.id === filtroCategoria)?.nome ?? null)
+    : null
+
+  const prioridadeAtivaLabel = filtroPrioridade
+    ? TODO_PRIORIDADE_CONFIG[filtroPrioridade].label
     : null
 
   const secoesVisiveis =
@@ -103,8 +122,10 @@ export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
     vencidas,
     counts,
     countsPorCategoria,
+    countsPorPrioridade,
     categoriasPorId,
     categoriaAtivaNome,
+    prioridadeAtivaLabel,
     secoesVisiveis,
   }
 }
@@ -125,16 +146,33 @@ export function getListaVaziaMensagem(
   buscaTermo: string,
   categoriaAtivaNome: string | null,
   totalTodos: number,
-  filtroAtivo: TodoFiltersInput['filtroAtivo'] = 'todas'
+  filtroAtivo: TodoFiltersInput['filtroAtivo'] = 'todas',
+  prioridadeAtivaLabel: string | null = null
 ): string {
   const filtroNome = getFiltroNome(filtroAtivo)
   const filtroFrase = getFiltroVazioFrase(filtroAtivo)
 
+  const prioridadeFrase = prioridadeAtivaLabel
+    ? `prioridade ${prioridadeAtivaLabel.toLowerCase()}`
+    : null
+
+  if (buscaTermo && categoriaAtivaNome && prioridadeFrase && filtroNome) {
+    return `Nenhum resultado para "${buscaTermo}" em ${filtroNome} (${prioridadeFrase}, "${categoriaAtivaNome}")`
+  }
+  if (buscaTermo && categoriaAtivaNome && prioridadeFrase) {
+    return `Nenhum resultado para "${buscaTermo}" em ${prioridadeFrase} ("${categoriaAtivaNome}")`
+  }
+  if (buscaTermo && prioridadeFrase && filtroNome) {
+    return `Nenhum resultado para "${buscaTermo}" em ${filtroNome} (${prioridadeFrase})`
+  }
   if (buscaTermo && categoriaAtivaNome && filtroNome) {
     return `Nenhum resultado para "${buscaTermo}" em ${filtroNome} ("${categoriaAtivaNome}")`
   }
   if (buscaTermo && categoriaAtivaNome) {
     return `Nenhum resultado para "${buscaTermo}" em "${categoriaAtivaNome}"`
+  }
+  if (buscaTermo && prioridadeFrase) {
+    return `Nenhum resultado para "${buscaTermo}" em ${prioridadeFrase}`
   }
   if (buscaTermo && filtroNome) {
     return `Nenhum resultado para "${buscaTermo}" em ${filtroNome}`
@@ -142,11 +180,23 @@ export function getListaVaziaMensagem(
   if (buscaTermo) {
     return `Nenhum resultado para "${buscaTermo}"`
   }
+  if (categoriaAtivaNome && prioridadeFrase && filtroFrase) {
+    return `Nenhuma tarefa ${filtroFrase} com ${prioridadeFrase} em "${categoriaAtivaNome}"`
+  }
+  if (categoriaAtivaNome && prioridadeFrase) {
+    return `Nenhuma tarefa com ${prioridadeFrase} em "${categoriaAtivaNome}"`
+  }
+  if (prioridadeFrase && filtroFrase) {
+    return `Nenhuma tarefa ${filtroFrase} com ${prioridadeFrase}`
+  }
   if (categoriaAtivaNome && filtroFrase) {
     return `Nenhuma tarefa ${filtroFrase} em "${categoriaAtivaNome}"`
   }
   if (categoriaAtivaNome) {
     return `Nenhuma tarefa em "${categoriaAtivaNome}"`
+  }
+  if (prioridadeFrase) {
+    return `Nenhuma tarefa com ${prioridadeFrase}`
   }
   if (filtroFrase) {
     return `Nenhuma tarefa ${filtroFrase}`

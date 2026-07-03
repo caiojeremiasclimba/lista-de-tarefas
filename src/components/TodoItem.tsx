@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { TODO_STATUS_CONFIG } from '../constants/todoStatus'
+import { TODO_PRIORIDADE_CONFIG } from '../constants/todoPrioridade'
 import type { Subtarefa } from '../types/subtarefa'
 import type { Todo } from '../types/todo'
 import { useAttachmentSignedUrl } from '../hooks/useAttachmentSignedUrl'
@@ -42,6 +43,7 @@ export default function TodoItem({
   const overdue = isTodoOverdue(todo)
   const dateLabel = formatTodoDate(todo.data_prevista)
   const statusConfig = TODO_STATUS_CONFIG[todo.status]
+  const prioridadeConfig = TODO_PRIORIDADE_CONFIG[todo.prioridade]
   const subtarefas = todo.subtarefas ?? []
   const { concluidas, total } = getSubtarefaProgress(subtarefas)
   const progressPercent = total > 0 ? Math.round((concluidas / total) * 100) : 0
@@ -149,6 +151,11 @@ export default function TodoItem({
               className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium sm:px-2 sm:text-xs ${statusConfig.badgeClass}`}
             >
               {statusConfig.label}
+            </span>
+            <span
+              className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium sm:px-2 sm:text-xs ${prioridadeConfig.badgeClass}`}
+            >
+              {prioridadeConfig.label}
             </span>
             {categoriaNome && (
               <span className="rounded-full bg-violet-100 px-1.5 py-0.5 text-[10px] font-medium text-violet-700 sm:px-2 sm:text-xs">

@@ -84,6 +84,7 @@ function buildTodoPayload(data: TodoFormData, editingTodo?: Todo | null) {
     descricao: data.descricao.trim() || null,
     data_prevista: data.data_prevista || null,
     status: data.status,
+    prioridade: data.prioridade,
     categoria_id: data.categoria_id || null,
     completed_at: completedAtForStatusChange(
       data.status,
@@ -158,6 +159,7 @@ async function rollbackEditedTodo(editingTodo: Todo, userId: string): Promise<vo
       descricao: editingTodo.descricao,
       data_prevista: editingTodo.data_prevista,
       status: editingTodo.status,
+      prioridade: editingTodo.prioridade,
       categoria_id: editingTodo.categoria_id,
       completed_at: editingTodo.completed_at,
       anexo_path: editingTodo.anexo_path ?? null,

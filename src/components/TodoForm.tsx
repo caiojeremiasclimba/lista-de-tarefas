@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import type { SubmitEvent, ChangeEvent } from 'react'
 import type { Categoria } from '../types/categoria'
 import { createSubtarefaDraft } from '../types/subtarefa'
-import type { Todo, TodoFormData, TodoStatus } from '../types/todo'
+import type { Todo, TodoFormData, TodoPrioridade, TodoStatus } from '../types/todo'
+import { TODO_PRIORIDADE_CONFIG, TODO_PRIORIDADES } from '../constants/todoPrioridade'
 import { TODO_STATUS_CONFIG, TODO_STATUSES } from '../constants/todoStatus'
 import { validateAttachmentFile } from '../utils/attachmentStorage'
 import { validateTodo } from '../utils/validateTodo'
@@ -22,6 +23,7 @@ const emptyForm: TodoFormData = {
   descricao: '',
   data_prevista: '',
   status: 'pendente',
+  prioridade: 'media',
   categoria_id: '',
   subtarefas: [],
   anexoFile: null,
@@ -54,6 +56,7 @@ export default function TodoForm({
         descricao: editingTodo.descricao ?? '',
         data_prevista: editingTodo.data_prevista ?? '',
         status: editingTodo.status,
+        prioridade: editingTodo.prioridade,
         categoria_id: editingTodo.categoria_id ?? '',
         subtarefas: (editingTodo.subtarefas ?? []).map((s) =>
           createSubtarefaDraft({
@@ -311,22 +314,40 @@ export default function TodoForm({
         </div>
 
         <div>
-          <label htmlFor="status" className="mb-1 block text-sm font-medium text-slate-700">
-            Status
+          <label htmlFor="prioridade" className="mb-1 block text-sm font-medium text-slate-700">
+            Prioridade
           </label>
           <select
-            id="status"
-            value={form.status}
-            onChange={(e) => updateField('status', e.target.value as TodoStatus)}
+            id="prioridade"
+            value={form.prioridade}
+            onChange={(e) => updateField('prioridade', e.target.value as TodoPrioridade)}
             className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           >
-            {TODO_STATUSES.map((status) => (
-              <option key={status} value={status}>
-                {TODO_STATUS_CONFIG[status].label}
+            {TODO_PRIORIDADES.map((prioridade) => (
+              <option key={prioridade} value={prioridade}>
+                {TODO_PRIORIDADE_CONFIG[prioridade].label}
               </option>
             ))}
           </select>
         </div>
+      </div>
+
+      <div>
+        <label htmlFor="status" className="mb-1 block text-sm font-medium text-slate-700">
+          Status
+        </label>
+        <select
+          id="status"
+          value={form.status}
+          onChange={(e) => updateField('status', e.target.value as TodoStatus)}
+          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+        >
+          {TODO_STATUSES.map((status) => (
+            <option key={status} value={status}>
+              {TODO_STATUS_CONFIG[status].label}
+            </option>
+          ))}
+        </select>
       </div>
 
       {submitError && (

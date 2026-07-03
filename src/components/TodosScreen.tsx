@@ -53,6 +53,7 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
     busca: shell.busca,
     filtroAtivo: shell.filtroAtivo,
     filtroCategoria: shell.filtroCategoria,
+    filtroPrioridade: shell.filtroPrioridade,
   })
 
   const { title, subtitle } = formatTodayHeader()
@@ -63,10 +64,19 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
   const mobileHeaderSubtitle = useMemo(() => {
     if (shell.view !== 'tarefas') return null
     if (shell.filtroCategoria && filters.categoriaAtivaNome) return filters.categoriaAtivaNome
+    if (shell.filtroPrioridade && filters.prioridadeAtivaLabel) return filters.prioridadeAtivaLabel
     if (shell.filtroAtivo === 'vencidas') return 'Vencidas'
     if (shell.filtroAtivo !== 'todas') return TODO_STATUS_CONFIG[shell.filtroAtivo].label
     return subtitle
-  }, [shell.view, shell.filtroCategoria, shell.filtroAtivo, filters.categoriaAtivaNome, subtitle])
+  }, [
+    shell.view,
+    shell.filtroCategoria,
+    shell.filtroPrioridade,
+    shell.filtroAtivo,
+    filters.categoriaAtivaNome,
+    filters.prioridadeAtivaLabel,
+    subtitle,
+  ])
 
   async function handleSubmitTodo(data: TodoFormData) {
     await submitTodo(data, shell.editingTodo)
@@ -159,6 +169,9 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
         filtroCategoria={shell.filtroCategoria}
         countsPorCategoria={filters.countsPorCategoria}
         onCategoriaChange={shell.handleCategoriaChange}
+        prioridadeAtiva={shell.filtroPrioridade}
+        countsPorPrioridade={filters.countsPorPrioridade}
+        onPrioridadeChange={shell.handlePrioridadeChange}
         onNovaCategoria={shell.openNovaCategoriaForm}
         onEditCategoria={shell.openEditCategoriaForm}
         onDeleteCategoria={handleDeleteCategoria}

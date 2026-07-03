@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { FiltroTarefas } from '../components/FilterSidebar'
 import type { Categoria } from '../types/categoria'
-import type { Todo } from '../types/todo'
+import type { Todo, TodoPrioridade } from '../types/todo'
 import { computeTodoFilters, getListaVaziaMensagem } from '../utils/todoFilters'
 
 interface UseTodoFiltersOptions {
@@ -10,6 +10,7 @@ interface UseTodoFiltersOptions {
   busca: string
   filtroAtivo: FiltroTarefas
   filtroCategoria: string | null
+  filtroPrioridade: TodoPrioridade | null
 }
 
 export function useTodoFilters({
@@ -18,6 +19,7 @@ export function useTodoFilters({
   busca,
   filtroAtivo,
   filtroCategoria,
+  filtroPrioridade,
 }: UseTodoFiltersOptions) {
   const filters = useMemo(
     () =>
@@ -27,14 +29,21 @@ export function useTodoFilters({
         busca,
         filtroAtivo,
         filtroCategoria,
+        filtroPrioridade,
       }),
-    [todos, categorias, busca, filtroAtivo, filtroCategoria]
+    [todos, categorias, busca, filtroAtivo, filtroCategoria, filtroPrioridade]
   )
 
   const listaVaziaMensagem = useMemo(
     () =>
-      getListaVaziaMensagem(busca.trim(), filters.categoriaAtivaNome, todos.length, filtroAtivo),
-    [busca, filters.categoriaAtivaNome, todos.length, filtroAtivo]
+      getListaVaziaMensagem(
+        busca.trim(),
+        filters.categoriaAtivaNome,
+        todos.length,
+        filtroAtivo,
+        filters.prioridadeAtivaLabel
+      ),
+    [busca, filters.categoriaAtivaNome, filters.prioridadeAtivaLabel, todos.length, filtroAtivo]
   )
 
   return {

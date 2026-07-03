@@ -1,4 +1,5 @@
 import type { Todo } from '../types/todo'
+import { TODO_PRIORIDADE_CONFIG } from '../constants/todoPrioridade'
 import { isTodoOverdue } from './todoDue'
 
 function compareByDueDate(a: Todo, b: Todo): number {
@@ -8,12 +9,20 @@ function compareByDueDate(a: Todo, b: Todo): number {
   return a.data_prevista.localeCompare(b.data_prevista)
 }
 
+function compareByPrioridade(a: Todo, b: Todo): number {
+  return (
+    TODO_PRIORIDADE_CONFIG[a.prioridade].sortOrder - TODO_PRIORIDADE_CONFIG[b.prioridade].sortOrder
+  )
+}
+
 export function sortActiveTodos(todos: Todo[]): Todo[] {
   return [...todos].sort((a, b) => {
     const aOverdue = isTodoOverdue(a)
     const bOverdue = isTodoOverdue(b)
     if (aOverdue !== bOverdue) return aOverdue ? -1 : 1
-    return compareByDueDate(a, b)
+    const byDue = compareByDueDate(a, b)
+    if (byDue !== 0) return byDue
+    return compareByPrioridade(a, b)
   })
 }
 
