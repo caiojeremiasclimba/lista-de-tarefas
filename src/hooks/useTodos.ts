@@ -70,8 +70,11 @@ export function useTodos(userId: string) {
     if (todo.status === 'cancelada') return
 
     try {
-      const updated = await toggleTodoStatus(todo)
-      setTodos((prev) => prev.map((t) => (t.id === todo.id ? updated : t)))
+      const { updatedTodo, createdNextTodo } = await toggleTodoStatus(todo)
+      setTodos((prev) => {
+        const updatedList = prev.map((t) => (t.id === todo.id ? updatedTodo : t))
+        return createdNextTodo ? [createdNextTodo, ...updatedList] : updatedList
+      })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Erro ao atualizar status.')
     }

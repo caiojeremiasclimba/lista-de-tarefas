@@ -74,7 +74,94 @@ describe('toggleTodoStatus', () => {
       status: 'em_andamento',
       completed_at: null,
     })
-    expect(result.subtarefas).toEqual(subtarefas)
+    expect(result.updatedTodo.subtarefas).toEqual(subtarefas)
+    expect(result.createdNextTodo).toBeNull()
+  })
+
+  it('cria próxima ocorrência ao concluir tarefa recorrente', async () => {
+    const subtarefas = [
+      makeSubtarefa({ id: 'sub-1', titulo: 'Checklist', concluida: true, ordem: 0 }),
+    ]
+    const todo = makeTodo({
+      id: 'todo-1',
+      status: 'em_andamento',
+      data_prevista: '2026-07-02',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+      subtarefas,
+    })
+    const updated = makeTodo({
+      id: 'todo-1',
+      status: 'concluida',
+      data_prevista: '2026-07-02',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+      subtarefas: undefined,
+    })
+    const next = makeTodo({
+      id: 'todo-2',
+      status: 'pendente',
+      data_prevista: '2026-07-09',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+      recorrencia_origem_id: 'todo-1',
+      subtarefas: undefined,
+    })
+    const nextSubtarefas = [
+      makeSubtarefa({
+        id: 'sub-2',
+        tarefa_id: 'todo-2',
+        titulo: 'Checklist',
+        concluida: false,
+      }),
+    ]
+    const updateBuilder = createMockQueryBuilder({ data: updated, error: null })
+    const insertTodoBuilder = createMockQueryBuilder({ data: next, error: null })
+    const insertSubtarefasBuilder = createMockQueryBuilder({
+      data: nextSubtarefas,
+      error: null,
+    })
+
+    let tarefasCalls = 0
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'tarefas') {
+        tarefasCalls++
+        return tarefasCalls === 1 ? updateBuilder : insertTodoBuilder
+      }
+      return insertSubtarefasBuilder
+    })
+
+    const result = await toggleTodoStatus(todo)
+
+    expect(updateBuilder.update).toHaveBeenCalledWith({
+      status: 'concluida',
+      completed_at: '2026-07-02T12:00:00.000Z',
+    })
+    expect(insertTodoBuilder.insert).toHaveBeenCalledWith({
+      user_id: 'user-1',
+      titulo: 'Tarefa teste',
+      descricao: null,
+      data_prevista: '2026-07-09',
+      status: 'pendente',
+      prioridade: 'media',
+      categoria_id: null,
+      completed_at: null,
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+      recorrencia_fim: null,
+      recorrencia_origem_id: 'todo-1',
+    })
+    expect(insertSubtarefasBuilder.insert).toHaveBeenCalledWith([
+      {
+        tarefa_id: 'todo-2',
+        user_id: 'user-1',
+        titulo: 'Checklist',
+        ordem: 0,
+        concluida: false,
+      },
+    ])
+    expect(result.updatedTodo.subtarefas).toEqual(subtarefas)
+    expect(result.createdNextTodo).toEqual({ ...next, subtarefas: nextSubtarefas })
   })
 
   it('lança erro para tarefa cancelada', async () => {
@@ -148,11 +235,56 @@ describe('saveTodo', () => {
   it('cria nova tarefa sem subtarefas', async () => {
     mockAuthenticatedUser()
     const created = makeTodo({ id: 'new-todo', titulo: 'Nova tarefa' })
-    mockFrom.mockReturnValue(createMockQueryBuilder({ data: created, error: null }))
+    const builder = createMockQueryBuilder({ data: created, error: null })
+    mockFrom.mockReturnValue(builder)
 
     const result = await saveTodo(makeTodoFormData({ titulo: 'Nova tarefa' }))
 
+    expect(builder.insert).toHaveBeenCalledWith({
+      titulo: 'Nova tarefa',
+      descricao: null,
+      data_prevista: null,
+      status: 'pendente',
+      prioridade: 'media',
+      categoria_id: null,
+      recorrencia_tipo: 'nenhuma',
+      recorrencia_intervalo: 1,
+      recorrencia_fim: null,
+      completed_at: null,
+      user_id: AUTH_USER.id,
+    })
     expect(result).toEqual({ ...created, subtarefas: [] })
+  })
+
+  it('inclui recorrência no payload de criação', async () => {
+    mockAuthenticatedUser()
+    const created = makeTodo({
+      id: 'new-todo',
+      data_prevista: '2026-07-02',
+      recorrencia_tipo: 'mensal',
+      recorrencia_intervalo: 2,
+      recorrencia_fim: '2026-12-31',
+    })
+    const builder = createMockQueryBuilder({ data: created, error: null })
+    mockFrom.mockReturnValue(builder)
+
+    await saveTodo(
+      makeTodoFormData({
+        data_prevista: '2026-07-02',
+        recorrencia_tipo: 'mensal',
+        recorrencia_intervalo: 2,
+        recorrencia_fim: '2026-12-31',
+      })
+    )
+
+    expect(builder.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data_prevista: '2026-07-02',
+        recorrencia_tipo: 'mensal',
+        recorrencia_intervalo: 2,
+        recorrencia_fim: '2026-12-31',
+      })
+    )
   })
 
   it('faz rollback da tarefa criada quando subtarefas falham', async () => {
