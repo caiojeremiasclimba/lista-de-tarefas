@@ -35,17 +35,12 @@ export function useTodos(userId: string) {
   useSupabaseRealtime(userId, TODOS_REALTIME_TABLES, loadTodos)
 
   const submitTodo = useCallback(async (data: TodoFormData, editingTodo?: Todo | null) => {
-    try {
-      const saved = await saveTodo(data, editingTodo)
+    const saved = await saveTodo(data, editingTodo)
 
-      if (editingTodo) {
-        setTodos((prev) => prev.map((t) => (t.id === editingTodo.id ? saved : t)))
-      } else {
-        setTodos((prev) => [saved, ...prev])
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Erro ao salvar tarefa.')
-      throw err
+    if (editingTodo) {
+      setTodos((prev) => prev.map((t) => (t.id === editingTodo.id ? saved : t)))
+    } else {
+      setTodos((prev) => [saved, ...prev])
     }
   }, [])
 

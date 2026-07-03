@@ -91,7 +91,7 @@ describe('useTodos', () => {
     expect(result.current.todos[0].titulo).toBe('Novo')
   })
 
-  it('exibe toast de erro, mantém lista e repassa erro quando submitTodo falha', async () => {
+  it('mantém lista e repassa erro quando submitTodo falha', async () => {
     const existing = makeTodo({ id: 'todo-1', titulo: 'Antigo' })
     mockFetchTodos.mockResolvedValue([existing])
     mockSaveTodo.mockRejectedValue(new Error('Erro ao salvar'))
@@ -106,7 +106,7 @@ describe('useTodos', () => {
     ).rejects.toThrow('Erro ao salvar')
 
     expect(result.current.todos[0].titulo).toBe('Antigo')
-    expect(mockToastError).toHaveBeenCalledWith('Erro ao salvar')
+    expect(mockToastError).not.toHaveBeenCalled()
   })
 
   it('remove tarefa e chama onCloseForm quando aplicável', async () => {
