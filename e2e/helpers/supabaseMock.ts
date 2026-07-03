@@ -66,6 +66,74 @@ export interface SupabaseMockState {
   categorias: MockCategoria[]
   subtarefas: MockSubtarefa[]
   user: MockUser
+  /** Falhas REST simuladas (chave: "METHOD:tabela", consumidas uma vez). */
+  restFailures?: Record<string, string>
+  /** Falhas Auth simuladas (chave: "METHOD:caminho", consumidas uma vez). */
+  authFailures?: Record<string, string>
+}
+
+function restFailureKey(method: string, table: string) {
+  return `${method}:${table}`
+}
+
+function authFailureKey(method: string, path: string) {
+  return `${method}:${path}`
+}
+
+/** Chave alternativa para falhas em /auth/v1/user (PUT ou PATCH). */
+function authUserFailureKey(path: string) {
+  return `user:${path}`
+}
+
+function consumeAuthFailure(state: SupabaseMockState, method: string, path: string): string | null {
+  return (
+    consumeFailure(state.authFailures, authFailureKey(method, path)) ??
+    consumeFailure(state.authFailures, authUserFailureKey(path))
+  )
+}
+
+function consumeFailure(failures: Record<string, string> | undefined, key: string): string | null {
+  if (!failures?.[key]) return null
+  const message = failures[key]
+  delete failures[key]
+  return message
+}
+
+/** Simula falha na próxima requisição REST para o método/tabela indicados. */
+export function failRestOnce(
+  state: SupabaseMockState,
+  method: string,
+  table: string,
+  message: string
+) {
+  state.restFailures ??= {}
+  state.restFailures[restFailureKey(method, table)] = message
+}
+
+/** Simula falha na próxima requisição Auth para o método/caminho indicados. */
+export function failAuthOnce(
+  state: SupabaseMockState,
+  method: string,
+  path: string,
+  message: string
+) {
+  state.authFailures ??= {}
+  state.authFailures[authFailureKey(method, path)] = message
+  if (path === '/auth/v1/user') {
+    state.authFailures[authUserFailureKey(path)] = message
+  }
+}
+
+function maybeFailRest(
+  route: Route,
+  state: SupabaseMockState,
+  method: string,
+  table: string
+): boolean {
+  const message = consumeFailure(state.restFailures, restFailureKey(method, table))
+  if (!message) return false
+  void json(route, { message, code: 'E2E_MOCK' }, 500)
+  return true
 }
 
 function createEmptyState(): SupabaseMockState {
@@ -185,10 +253,24 @@ function handleAuth(route: Route, url: URL, state: SupabaseMockState) {
     return json(route, state.user)
   }
 
-  if (url.pathname === '/auth/v1/user' && method === 'PUT') {
+  if (url.pathname === '/auth/v1/user' && (method === 'PUT' || method === 'PATCH')) {
     const auth = route.request().headers()['authorization']
     if (!auth?.startsWith('Bearer ')) {
       return json(route, { message: 'JWT expired' }, 401)
+    }
+
+    const authFailure = consumeAuthFailure(state, method, url.pathname)
+    if (authFailure) {
+      return json(
+        route,
+        {
+          error: 'unexpected_failure',
+          error_description: authFailure,
+          msg: authFailure,
+          message: authFailure,
+        },
+        500
+      )
     }
 
     const body = route.request().postDataJSON() as {
@@ -226,6 +308,8 @@ function handleRest(route: Route, url: URL, state: SupabaseMockState) {
   const wantsSingle = route.request().headers()['accept']?.includes('vnd.pgrst.object+json')
 
   if (table === 'rpc/delete_categoria_com_tarefas' && method === 'POST') {
+    if (maybeFailRest(route, state, method, table)) return
+
     const body = route.request().postDataJSON() as { p_categoria_id?: string }
     const categoriaId = body.p_categoria_id
     if (!categoriaId) return json(route, { message: 'Missing p_categoria_id' }, 400)
@@ -238,6 +322,8 @@ function handleRest(route: Route, url: URL, state: SupabaseMockState) {
   }
 
   if (table === 'tarefas') {
+    if (method !== 'GET' && maybeFailRest(route, state, method, table)) return
+
     if (method === 'GET') {
       const id = parseEqFilter(params, 'id')
       const todos = [...state.todos].sort(
@@ -313,6 +399,8 @@ function handleRest(route: Route, url: URL, state: SupabaseMockState) {
   }
 
   if (table === 'categorias') {
+    if (method !== 'GET' && maybeFailRest(route, state, method, table)) return
+
     if (method === 'GET') {
       const sorted = [...state.categorias].sort((a, b) => a.nome.localeCompare(b.nome))
       return json(route, sorted)
@@ -349,6 +437,8 @@ function handleRest(route: Route, url: URL, state: SupabaseMockState) {
   }
 
   if (table === 'subtarefas') {
+    if (method !== 'GET' && maybeFailRest(route, state, method, table)) return
+
     if (method === 'GET') {
       const tarefaId = parseEqFilter(params, 'tarefa_id')
       const items = state.subtarefas.filter((sub) => (tarefaId ? sub.tarefa_id === tarefaId : true))
