@@ -12,6 +12,10 @@ function baseTodo(
     categoria_id: null,
     completed_at: null,
     created_at: '2026-06-01T10:00:00.000Z',
+    recorrencia_tipo: 'nenhuma',
+    recorrencia_intervalo: 1,
+    recorrencia_fim: null,
+    recorrencia_origem_id: null,
     ...overrides,
   }
 }
