@@ -9,6 +9,26 @@ export async function openNewTaskModal(page: Page) {
   await expect(page.getByRole('dialog', { name: 'Nova tarefa' })).toBeVisible()
 }
 
+export async function submitNewTask(page: Page, titulo: string) {
+  await openNewTaskModal(page)
+  await page.getByLabel('Título *').fill(titulo)
+  await page.getByRole('button', { name: 'Adicionar tarefa' }).click()
+}
+
+export async function submitTaskEdit(page: Page, tituloAtual: string, novoTitulo: string) {
+  await openEditTaskModal(page, tituloAtual)
+  await page.getByLabel('Título *').fill(novoTitulo)
+  await page.getByRole('button', { name: 'Salvar alterações' }).click()
+}
+
+export async function confirmDeleteTask(page: Page, titulo: string) {
+  await openTaskMenu(page, titulo)
+  await taskCard(page, titulo).getByRole('button', { name: 'Excluir' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Excluir tarefa' })
+  await expect(dialog).toBeVisible()
+  await dialog.getByRole('button', { name: 'Excluir' }).click()
+}
+
 export async function createTask(page: Page, titulo: string, options?: { descricao?: string }) {
   await openNewTaskModal(page)
   await page.getByLabel('Título *').fill(titulo)

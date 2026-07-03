@@ -17,6 +17,28 @@ export async function openNewCategoryModal(page: Page) {
   await expect(page.getByRole('dialog', { name: 'Nova categoria' })).toBeVisible()
 }
 
+export async function submitNewCategory(page: Page, nome: string) {
+  await openNewCategoryModal(page)
+  await page.getByLabel('Nome *').fill(nome)
+  await page.getByRole('button', { name: 'Criar' }).click()
+}
+
+export async function submitCategoryEdit(page: Page, nomeAtual: string, novoNome: string) {
+  await openCategoryMenu(page, nomeAtual)
+  await page.getByRole('button', { name: 'Editar' }).click()
+  await expect(page.getByRole('dialog', { name: 'Editar categoria' })).toBeVisible()
+  await page.getByLabel('Nome *').fill(novoNome)
+  await page.getByRole('button', { name: 'Salvar' }).click()
+}
+
+export async function confirmDeleteCategory(page: Page, nome: string) {
+  await openCategoryMenu(page, nome)
+  await page.getByRole('button', { name: 'Excluir' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Excluir categoria' })
+  await expect(dialog).toBeVisible()
+  await dialog.getByRole('button', { name: 'Excluir' }).click()
+}
+
 export async function createCategory(page: Page, nome: string) {
   await openNewCategoryModal(page)
   await page.getByLabel('Nome *').fill(nome)
