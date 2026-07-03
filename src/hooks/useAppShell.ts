@@ -2,29 +2,49 @@ import { useCallback, useEffect, useState } from 'react'
 import type { Categoria } from '../types/categoria'
 import type { Todo, TodoPrioridade, TodoStatus } from '../types/todo'
 import type { AppView, FiltroTarefas } from '../components/FilterSidebar'
+import {
+  getDefaultAppShellPreferences,
+  loadAppShellPreferences,
+  saveAppShellPreferences,
+} from '../lib/appShellPreferences'
 import type { SecoesAbertas } from '../utils/todoFilters'
 
-const SECOES_INICIAIS: SecoesAbertas = {
-  pendente: true,
-  em_andamento: true,
-  concluida: true,
-  cancelada: true,
-  vencidas: true,
+function readInitialPrefs() {
+  return loadAppShellPreferences() ?? getDefaultAppShellPreferences()
 }
 
 export function useAppShell() {
   const [busca, setBusca] = useState('')
-  const [filtroAtivo, setFiltroAtivo] = useState<FiltroTarefas>('todas')
-  const [view, setView] = useState<AppView>('tarefas')
-  const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null)
-  const [filtroPrioridade, setFiltroPrioridade] = useState<TodoPrioridade | null>(null)
+  const [filtroAtivo, setFiltroAtivo] = useState<FiltroTarefas>(
+    () => readInitialPrefs().filtroAtivo
+  )
+  const [view, setView] = useState<AppView>(() => readInitialPrefs().view)
+  const [filtroCategoria, setFiltroCategoria] = useState<string | null>(
+    () => readInitialPrefs().filtroCategoria
+  )
+  const [filtroPrioridade, setFiltroPrioridade] = useState<TodoPrioridade | null>(
+    () => readInitialPrefs().filtroPrioridade
+  )
   const [showForm, setShowForm] = useState(false)
   const [showCategoriaForm, setShowCategoriaForm] = useState(false)
   const [editingCategoria, setEditingCategoria] = useState<Categoria | null>(null)
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
   const [newTaskCategoriaId, setNewTaskCategoriaId] = useState<string | null>(null)
-  const [secoesAbertas, setSecoesAbertas] = useState<SecoesAbertas>(SECOES_INICIAIS)
+  const [secoesAbertas, setSecoesAbertas] = useState<SecoesAbertas>(
+    () => readInitialPrefs().secoesAbertas
+  )
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  useEffect(() => {
+    saveAppShellPreferences({
+      version: 1,
+      view,
+      filtroAtivo,
+      filtroCategoria,
+      filtroPrioridade,
+      secoesAbertas,
+    })
+  }, [view, filtroAtivo, filtroCategoria, filtroPrioridade, secoesAbertas])
 
   const closeSidebar = useCallback(() => setSidebarOpen(false), [])
 

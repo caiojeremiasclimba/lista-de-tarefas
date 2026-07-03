@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { TODO_STATUS_CONFIG } from '../constants/todoStatus'
 import { useAppShell } from '../hooks/useAppShell'
@@ -25,6 +25,7 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
   const { confirm, confirmDialog } = useConfirmDialog()
 
   const shell = useAppShell()
+  const { filtroCategoria, setFiltroCategoria } = shell
   const {
     todos,
     loading,
@@ -42,10 +43,16 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
     useCategorias({
       userId: user.id,
       unlinkCategoriaFromTodos,
-      filtroCategoria: shell.filtroCategoria,
-      setFiltroCategoria: shell.setFiltroCategoria,
+      filtroCategoria,
+      setFiltroCategoria,
       reloadTodos,
     })
+
+  useEffect(() => {
+    if (filtroCategoria && !categorias.some((c) => c.id === filtroCategoria)) {
+      setFiltroCategoria(null)
+    }
+  }, [categorias, filtroCategoria, setFiltroCategoria])
 
   const filters = useTodoFilters({
     todos,
