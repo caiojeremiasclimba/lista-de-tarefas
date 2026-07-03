@@ -8,6 +8,7 @@ test.describe('Navegação', () => {
     const main = page.getByRole('main')
     await expect(main.getByText('% concluído')).toBeVisible()
     await expect(main.getByRole('paragraph').filter({ hasText: /^Por status$/ })).toBeVisible()
+    await expect(main.getByRole('paragraph').filter({ hasText: /^Por prioridade$/ })).toBeVisible()
     await expect(main.getByText('Concluídas na semana')).toBeVisible()
     await expect(main.getByRole('heading', { name: 'Distribuição por status' })).toBeVisible()
   })
