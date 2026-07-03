@@ -11,6 +11,10 @@ interface ProfileScreenProps {
   user: User
 }
 
+async function syncAuthSession(): Promise<void> {
+  await supabase.auth.refreshSession()
+}
+
 function PasswordToggle({ visible, onToggle }: { visible: boolean; onToggle: () => void }) {
   return (
     <button
@@ -85,7 +89,7 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
     return () => {
       cancelled = true
     }
-  }, [user.id, user.user_metadata?.avatar_url])
+  }, [user.id, user.user_metadata?.avatar_url, user.user_metadata?.full_name])
 
   async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -112,6 +116,7 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
     if (updateError) {
       setError(updateError.message)
     } else {
+      await syncAuthSession()
       setSuccess('Perfil atualizado com sucesso!')
     }
 
@@ -132,6 +137,7 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
 
     try {
       await uploadAvatar(user.id, file)
+      await syncAuthSession()
       setHasAvatar(true)
       setPreviewUrl(null)
       setAvatarSuccess('Foto atualizada com sucesso!')
@@ -152,6 +158,7 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
     try {
       const currentUrl = getUserAvatarUrl(user)
       await removeAvatar(user.id, currentUrl)
+      await syncAuthSession()
       setHasAvatar(false)
       setPreviewUrl(null)
       setAvatarSuccess('Foto removida com sucesso!')
