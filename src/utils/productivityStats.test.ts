@@ -4,6 +4,7 @@ import {
   buildStatusChartData,
   calcConcluidasNaSemana,
   calcPercentConcluido,
+  calcTotaisPorPrioridade,
   calcTotaisPorStatus,
   getEndOfWeek,
   getStartOfWeek,
@@ -96,6 +97,23 @@ describe('calcTotaisPorStatus', () => {
       em_andamento: 0,
       concluida: 1,
       cancelada: 1,
+    })
+  })
+})
+
+describe('calcTotaisPorPrioridade', () => {
+  it('conta tarefas por prioridade', () => {
+    const todos = [
+      makeTodo({ prioridade: 'alta' }),
+      makeTodo({ prioridade: 'alta' }),
+      makeTodo({ prioridade: 'media' }),
+      makeTodo({ prioridade: 'baixa' }),
+    ]
+
+    expect(calcTotaisPorPrioridade(todos)).toEqual({
+      alta: 2,
+      media: 1,
+      baixa: 1,
     })
   })
 })

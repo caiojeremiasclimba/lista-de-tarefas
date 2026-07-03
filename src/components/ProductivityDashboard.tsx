@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { TODO_PRIORIDADE_CONFIG, TODO_PRIORIDADES } from '../constants/todoPrioridade'
 import { TODO_STATUSES, TODO_STATUS_CONFIG } from '../constants/todoStatus'
 import type { Todo } from '../types/todo'
 import { formatTodayHeader } from '../utils/formatTodoDate'
@@ -6,6 +7,7 @@ import {
   buildStatusChartData,
   calcConcluidasNaSemana,
   calcPercentConcluido,
+  calcTotaisPorPrioridade,
   calcTotaisPorStatus,
   todosElegiveisParaConclusao,
   type StatusChartSlice,
@@ -104,6 +106,7 @@ export default function ProductivityDashboard({ todos, loading }: ProductivityDa
   const percentConcluido = useMemo(() => calcPercentConcluido(todos), [todos])
   const totalElegivel = useMemo(() => todosElegiveisParaConclusao(todos).length, [todos])
   const totaisPorStatus = useMemo(() => calcTotaisPorStatus(todos), [todos])
+  const totaisPorPrioridade = useMemo(() => calcTotaisPorPrioridade(todos), [todos])
   const concluidasNaSemana = useMemo(() => calcConcluidasNaSemana(todos), [todos])
   const chartData = useMemo(() => buildStatusChartData(todos), [todos])
 
@@ -121,7 +124,7 @@ export default function ProductivityDashboard({ todos, loading }: ProductivityDa
         </p>
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
             % concluído
@@ -149,6 +152,26 @@ export default function ProductivityDashboard({ todos, loading }: ProductivityDa
                   {TODO_STATUS_CONFIG[status].label}
                 </span>
                 <span className="font-semibold text-slate-800">{totaisPorStatus[status]}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+            Por prioridade
+          </p>
+          <ul className="mt-3 space-y-2">
+            {TODO_PRIORIDADES.map((prioridade) => (
+              <li key={prioridade} className="flex items-center justify-between text-sm">
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${TODO_PRIORIDADE_CONFIG[prioridade].badgeClass}`}
+                >
+                  {TODO_PRIORIDADE_CONFIG[prioridade].label}
+                </span>
+                <span className="font-semibold text-slate-800">
+                  {totaisPorPrioridade[prioridade]}
+                </span>
               </li>
             ))}
           </ul>

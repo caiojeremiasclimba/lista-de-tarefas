@@ -1,5 +1,6 @@
+import { TODO_PRIORIDADES } from '../constants/todoPrioridade'
 import { TODO_STATUSES, TODO_STATUS_CONFIG } from '../constants/todoStatus'
-import type { Todo, TodoStatus } from '../types/todo'
+import type { Todo, TodoPrioridade, TodoStatus } from '../types/todo'
 
 export function getStartOfWeek(date: Date): Date {
   const d = new Date(date)
@@ -42,6 +43,16 @@ export function calcTotaisPorStatus(todos: Todo[]): Record<TodoStatus, number> {
       return acc
     },
     {} as Record<TodoStatus, number>
+  )
+}
+
+export function calcTotaisPorPrioridade(todos: Todo[]): Record<TodoPrioridade, number> {
+  return TODO_PRIORIDADES.reduce(
+    (acc, prioridade) => {
+      acc[prioridade] = todos.filter((t) => t.prioridade === prioridade).length
+      return acc
+    },
+    {} as Record<TodoPrioridade, number>
   )
 }
 
