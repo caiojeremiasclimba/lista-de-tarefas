@@ -1,8 +1,13 @@
 import { act, renderHook } from '@testing-library/react'
+import { APP_SHELL_PREFS_KEY } from '../lib/appShellPreferences'
 import { makeCategoria, makeTodo } from '../test/fixtures/todos'
 import { useAppShell } from './useAppShell'
 
 describe('useAppShell', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
   it('inicia com estado padrão', () => {
     const { result } = renderHook(() => useAppShell())
 
@@ -110,5 +115,38 @@ describe('useAppShell', () => {
 
     expect(result.current.view).toBe('dashboard')
     expect(result.current.sidebarOpen).toBe(false)
+  })
+
+  it('restaura preferências salvas ao remontar', () => {
+    const { result, unmount } = renderHook(() => useAppShell())
+
+    act(() => {
+      result.current.handleViewChange('dashboard')
+      result.current.handleFiltroChange('pendente')
+      result.current.handleCategoriaChange('cat-1')
+      result.current.handlePrioridadeChange('alta')
+      result.current.toggleSecao('concluida')
+    })
+
+    unmount()
+
+    const { result: restored } = renderHook(() => useAppShell())
+
+    expect(restored.current.view).toBe('dashboard')
+    expect(restored.current.filtroAtivo).toBe('pendente')
+    expect(restored.current.filtroCategoria).toBe('cat-1')
+    expect(restored.current.filtroPrioridade).toBe('alta')
+    expect(restored.current.secoesAbertas.concluida).toBe(false)
+  })
+
+  it('persiste alterações no localStorage', () => {
+    const { result } = renderHook(() => useAppShell())
+
+    act(() => {
+      result.current.handleFiltroChange('vencidas')
+    })
+
+    const stored = JSON.parse(localStorage.getItem(APP_SHELL_PREFS_KEY)!)
+    expect(stored.filtroAtivo).toBe('vencidas')
   })
 })
