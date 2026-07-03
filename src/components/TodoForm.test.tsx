@@ -48,6 +48,7 @@ describe('TodoForm', () => {
     expect(onSubmit.mock.calls[0][0]).toMatchObject({
       titulo: 'Estudar testes',
       status: 'pendente',
+      prioridade: 'media',
     })
   })
 

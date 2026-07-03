@@ -51,6 +51,17 @@ describe('sortActiveTodos', () => {
     expect(sorted.map((t) => t.id)).toEqual(['with-date', 'no-date'])
   })
 
+  it('ordena por prioridade quando datas são iguais', () => {
+    const alta = makeTodo({ id: 'alta', data_prevista: '2026-07-10', prioridade: 'alta' })
+    const baixa = makeTodo({ id: 'baixa', data_prevista: '2026-07-10', prioridade: 'baixa' })
+    const media = makeTodo({ id: 'media', data_prevista: '2026-07-10', prioridade: 'media' })
+    const input = [baixa, media, alta]
+
+    const sorted = sortActiveTodos(input)
+
+    expect(sorted.map((t) => t.id)).toEqual(['alta', 'media', 'baixa'])
+  })
+
   it('não altera o array original', () => {
     const input = [
       makeTodo({ id: 'a', data_prevista: '2026-07-10' }),

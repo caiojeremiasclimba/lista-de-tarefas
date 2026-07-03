@@ -37,6 +37,7 @@ export interface MockTodo {
   descricao: string | null
   data_prevista: string | null
   status: string
+  prioridade?: string
   categoria_id: string | null
   created_at: string
   completed_at: string | null
@@ -351,6 +352,7 @@ function handleRest(route: Route, url: URL, state: SupabaseMockState) {
         descricao: (body.descricao as string | null) ?? null,
         data_prevista: (body.data_prevista as string | null) ?? null,
         status: String(body.status ?? 'pendente'),
+        prioridade: String(body.prioridade ?? 'media'),
         categoria_id: (body.categoria_id as string | null) ?? null,
         created_at: new Date().toISOString(),
         completed_at: (body.completed_at as string | null) ?? null,

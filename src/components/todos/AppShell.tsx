@@ -9,6 +9,7 @@ import FilterSidebar, {
 import UserAvatar from '../UserAvatar'
 import { LogOutIcon, MenuIcon, XIcon } from '../TodosUi'
 import type { Categoria } from '../../types/categoria'
+import type { TodoPrioridade } from '../../types/todo'
 
 interface AppShellProps {
   user: User
@@ -28,6 +29,9 @@ interface AppShellProps {
   filtroCategoria: string | null
   countsPorCategoria: Record<string, number>
   onCategoriaChange: (id: string | null) => void
+  prioridadeAtiva: TodoPrioridade | null
+  countsPorPrioridade: Record<TodoPrioridade, number>
+  onPrioridadeChange: (prioridade: TodoPrioridade | null) => void
   onNovaCategoria: () => void
   onEditCategoria: (categoria: Categoria) => void
   onDeleteCategoria: (id: string) => void
@@ -72,6 +76,9 @@ export default function AppShell({
   filtroCategoria,
   countsPorCategoria,
   onCategoriaChange,
+  prioridadeAtiva,
+  countsPorPrioridade,
+  onPrioridadeChange,
   onNovaCategoria,
   onEditCategoria,
   onDeleteCategoria,
@@ -121,6 +128,9 @@ export default function AppShell({
             categoriaAtiva={filtroCategoria}
             countsPorCategoria={countsPorCategoria}
             onCategoriaChange={onCategoriaChange}
+            prioridadeAtiva={prioridadeAtiva}
+            countsPorPrioridade={countsPorPrioridade}
+            onPrioridadeChange={onPrioridadeChange}
             onNovaCategoria={onNovaCategoria}
             onEditCategoria={onEditCategoria}
             onDeleteCategoria={onDeleteCategoria}

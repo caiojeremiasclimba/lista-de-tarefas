@@ -27,6 +27,7 @@ describe('useTodoFilters', () => {
         busca: '',
         filtroAtivo: 'todas',
         filtroCategoria: null,
+        filtroPrioridade: null,
       })
     )
 
@@ -42,6 +43,7 @@ describe('useTodoFilters', () => {
         busca: 'inexistente',
         filtroAtivo: 'todas',
         filtroCategoria: null,
+        filtroPrioridade: null,
       })
     )
 
@@ -58,6 +60,7 @@ describe('useTodoFilters', () => {
           busca: '',
           filtroAtivo,
           filtroCategoria: null,
+        filtroPrioridade: null,
         }),
       { initialProps: { filtroAtivo: 'todas' as FiltroTarefas } }
     )

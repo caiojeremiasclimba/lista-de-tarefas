@@ -114,6 +114,7 @@ O schema do banco está versionado em `supabase/migrations/`:
 | `20260702120000_initial_schema.sql`          | Tabelas, RLS e buckets de Storage                                  |
 | `20260702130000_delete_categoria_atomic.sql` | RPC `delete_categoria_com_tarefas` (exclusão atômica de categoria) |
 | `20260702140000_enable_realtime.sql`         | Realtime nas tabelas `categorias`, `tarefas` e `subtarefas`        |
+| `20260703100000_add_prioridade.sql`          | Coluna `prioridade` (`baixa`, `media`, `alta`) na tabela `tarefas` |
 
 A migration inicial cria:
 

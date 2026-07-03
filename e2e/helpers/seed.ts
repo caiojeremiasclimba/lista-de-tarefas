@@ -8,6 +8,7 @@ function baseTodo(
     user_id: E2E_USER.id,
     descricao: null,
     data_prevista: null,
+    prioridade: 'media',
     categoria_id: null,
     completed_at: null,
     created_at: '2026-06-01T10:00:00.000Z',
@@ -29,18 +30,21 @@ export const MIXED_STATUS_TODOS: MockTodo[] = [
     id: 'e2e-todo-pendente',
     titulo: 'Tarefa pendente',
     status: 'pendente',
+    prioridade: 'media',
     created_at: '2026-06-01T10:00:00.000Z',
   }),
   baseTodo({
     id: 'e2e-todo-andamento',
     titulo: 'Tarefa em andamento',
     status: 'em_andamento',
+    prioridade: 'baixa',
     created_at: '2026-06-02T10:00:00.000Z',
   }),
   baseTodo({
     id: 'e2e-todo-concluida',
     titulo: 'Tarefa concluída',
     status: 'concluida',
+    prioridade: 'alta',
     completed_at: '2026-06-03T10:00:00.000Z',
     created_at: '2026-06-03T10:00:00.000Z',
   }),
@@ -49,7 +53,33 @@ export const MIXED_STATUS_TODOS: MockTodo[] = [
     titulo: 'Relatório mensal',
     descricao: 'Preparar documentação',
     status: 'pendente',
+    prioridade: 'alta',
     created_at: '2026-06-04T10:00:00.000Z',
+  }),
+]
+
+/** Tarefas com prioridades variadas para testes de filtro. */
+export const MIXED_PRIORITY_TODOS: MockTodo[] = [
+  baseTodo({
+    id: 'e2e-todo-alta',
+    titulo: 'Tarefa prioridade alta',
+    status: 'pendente',
+    prioridade: 'alta',
+    created_at: '2026-06-01T10:00:00.000Z',
+  }),
+  baseTodo({
+    id: 'e2e-todo-media',
+    titulo: 'Tarefa prioridade média',
+    status: 'pendente',
+    prioridade: 'media',
+    created_at: '2026-06-02T10:00:00.000Z',
+  }),
+  baseTodo({
+    id: 'e2e-todo-baixa',
+    titulo: 'Tarefa prioridade baixa',
+    status: 'pendente',
+    prioridade: 'baixa',
+    created_at: '2026-06-03T10:00:00.000Z',
   }),
 ]
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { TODO_PRIORIDADE_CONFIG, TODO_PRIORIDADES } from '../constants/todoPrioridade'
 import type { Categoria } from '../types/categoria'
-import type { TodoStatus } from '../types/todo'
+import type { TodoPrioridade, TodoStatus } from '../types/todo'
 import {
   AlertIcon,
   ChartBarIcon,
@@ -30,6 +31,9 @@ interface FilterSidebarProps {
   categoriaAtiva: string | null
   countsPorCategoria: Record<string, number>
   onCategoriaChange: (id: string | null) => void
+  prioridadeAtiva: TodoPrioridade | null
+  countsPorPrioridade: Record<TodoPrioridade, number>
+  onPrioridadeChange: (prioridade: TodoPrioridade | null) => void
   onNovaCategoria: () => void
   onEditCategoria: (categoria: Categoria) => void
   onDeleteCategoria: (id: string) => void
@@ -116,6 +120,51 @@ function FilterButton({
             : isActive
               ? 'bg-blue-100 text-blue-700'
               : 'bg-slate-100 text-slate-500'
+        }`}
+      >
+        {count}
+      </span>
+    </button>
+  )
+}
+
+function PriorityFilterButton({
+  prioridade,
+  active,
+  count,
+  onChange,
+}: {
+  prioridade: TodoPrioridade
+  active: TodoPrioridade | null
+  count: number
+  onChange: (prioridade: TodoPrioridade | null) => void
+}) {
+  const config = TODO_PRIORIDADE_CONFIG[prioridade]
+  const isActive = active === prioridade
+
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(isActive ? null : prioridade)}
+      aria-current={isActive ? 'page' : undefined}
+      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
+        isActive ? 'bg-blue-50 font-medium text-blue-700' : 'text-slate-600 hover:bg-slate-50'
+      }`}
+    >
+      <span
+        className={`h-2.5 w-2.5 shrink-0 rounded-full ${
+          prioridade === 'alta'
+            ? 'bg-red-500'
+            : prioridade === 'media'
+              ? 'bg-amber-500'
+              : 'bg-slate-400'
+        }`}
+        aria-hidden
+      />
+      <span className="truncate">{config.label}</span>
+      <span
+        className={`ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-xs font-medium ${
+          isActive ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'
         }`}
       >
         {count}
@@ -290,12 +339,16 @@ export default function FilterSidebar({
   categoriaAtiva,
   countsPorCategoria,
   onCategoriaChange,
+  prioridadeAtiva,
+  countsPorPrioridade,
+  onPrioridadeChange,
   onNovaCategoria,
   onEditCategoria,
   onDeleteCategoria,
 }: FilterSidebarProps) {
   const filtersMuted = view === 'dashboard'
   const [statusOpen, setStatusOpen] = useState(false)
+  const [prioridadeOpen, setPrioridadeOpen] = useState(false)
   const [categoriaOpen, setCategoriaOpen] = useState(false)
 
   return (
@@ -335,6 +388,21 @@ export default function FilterSidebar({
               active={active}
               count={counts[item.id]}
               onChange={onChange}
+            />
+          ))}
+        </CollapsibleFilterSection>
+        <CollapsibleFilterSection
+          title="Por prioridade"
+          open={prioridadeOpen}
+          onToggle={() => setPrioridadeOpen((o) => !o)}
+        >
+          {TODO_PRIORIDADES.map((prioridade) => (
+            <PriorityFilterButton
+              key={prioridade}
+              prioridade={prioridade}
+              active={prioridadeAtiva}
+              count={countsPorPrioridade[prioridade] ?? 0}
+              onChange={onPrioridadeChange}
             />
           ))}
         </CollapsibleFilterSection>

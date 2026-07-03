@@ -52,6 +52,19 @@ export async function editTask(page: Page, tituloAtual: string, novoTitulo: stri
   await expect(page.getByText('Tarefa atualizada com sucesso.')).toBeVisible()
 }
 
+export async function expandPrioridadeFilters(page: Page) {
+  const nav = page.getByRole('navigation', { name: 'Navegação e filtros' })
+  const button = nav.getByRole('button', { name: 'Por prioridade' })
+  if ((await button.getAttribute('aria-expanded')) !== 'true') {
+    await button.click()
+  }
+}
+
+export async function filterByPrioridade(page: Page, prioridade: 'Alta' | 'Média' | 'Baixa') {
+  await expandPrioridadeFilters(page)
+  await navFilterButton(page, prioridade).click()
+}
+
 export async function expandStatusFilters(page: Page) {
   const nav = page.getByRole('navigation', { name: 'Navegação e filtros' })
   const button = nav.getByRole('button', { name: 'Por status' })

@@ -15,6 +15,7 @@ function renderSidebar(overrides: Partial<Parameters<typeof FilterSidebar>[0]> =
   const onViewChange = vi.fn()
   const onChange = vi.fn()
   const onCategoriaChange = vi.fn()
+  const onPrioridadeChange = vi.fn()
   const onNovaCategoria = vi.fn()
   const onEditCategoria = vi.fn()
   const onDeleteCategoria = vi.fn()
@@ -30,6 +31,9 @@ function renderSidebar(overrides: Partial<Parameters<typeof FilterSidebar>[0]> =
       categoriaAtiva={null}
       countsPorCategoria={{ 'cat-1': 5 }}
       onCategoriaChange={onCategoriaChange}
+      prioridadeAtiva={null}
+      countsPorPrioridade={{ alta: 2, media: 5, baixa: 3 }}
+      onPrioridadeChange={onPrioridadeChange}
       onNovaCategoria={onNovaCategoria}
       onEditCategoria={onEditCategoria}
       onDeleteCategoria={onDeleteCategoria}
@@ -41,6 +45,7 @@ function renderSidebar(overrides: Partial<Parameters<typeof FilterSidebar>[0]> =
     onViewChange,
     onChange,
     onCategoriaChange,
+    onPrioridadeChange,
     onNovaCategoria,
     onEditCategoria,
     onDeleteCategoria,
@@ -98,6 +103,15 @@ describe('FilterSidebar', () => {
     fireEvent.click(categoryButton)
 
     expect(onCategoriaChange).toHaveBeenCalledWith('cat-1')
+  })
+
+  it('expande prioridade e chama onPrioridadeChange ao selecionar alta', () => {
+    const { onPrioridadeChange } = renderSidebar()
+
+    fireEvent.click(screen.getByRole('button', { name: /por prioridade/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^Alta/i }))
+
+    expect(onPrioridadeChange).toHaveBeenCalledWith('alta')
   })
 
   it('desativa filtros visualmente no dashboard', () => {
