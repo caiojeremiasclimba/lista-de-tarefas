@@ -9,11 +9,7 @@ export async function openNewTaskModal(page: Page) {
   await expect(page.getByRole('dialog', { name: 'Nova tarefa' })).toBeVisible()
 }
 
-export async function createTask(
-  page: Page,
-  titulo: string,
-  options?: { descricao?: string }
-) {
+export async function createTask(page: Page, titulo: string, options?: { descricao?: string }) {
   await openNewTaskModal(page)
   await page.getByLabel('Título *').fill(titulo)
   if (options?.descricao) {
@@ -62,11 +58,7 @@ export async function filterByOverview(page: Page, label: 'Todas' | 'Vencidas') 
   await navFilterButton(page, label).click()
 }
 
-export async function createTaskWithSubtarefas(
-  page: Page,
-  titulo: string,
-  subtarefas: string[]
-) {
+export async function createTaskWithSubtarefas(page: Page, titulo: string, subtarefas: string[]) {
   await openNewTaskModal(page)
   await page.getByLabel('Título *').fill(titulo)
 
@@ -85,11 +77,7 @@ export async function openTaskChecklist(page: Page, titulo: string) {
   await card.getByRole('button', { name: 'Checklist' }).click()
 }
 
-export async function createTaskWithCategory(
-  page: Page,
-  titulo: string,
-  categoriaNome: string
-) {
+export async function createTaskWithCategory(page: Page, titulo: string, categoriaNome: string) {
   await openNewTaskModal(page)
   await page.getByLabel('Título *').fill(titulo)
   await page.locator('#categoria_id').selectOption({ label: categoriaNome })

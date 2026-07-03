@@ -24,9 +24,7 @@ test.describe('Tarefas — edição', () => {
   test('cancelar edição mantém título original', async ({ page, authenticatedPage: _auth }) => {
     await createTask(page, 'Tarefa intacta')
 
-    await taskCard(page, 'Tarefa intacta')
-      .getByRole('button', { name: 'Ações da tarefa' })
-      .click()
+    await taskCard(page, 'Tarefa intacta').getByRole('button', { name: 'Ações da tarefa' }).click()
     await taskCard(page, 'Tarefa intacta').getByRole('button', { name: 'Editar' }).click()
     await page.getByLabel('Título *').fill('Título alterado')
     await page.getByRole('button', { name: 'Cancelar' }).click()

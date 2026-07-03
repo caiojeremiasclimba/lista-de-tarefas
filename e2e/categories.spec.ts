@@ -47,7 +47,10 @@ test.describe('Categorias', () => {
     ).toBeVisible()
   })
 
-  test('exclui categoria após confirmação', async ({ page, authenticatedWithCategories: _state }) => {
+  test('exclui categoria após confirmação', async ({
+    page,
+    authenticatedWithCategories: _state,
+  }) => {
     await deleteCategory(page, 'Pessoal')
     await expandCategoryFilters(page)
 

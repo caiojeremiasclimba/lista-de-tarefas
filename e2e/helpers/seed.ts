@@ -1,7 +1,9 @@
 import type { MockCategoria, MockTodo } from './supabaseMock'
 import { E2E_USER } from './supabaseMock'
 
-function baseTodo(overrides: Partial<MockTodo> & Pick<MockTodo, 'id' | 'titulo' | 'status'>): MockTodo {
+function baseTodo(
+  overrides: Partial<MockTodo> & Pick<MockTodo, 'id' | 'titulo' | 'status'>
+): MockTodo {
   return {
     user_id: E2E_USER.id,
     descricao: null,

@@ -2,11 +2,11 @@ import { test, expect } from './fixtures'
 import { createTaskWithSubtarefas, openTaskChecklist, taskCard } from './helpers/tasks'
 
 test.describe('Subtarefas', () => {
-  test('cria tarefa com subtarefas e exibe progresso', async ({ page, authenticatedPage: _auth }) => {
-    await createTaskWithSubtarefas(page, 'Projeto final', [
-      'Pesquisar tema',
-      'Escrever rascunho',
-    ])
+  test('cria tarefa com subtarefas e exibe progresso', async ({
+    page,
+    authenticatedPage: _auth,
+  }) => {
+    await createTaskWithSubtarefas(page, 'Projeto final', ['Pesquisar tema', 'Escrever rascunho'])
 
     const card = taskCard(page, 'Projeto final')
     await expect(card.getByText('0 de 2 subtarefas concluídas')).toBeVisible()
@@ -17,7 +17,10 @@ test.describe('Subtarefas', () => {
     await expect(card.getByText('Escrever rascunho')).toBeVisible()
   })
 
-  test('marca subtarefa como concluída na checklist', async ({ page, authenticatedPage: _auth }) => {
+  test('marca subtarefa como concluída na checklist', async ({
+    page,
+    authenticatedPage: _auth,
+  }) => {
     await createTaskWithSubtarefas(page, 'Lista de compras', ['Leite', 'Pão'])
 
     await openTaskChecklist(page, 'Lista de compras')
