@@ -1,3 +1,4 @@
+import { DEFAULT_CATEGORIA_COR } from '../../constants/categoriaCor'
 import type { Categoria } from '../../types/categoria'
 import type { Subtarefa } from '../../types/subtarefa'
 import type { Todo, TodoFormData } from '../../types/todo'
@@ -27,6 +28,7 @@ export function makeCategoria(overrides: Partial<Categoria> = {}): Categoria {
     id: 'cat-1',
     user_id: 'user-1',
     nome: 'Trabalho',
+    cor: DEFAULT_CATEGORIA_COR,
     created_at: '2026-01-01T00:00:00.000Z',
     ...overrides,
   }

@@ -1,4 +1,4 @@
-import type { Categoria } from '../../types/categoria'
+import type { Categoria, CategoriaFormData } from '../../types/categoria'
 import type { Todo, TodoFormData } from '../../types/todo'
 import CategoriaForm from '../CategoriaForm'
 import Modal from '../Modal'
@@ -17,7 +17,7 @@ interface TaskModalsProps {
   onCloseForm: () => void
   onCloseCategoriaForm: () => void
   onSubmitTodo: (data: TodoFormData) => Promise<void>
-  onSubmitCategoria: (nome: string) => Promise<void>
+  onSubmitCategoria: (data: CategoriaFormData) => Promise<void>
 }
 
 export default function TaskModals({

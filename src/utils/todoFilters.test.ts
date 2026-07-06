@@ -269,8 +269,8 @@ describe('computeTodoFilters', () => {
     })
 
     expect(result.categoriasPorId).toEqual({
-      'cat-1': 'Trabalho',
-      'cat-2': 'Pessoal',
+      'cat-1': { nome: 'Trabalho', cor: 'slate' },
+      'cat-2': { nome: 'Pessoal', cor: 'slate' },
     })
   })
 

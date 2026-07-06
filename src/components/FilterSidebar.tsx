@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { getCategoriaCorConfig } from '../constants/categoriaCor'
 import { TODO_PRIORIDADE_CONFIG, TODO_PRIORIDADES } from '../constants/todoPrioridade'
 import type { Categoria } from '../types/categoria'
 import type { TodoPrioridade, TodoStatus } from '../types/todo'
@@ -12,7 +13,6 @@ import {
   DotsVerticalIcon,
   ListIcon,
   PlayCircleIcon,
-  TagIcon,
   XCircleIcon,
 } from './TodosUi'
 
@@ -234,7 +234,10 @@ function CategoryFilterButton({
           isActive ? 'font-medium text-blue-700' : 'text-slate-600'
         }`}
       >
-        <TagIcon className="h-4 w-4 shrink-0" />
+        <span
+          className={`h-2.5 w-2.5 shrink-0 rounded-full ${getCategoriaCorConfig(categoria.cor).dotClass}`}
+          aria-hidden
+        />
         <span className="truncate">{categoria.nome}</span>
         <span
           className={`ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-xs font-medium ${

@@ -17,9 +17,10 @@ export async function openNewCategoryModal(page: Page) {
   await expect(page.getByRole('dialog', { name: 'Nova categoria' })).toBeVisible()
 }
 
-export async function submitNewCategory(page: Page, nome: string) {
+export async function submitNewCategory(page: Page, nome: string, corLabel = 'Cinza') {
   await openNewCategoryModal(page)
   await page.getByLabel('Nome *').fill(nome)
+  await page.getByRole('button', { name: `Cor ${corLabel}` }).click()
   await page.getByRole('button', { name: 'Criar' }).click()
 }
 
@@ -39,9 +40,10 @@ export async function confirmDeleteCategory(page: Page, nome: string) {
   await dialog.getByRole('button', { name: 'Excluir' }).click()
 }
 
-export async function createCategory(page: Page, nome: string) {
+export async function createCategory(page: Page, nome: string, corLabel = 'Cinza') {
   await openNewCategoryModal(page)
   await page.getByLabel('Nome *').fill(nome)
+  await page.getByRole('button', { name: `Cor ${corLabel}` }).click()
   await page.getByRole('button', { name: 'Criar' }).click()
   await expect(page.getByText('Categoria criada com sucesso.')).toBeVisible()
 }

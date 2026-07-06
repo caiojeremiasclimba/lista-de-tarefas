@@ -51,18 +51,24 @@ describe('createCategoria', () => {
   it('lança erro quando usuário não está autenticado', async () => {
     mockUnauthenticatedUser()
 
-    await expect(createCategoria('Nova')).rejects.toThrow('Usuário não autenticado')
+    await expect(createCategoria({ nome: 'Nova', cor: 'slate' })).rejects.toThrow(
+      'Usuário não autenticado'
+    )
   })
 
   it('cria categoria com user_id do usuário logado', async () => {
     mockAuthenticatedUser()
-    const created = makeCategoria({ id: 'cat-new', nome: 'Estudos' })
+    const created = makeCategoria({ id: 'cat-new', nome: 'Estudos', cor: 'blue' })
     const builder = createMockQueryBuilder({ data: created, error: null })
     mockFrom.mockReturnValue(builder)
 
-    const result = await createCategoria('Estudos')
+    const result = await createCategoria({ nome: 'Estudos', cor: 'blue' })
 
-    expect(builder.insert).toHaveBeenCalledWith({ nome: 'Estudos', user_id: AUTH_USER.id })
+    expect(builder.insert).toHaveBeenCalledWith({
+      nome: 'Estudos',
+      cor: 'blue',
+      user_id: AUTH_USER.id,
+    })
     expect(result).toEqual(created)
   })
 
@@ -72,15 +78,21 @@ describe('createCategoria', () => {
     const builder = createMockQueryBuilder({ data: created, error: null })
     mockFrom.mockReturnValue(builder)
 
-    await createCategoria('  Estudos  ')
+    await createCategoria({ nome: '  Estudos  ', cor: 'slate' })
 
-    expect(builder.insert).toHaveBeenCalledWith({ nome: 'Estudos', user_id: AUTH_USER.id })
+    expect(builder.insert).toHaveBeenCalledWith({
+      nome: 'Estudos',
+      cor: 'slate',
+      user_id: AUTH_USER.id,
+    })
   })
 
   it('lança erro quando nome fica vazio após trim', async () => {
     mockAuthenticatedUser()
 
-    await expect(createCategoria('   ')).rejects.toThrow('Informe o nome da categoria.')
+    await expect(createCategoria({ nome: '   ', cor: 'slate' })).rejects.toThrow(
+      'Informe o nome da categoria.'
+    )
     expect(mockFrom).not.toHaveBeenCalled()
   })
 })
@@ -90,14 +102,14 @@ describe('updateCategoria', () => {
     mockFrom.mockReset()
   })
 
-  it('atualiza nome e retorna categoria', async () => {
-    const updated = makeCategoria({ id: 'cat-1', nome: 'Pessoal' })
+  it('atualiza nome e cor e retorna categoria', async () => {
+    const updated = makeCategoria({ id: 'cat-1', nome: 'Pessoal', cor: 'emerald' })
     const builder = createMockQueryBuilder({ data: updated, error: null })
     mockFrom.mockReturnValue(builder)
 
-    const result = await updateCategoria('cat-1', 'Pessoal')
+    const result = await updateCategoria('cat-1', { nome: 'Pessoal', cor: 'emerald' })
 
-    expect(builder.update).toHaveBeenCalledWith({ nome: 'Pessoal' })
+    expect(builder.update).toHaveBeenCalledWith({ nome: 'Pessoal', cor: 'emerald' })
     expect(builder.eq).toHaveBeenCalledWith('id', 'cat-1')
     expect(result).toEqual(updated)
   })
@@ -107,13 +119,15 @@ describe('updateCategoria', () => {
     const builder = createMockQueryBuilder({ data: updated, error: null })
     mockFrom.mockReturnValue(builder)
 
-    await updateCategoria('cat-1', '  Pessoal  ')
+    await updateCategoria('cat-1', { nome: '  Pessoal  ', cor: 'slate' })
 
-    expect(builder.update).toHaveBeenCalledWith({ nome: 'Pessoal' })
+    expect(builder.update).toHaveBeenCalledWith({ nome: 'Pessoal', cor: 'slate' })
   })
 
   it('lança erro quando nome fica vazio após trim', async () => {
-    await expect(updateCategoria('cat-1', '   ')).rejects.toThrow('Informe o nome da categoria.')
+    await expect(updateCategoria('cat-1', { nome: '   ', cor: 'slate' })).rejects.toThrow(
+      'Informe o nome da categoria.'
+    )
     expect(mockFrom).not.toHaveBeenCalled()
   })
 })

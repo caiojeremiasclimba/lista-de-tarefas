@@ -1,6 +1,6 @@
-import type { TodoStatus } from '../types/todo'
+import type { CategoriaDisplay } from '../types/categoria'
 import { TODO_STATUS_CONFIG } from '../constants/todoStatus'
-import type { Todo } from '../types/todo'
+import type { Todo, TodoStatus } from '../types/todo'
 import type { Subtarefa } from '../types/subtarefa'
 import TodoItem from './TodoItem'
 import {
@@ -22,7 +22,7 @@ interface TaskSectionProps {
   onDelete: (id: string) => void
   onToggleStatus: (todo: Todo) => void
   onToggleSubtarefa: (sub: Subtarefa) => void
-  categoriasPorId: Record<string, string>
+  categoriasPorId: Record<string, CategoriaDisplay>
 }
 
 const SECTION_ICONS = {
@@ -82,7 +82,7 @@ export default function TaskSection({
               <TodoItem
                 key={todo.id}
                 todo={todo}
-                categoriaNome={todo.categoria_id ? categoriasPorId[todo.categoria_id] : undefined}
+                categoria={todo.categoria_id ? categoriasPorId[todo.categoria_id] : undefined}
                 onEdit={onEdit}
                 onDelete={onDelete}
                 onToggleStatus={onToggleStatus}

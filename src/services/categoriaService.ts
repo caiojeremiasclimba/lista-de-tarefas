@@ -1,5 +1,6 @@
+import { DEFAULT_CATEGORIA_COR } from '../constants/categoriaCor'
 import { supabase } from '../lib/supabase'
-import type { Categoria } from '../types/categoria'
+import type { Categoria, CategoriaFormData } from '../types/categoria'
 
 export async function fetchCategorias(): Promise<Categoria[]> {
   const { data, error } = await supabase.from('categorias').select('*').order('nome')
@@ -8,7 +9,10 @@ export async function fetchCategorias(): Promise<Categoria[]> {
   return data ?? []
 }
 
-export async function createCategoria(nome: string): Promise<Categoria> {
+export async function createCategoria({
+  nome,
+  cor = DEFAULT_CATEGORIA_COR,
+}: CategoriaFormData): Promise<Categoria> {
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -19,7 +23,7 @@ export async function createCategoria(nome: string): Promise<Categoria> {
 
   const { data: created, error: insertError } = await supabase
     .from('categorias')
-    .insert({ nome: nomeNormalizado, user_id: user.id })
+    .insert({ nome: nomeNormalizado, cor, user_id: user.id })
     .select()
     .single()
 
@@ -29,13 +33,16 @@ export async function createCategoria(nome: string): Promise<Categoria> {
   return created
 }
 
-export async function updateCategoria(id: string, nome: string): Promise<Categoria> {
+export async function updateCategoria(
+  id: string,
+  { nome, cor }: CategoriaFormData
+): Promise<Categoria> {
   const nomeNormalizado = nome.trim()
   if (!nomeNormalizado) throw new Error('Informe o nome da categoria.')
 
   const { data: updated, error: updateError } = await supabase
     .from('categorias')
-    .update({ nome: nomeNormalizado })
+    .update({ nome: nomeNormalizado, cor })
     .eq('id', id)
     .select()
     .single()

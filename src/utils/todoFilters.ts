@@ -1,7 +1,7 @@
 import { TODO_STATUSES, TODO_STATUS_CONFIG } from '../constants/todoStatus'
 import { TODO_PRIORIDADES, TODO_PRIORIDADE_CONFIG } from '../constants/todoPrioridade'
 import type { FiltroCounts } from '../components/FilterSidebar'
-import type { Categoria } from '../types/categoria'
+import type { Categoria, CategoriaDisplay } from '../types/categoria'
 import type { Todo, TodoPrioridade, TodoStatus } from '../types/todo'
 import { sortActiveTodos, sortFinalTodos } from './sortTodos'
 import { isTodoDueToday, isTodoOverdue } from './todoDue'
@@ -26,7 +26,7 @@ export interface TodoFiltersResult {
   counts: FiltroCounts
   countsPorCategoria: Record<string, number>
   countsPorPrioridade: Record<TodoPrioridade, number>
-  categoriasPorId: Record<string, string>
+  categoriasPorId: Record<string, CategoriaDisplay>
   categoriaAtivaNome: string | null
   prioridadeAtivaLabel: string | null
   secoesVisiveis: TodoStatus[]
@@ -105,7 +105,9 @@ export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
     vence_hoje: filtradosPorPrioridade.filter((t) => isTodoDueToday(t)).length,
   }
 
-  const categoriasPorId = Object.fromEntries(categorias.map((c) => [c.id, c.nome]))
+  const categoriasPorId = Object.fromEntries(
+    categorias.map((c) => [c.id, { nome: c.nome, cor: c.cor }])
+  )
 
   const categoriaAtivaNome = filtroCategoria
     ? (categorias.find((c) => c.id === filtroCategoria)?.nome ?? null)

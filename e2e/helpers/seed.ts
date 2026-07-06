@@ -20,9 +20,12 @@ function baseTodo(
   }
 }
 
-function baseCategoria(overrides: Pick<MockCategoria, 'id' | 'nome'>): MockCategoria {
+function baseCategoria(
+  overrides: Pick<MockCategoria, 'id' | 'nome'> & Partial<Pick<MockCategoria, 'cor'>>
+): MockCategoria {
   return {
     user_id: E2E_USER.id,
+    cor: 'slate',
     created_at: '2026-06-01T10:00:00.000Z',
     ...overrides,
   }
@@ -88,8 +91,8 @@ export const MIXED_PRIORITY_TODOS: MockTodo[] = [
 ]
 
 export const SEED_CATEGORIAS: MockCategoria[] = [
-  baseCategoria({ id: 'e2e-cat-trabalho', nome: 'Trabalho' }),
-  baseCategoria({ id: 'e2e-cat-pessoal', nome: 'Pessoal' }),
+  baseCategoria({ id: 'e2e-cat-trabalho', nome: 'Trabalho', cor: 'blue' }),
+  baseCategoria({ id: 'e2e-cat-pessoal', nome: 'Pessoal', cor: 'emerald' }),
 ]
 
 export const SEED_TODOS_WITH_CATEGORIES: MockTodo[] = [

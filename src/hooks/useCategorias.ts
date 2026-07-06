@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from '../lib/toast'
-import type { Categoria } from '../types/categoria'
+import type { Categoria, CategoriaFormData } from '../types/categoria'
 import {
   createCategoria,
   deleteCategoriaComTarefas,
@@ -44,8 +44,8 @@ export function useCategorias({
   useSupabaseRealtime(userId, CATEGORIAS_REALTIME_TABLES, loadCategorias)
 
   const handleCreateCategoria = useCallback(
-    async (nome: string) => {
-      const created = await createCategoria(nome)
+    async (data: CategoriaFormData) => {
+      const created = await createCategoria(data)
       setCategorias((prev) => [...prev, created].sort((a, b) => a.nome.localeCompare(b.nome)))
       setFiltroCategoria(created.id)
       return created
@@ -53,8 +53,8 @@ export function useCategorias({
     [setFiltroCategoria]
   )
 
-  const handleUpdateCategoria = useCallback(async (id: string, nome: string) => {
-    const updated = await updateCategoria(id, nome)
+  const handleUpdateCategoria = useCallback(async (id: string, data: CategoriaFormData) => {
+    const updated = await updateCategoria(id, data)
     setCategorias((prev) =>
       prev.map((c) => (c.id === id ? updated : c)).sort((a, b) => a.nome.localeCompare(b.nome))
     )

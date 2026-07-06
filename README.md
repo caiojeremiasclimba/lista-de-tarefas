@@ -118,6 +118,7 @@ O schema do banco está versionado em `supabase/migrations/`:
 | `20260703100000_add_prioridade.sql`          | Coluna `prioridade` (`baixa`, `media`, `alta`) na tabela `tarefas`                                               |
 | `20260703110000_add_recorrencia.sql`         | Colunas de recorrência (`recorrencia_tipo`, `recorrencia_intervalo`, `recorrencia_fim`, `recorrencia_origem_id`) |
 | `20260706110000_remove_lembretes.sql`        | Remove tabelas e colunas de lembretes por e-mail (se existirem)                                                  |
+| `20260706120000_add_cor_categoria.sql`       | Coluna `cor` na tabela `categorias` (paleta fixa de cores)                                                       |
 
 A migration inicial cria:
 
@@ -132,6 +133,8 @@ A migration inicial cria:
 `20260703110000_add_recorrencia.sql` adiciona suporte a tarefas recorrentes (`nenhuma`, `diaria`, `semanal`, `mensal`), intervalo, data limite e referência à ocorrência de origem.
 
 `20260706110000_remove_lembretes.sql` remove lembretes por e-mail do banco (colunas em `tarefas` e tabelas `preferencias_lembrete` / `lembretes_enviados`). Aplique se você tinha executado a migration de lembretes anteriormente.
+
+`20260706120000_add_cor_categoria.sql` adiciona a coluna `cor` em `categorias` para personalizar a cor dos badges nas tarefas.
 
 ### Projeto Supabase novo
 
@@ -154,6 +157,7 @@ Exemplos de migrations incrementais (aplique somente as que ainda não foram apl
 | Prioridade nas tarefas         | `20260703100000_add_prioridade.sql`          |
 | Recorrência nas tarefas        | `20260703110000_add_recorrencia.sql`         |
 | Remover lembretes por e-mail   | `20260706110000_remove_lembretes.sql`        |
+| Cor nas categorias             | `20260706120000_add_cor_categoria.sql`       |
 
 ### Storage
 

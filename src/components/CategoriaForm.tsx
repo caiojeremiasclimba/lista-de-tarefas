@@ -1,11 +1,16 @@
 import { useState, useEffect } from 'react'
 import type { SubmitEvent } from 'react'
-import type { Categoria } from '../types/categoria'
+import {
+  CATEGORIA_CORES,
+  CATEGORIA_COR_CONFIG,
+  DEFAULT_CATEGORIA_COR,
+} from '../constants/categoriaCor'
+import type { Categoria, CategoriaCor, CategoriaFormData } from '../types/categoria'
 
 interface CategoriaFormProps {
   editingCategoria?: Categoria | null
   titleId?: string
-  onSubmit: (nome: string) => Promise<void>
+  onSubmit: (data: CategoriaFormData) => Promise<void>
   onClose?: () => void
 }
 
@@ -16,6 +21,7 @@ export default function CategoriaForm({
   onClose,
 }: CategoriaFormProps) {
   const [nome, setNome] = useState('')
+  const [cor, setCor] = useState<CategoriaCor>(DEFAULT_CATEGORIA_COR)
   const [erro, setErro] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -24,6 +30,7 @@ export default function CategoriaForm({
 
   useEffect(() => {
     setNome(editingCategoria?.nome ?? '')
+    setCor(editingCategoria?.cor ?? DEFAULT_CATEGORIA_COR)
     setErro(null)
     setSubmitError(null)
   }, [editingCategoria])
@@ -41,9 +48,10 @@ export default function CategoriaForm({
 
     setLoading(true)
     try {
-      await onSubmit(trimmed)
+      await onSubmit({ nome: trimmed, cor })
       if (!isEditing) {
         setNome('')
+        setCor(DEFAULT_CATEGORIA_COR)
       }
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Erro ao salvar categoria')
@@ -72,6 +80,31 @@ export default function CategoriaForm({
         />
         {erro && <p className="mt-1 text-sm text-red-600">{erro}</p>}
       </div>
+
+      <fieldset>
+        <legend className="mb-2 block text-sm font-medium text-slate-700">Cor</legend>
+        <div className="flex flex-wrap gap-2">
+          {CATEGORIA_CORES.map((corOption) => {
+            const config = CATEGORIA_COR_CONFIG[corOption]
+            const isSelected = cor === corOption
+
+            return (
+              <button
+                key={corOption}
+                type="button"
+                aria-label={`Cor ${config.label}`}
+                aria-pressed={isSelected}
+                onClick={() => setCor(corOption)}
+                className={`flex h-9 w-9 items-center justify-center rounded-full border-2 transition ${
+                  isSelected ? 'border-slate-800' : 'border-transparent hover:border-slate-300'
+                }`}
+              >
+                <span className={`h-6 w-6 rounded-full ${config.dotClass}`} aria-hidden />
+              </button>
+            )
+          })}
+        </div>
+      </fieldset>
 
       {submitError && (
         <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{submitError}</p>
