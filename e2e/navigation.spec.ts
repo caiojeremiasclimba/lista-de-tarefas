@@ -31,7 +31,7 @@ test.describe('Navegação', () => {
   test('atualiza nome no perfil', async ({ page, authenticatedPage: _auth }) => {
     await goToProfile(page)
     await page.getByLabel('Nome').fill('Usuário E2E')
-    await page.getByRole('button', { name: 'Salvar' }).click()
+    await page.getByRole('button', { name: 'Salvar', exact: true }).click()
 
     await expect(page.getByText('Perfil atualizado com sucesso!')).toBeVisible()
   })
