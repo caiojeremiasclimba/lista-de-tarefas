@@ -1,6 +1,6 @@
 # Lista de Tarefas
 
-Aplicação web para organizar tarefas com autenticação, categorias, subtarefas, anexos e dashboard de produtividade.
+Aplicação web para organizar tarefas com autenticação, categorias, prioridade, recorrência, subtarefas, anexos e dashboard de produtividade.
 
 Stack: React 19, Vite 8, TypeScript, Tailwind CSS 4 e Supabase.
 
@@ -10,8 +10,9 @@ Stack: React 19, Vite 8, TypeScript, Tailwind CSS 4 e Supabase.
 ## O que o app faz
 
 - Login com e-mail/senha ou Google, recuperação de senha e opção "Lembrar-me"
-- Tarefas com status, data prevista, busca, anexos e subtarefas
-- Categorias com filtros na sidebar
+- Tarefas com status, prioridade, data prevista, busca, anexos e subtarefas
+- Recorrência (diária, semanal ou mensal) — ao concluir, cria automaticamente a próxima ocorrência
+- Categorias com filtros na sidebar (por status, categoria e prioridade)
 - Dashboard com indicadores de produtividade
 - Perfil com nome, avatar e troca de senha
 - Sincronização em tempo real entre abas (Supabase Realtime)
@@ -109,12 +110,13 @@ No Supabase (Authentication → URL Configuration), cadastre:
 
 O schema do banco está versionado em `supabase/migrations/`:
 
-| Migration                                    | Conteúdo                                                           |
-| -------------------------------------------- | ------------------------------------------------------------------ |
-| `20260702120000_initial_schema.sql`          | Tabelas, RLS e buckets de Storage                                  |
-| `20260702130000_delete_categoria_atomic.sql` | RPC `delete_categoria_com_tarefas` (exclusão atômica de categoria) |
-| `20260702140000_enable_realtime.sql`         | Realtime nas tabelas `categorias`, `tarefas` e `subtarefas`        |
-| `20260703100000_add_prioridade.sql`          | Coluna `prioridade` (`baixa`, `media`, `alta`) na tabela `tarefas` |
+| Migration                                    | Conteúdo                                                                                                         |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `20260702120000_initial_schema.sql`          | Tabelas, RLS e buckets de Storage                                                                                |
+| `20260702130000_delete_categoria_atomic.sql` | RPC `delete_categoria_com_tarefas` (exclusão atômica de categoria)                                               |
+| `20260702140000_enable_realtime.sql`         | Realtime nas tabelas `categorias`, `tarefas` e `subtarefas`                                                      |
+| `20260703100000_add_prioridade.sql`          | Coluna `prioridade` (`baixa`, `media`, `alta`) na tabela `tarefas`                                               |
+| `20260703110000_add_recorrencia.sql`         | Colunas de recorrência (`recorrencia_tipo`, `recorrencia_intervalo`, `recorrencia_fim`, `recorrencia_origem_id`) |
 
 A migration inicial cria:
 
@@ -122,7 +124,11 @@ A migration inicial cria:
 - RLS para que cada usuário acesse apenas os próprios dados
 - Buckets `task-attachments` (privado) e `avatars` (público) com políticas de Storage
 
-A segunda migration adiciona a função usada pelo app para excluir categorias: desvincula as tarefas e remove a categoria numa única transação.
+`20260702130000_delete_categoria_atomic.sql` adiciona a função usada pelo app para excluir categorias: desvincula as tarefas e remove a categoria numa única transação.
+
+`20260703100000_add_prioridade.sql` adiciona prioridade às tarefas, com default `media` para registros existentes.
+
+`20260703110000_add_recorrencia.sql` adiciona suporte a tarefas recorrentes (`nenhuma`, `diaria`, `semanal`, `mensal`), intervalo, data limite e referência à ocorrência de origem.
 
 ### Projeto Supabase novo
 
@@ -136,7 +142,14 @@ A segunda migration adiciona a função usada pelo app para excluir categorias: 
 
 Se as tabelas e buckets já foram criados manualmente, **não reaplique** a migration inicial inteira. Use os arquivos SQL como referência e aplique apenas o que estiver faltando.
 
-Se o app já está em produção e a exclusão de categorias foi implementada depois, aplique somente `20260702130000_delete_categoria_atomic.sql` no SQL Editor.
+Exemplos de migrations incrementais (aplique somente as que ainda não foram aplicadas):
+
+| Se faltar no banco…            | Arquivo a aplicar                            |
+| ------------------------------ | -------------------------------------------- |
+| Exclusão atômica de categorias | `20260702130000_delete_categoria_atomic.sql` |
+| Realtime entre abas            | `20260702140000_enable_realtime.sql`         |
+| Prioridade nas tarefas         | `20260703100000_add_prioridade.sql`          |
+| Recorrência nas tarefas        | `20260703110000_add_recorrencia.sql`         |
 
 ### Storage
 
@@ -157,11 +170,11 @@ src/
 ├── services/     integração com Supabase
 ├── utils/        filtros, validação, estatísticas
 ├── types/        tipos TypeScript
-├── constants/    status das tarefas
+├── constants/    status, prioridade e recorrência das tarefas
 ├── lib/          cliente Supabase e auth
 └── test/         fixtures e mocks para testes
 
-e2e/              testes Playwright (auth, tarefas)
+e2e/              testes Playwright (auth, tarefas, filtros, categorias, subtarefas, mobile)
 
 supabase/
 └── migrations/   schema SQL versionado (tabelas, RLS, Storage, RPCs)
