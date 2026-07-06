@@ -164,6 +164,52 @@ describe('toggleTodoStatus', () => {
     expect(result.createdNextTodo).toEqual({ ...next, subtarefas: nextSubtarefas })
   })
 
+  it('desfaz conclusão quando falha ao criar próxima ocorrência', async () => {
+    const todo = makeTodo({
+      id: 'todo-1',
+      status: 'em_andamento',
+      data_prevista: '2026-07-02',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+    })
+    const updated = makeTodo({
+      id: 'todo-1',
+      status: 'concluida',
+      data_prevista: '2026-07-02',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+    })
+    const updateBuilder = createMockQueryBuilder({ data: updated, error: null })
+    const insertTodoBuilder = createMockQueryBuilder({
+      data: null,
+      error: { message: 'Falha ao criar próxima ocorrência' },
+    })
+    const rollbackBuilder = createMockQueryBuilder({ data: null, error: null })
+
+    let tarefasCalls = 0
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'tarefas') {
+        tarefasCalls++
+        if (tarefasCalls === 1) return updateBuilder
+        if (tarefasCalls === 2) return insertTodoBuilder
+        return rollbackBuilder
+      }
+      return createMockQueryBuilder({ data: [], error: null })
+    })
+
+    await expect(toggleTodoStatus(todo)).rejects.toThrow('Falha ao criar próxima ocorrência')
+
+    expect(updateBuilder.update).toHaveBeenCalledWith({
+      status: 'concluida',
+      completed_at: '2026-07-02T12:00:00.000Z',
+    })
+    expect(rollbackBuilder.update).toHaveBeenCalledWith({
+      status: 'em_andamento',
+      completed_at: null,
+    })
+    expect(tarefasCalls).toBe(3)
+  })
+
   it('lança erro para tarefa cancelada', async () => {
     const todo = makeTodo({ status: 'cancelada' })
 
@@ -414,6 +460,63 @@ describe('saveTodo', () => {
     expect(result.savedTodo).toEqual(fetched)
     expect(result.createdNextTodo).toEqual({ ...next, subtarefas: nextSubtarefas })
     expect(tarefasCalls).toBe(3)
+
+    vi.useRealTimers()
+  })
+
+  it('desfaz salvamento quando falha ao criar próxima ocorrência no formulário', async () => {
+    mockAuthenticatedUser()
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-07-02T12:00:00.000Z'))
+
+    const editingTodo = makeTodo({
+      id: 'todo-1',
+      status: 'pendente',
+      titulo: 'Original',
+      data_prevista: '2026-07-02',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+      subtarefas: [],
+    })
+
+    let tarefasUpdateCalls = 0
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'tarefas') {
+        tarefasUpdateCalls++
+        if (tarefasUpdateCalls === 1) {
+          return createMockQueryBuilder({ data: null, error: null })
+        }
+        if (tarefasUpdateCalls === 2) {
+          return createMockQueryBuilder({
+            data: makeTodo({ ...editingTodo, status: 'concluida' }),
+            error: null,
+          })
+        }
+        if (tarefasUpdateCalls === 3) {
+          return createMockQueryBuilder({
+            data: null,
+            error: { message: 'Falha ao criar próxima ocorrência' },
+          })
+        }
+        return createMockQueryBuilder({ data: null, error: null })
+      }
+      return createMockQueryBuilder({ data: [], error: null })
+    })
+
+    await expect(
+      saveTodo(
+        makeTodoFormData({
+          titulo: 'Alterado',
+          status: 'concluida',
+          data_prevista: '2026-07-02',
+          recorrencia_tipo: 'semanal',
+          recorrencia_intervalo: 1,
+        }),
+        editingTodo
+      )
+    ).rejects.toThrow('Falha ao criar próxima ocorrência')
+
+    expect(tarefasUpdateCalls).toBe(4)
 
     vi.useRealTimers()
   })

@@ -1,7 +1,7 @@
 import { getNextStatusOnToggle } from '../constants/todoStatus'
 import { supabase } from '../lib/supabase'
 import type { Subtarefa } from '../types/subtarefa'
-import type { Todo, TodoFormData } from '../types/todo'
+import type { Todo, TodoFormData, TodoStatus } from '../types/todo'
 import {
   ATTACHMENT_DB_FIELDS,
   removeAttachment,
@@ -208,12 +208,46 @@ async function rollbackEditedTodo(editingTodo: Todo, userId: string): Promise<vo
   }
 }
 
+async function rollbackTodoStatus(
+  todoId: string,
+  status: TodoStatus,
+  completed_at: string | null
+): Promise<void> {
+  const { error } = await supabase.from('tarefas').update({ status, completed_at }).eq('id', todoId)
+
+  if (error) {
+    throw new Error(
+      `Erro ao criar próxima ocorrência e não foi possível desfazer a conclusão. Recarregue a lista. (${error.message})`
+    )
+  }
+}
+
+async function createNextRecurringTodoWithRollback(
+  todo: Todo,
+  rollback: () => Promise<void>
+): Promise<Todo | null> {
+  try {
+    return await createNextRecurringTodo(todo)
+  } catch (err) {
+    await rollback()
+    throw err instanceof Error ? err : new Error('Erro ao criar próxima ocorrência.')
+  }
+}
+
 async function maybeCreateNextRecurringOnSave(
   savedTodo: Todo,
   data: TodoFormData,
-  editingTodo?: Todo | null
+  editingTodo?: Todo | null,
+  userId?: string
 ): Promise<Todo | null> {
   if (!shouldCreateNextOnSave(data, editingTodo?.status ?? null)) return null
+
+  if (editingTodo && userId) {
+    return createNextRecurringTodoWithRollback(savedTodo, () =>
+      rollbackEditedTodo(editingTodo, userId)
+    )
+  }
+
   return createNextRecurringTodo(savedTodo)
 }
 
@@ -245,7 +279,12 @@ export async function saveTodo(
     }
 
     const savedTodo = await fetchTodoWithSubtarefas(editingTodo.id)
-    const createdNextTodo = await maybeCreateNextRecurringOnSave(savedTodo, data, editingTodo)
+    const createdNextTodo = await maybeCreateNextRecurringOnSave(
+      savedTodo,
+      data,
+      editingTodo,
+      user.id
+    )
     return { savedTodo, createdNextTodo }
   }
 
@@ -353,8 +392,11 @@ export async function toggleTodoStatus(todo: Todo): Promise<ToggleTodoStatusResu
 
   if (updateError) throw new Error(updateError.message)
   const updatedTodo = mergeTodoSubtarefas(updated, todo)
+
   const createdNextTodo = shouldCreateNextOccurrence(todo, newStatus)
-    ? await createNextRecurringTodo(todo)
+    ? await createNextRecurringTodoWithRollback(todo, () =>
+        rollbackTodoStatus(todo.id, todo.status, todo.completed_at)
+      )
     : null
 
   return { updatedTodo, createdNextTodo }
