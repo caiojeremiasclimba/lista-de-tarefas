@@ -1,4 +1,5 @@
 import { test, expect } from './fixtures'
+import { failRestOnce } from './helpers/supabaseMock'
 import {
   completeTaskViaToggle,
   createRecurringTask,
@@ -103,5 +104,34 @@ test.describe('Tarefas — recorrência', () => {
     await expect(pendenteCard.getByRole('heading', { name: titulo })).toBeVisible()
     await expect(pendenteCard.getByText('Pendente', { exact: true })).toBeVisible()
     await expect(pendenteCard.getByText('09/07/2026')).toBeVisible()
+  })
+
+  test('falha ao criar próxima ocorrência mantém tarefa sem concluir', async ({
+    page,
+    authenticatedPage: _auth,
+    supabaseMock: state,
+  }) => {
+    const titulo = 'Reunião com falha'
+
+    await createRecurringTask(page, titulo, {
+      data_prevista: '2026-07-02',
+      tipo: 'semanal',
+    })
+
+    failRestOnce(state, 'POST', 'tarefas', 'Falha ao criar próxima ocorrência')
+
+    const card = taskCard(page, titulo).first()
+    await card.getByRole('button', { name: 'Marcar como em andamento' }).click()
+    await card.getByRole('button', { name: 'Marcar como concluída' }).click()
+
+    await expect(page.getByText('Falha ao criar próxima ocorrência')).toBeVisible()
+    await expect(card.getByText('Em andamento')).toBeVisible()
+    await expect(card.getByText('Concluída', { exact: true })).not.toBeVisible()
+    await expect(
+      taskSection(page, 'EM ANDAMENTO').getByRole('heading', { name: titulo })
+    ).toBeVisible()
+    await expect(
+      taskSection(page, 'CONCLUÍDAS').getByRole('heading', { name: titulo })
+    ).not.toBeVisible()
   })
 })
