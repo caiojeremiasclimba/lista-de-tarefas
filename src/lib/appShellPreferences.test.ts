@@ -75,6 +75,20 @@ describe('appShellPreferences', () => {
     expect(loadAppShellPreferences()?.filtroCategoria).toBeNull()
   })
 
+  it('usa ordenacao padrão quando ausente no storage', () => {
+    const { ordenacao: _ordenacao, ...prefsSemOrdenacao } = getDefaultAppShellPreferences()
+    saveAppShellPreferences(prefsSemOrdenacao as ReturnType<typeof getDefaultAppShellPreferences>)
+    expect(loadAppShellPreferences()?.ordenacao).toBe('inteligente')
+  })
+
+  it('ignora ordenacao inválida e usa padrão', () => {
+    localStorage.setItem(
+      APP_SHELL_PREFS_KEY,
+      JSON.stringify({ ...getDefaultAppShellPreferences(), ordenacao: 'invalida' })
+    )
+    expect(loadAppShellPreferences()?.ordenacao).toBe('inteligente')
+  })
+
   it('ignora secoesAbertas incompletas', () => {
     localStorage.setItem(
       APP_SHELL_PREFS_KEY,

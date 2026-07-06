@@ -1,5 +1,5 @@
 import { makeTodo, FIXED_TODAY } from '../test/fixtures/todos'
-import { sortActiveTodos, sortFinalTodos } from './sortTodos'
+import { sortActiveTodos, sortFinalTodos, sortTodos } from './sortTodos'
 
 describe('sortActiveTodos', () => {
   beforeEach(() => {
@@ -72,6 +72,55 @@ describe('sortActiveTodos', () => {
     sortActiveTodos(input)
 
     expect(input).toEqual(copy)
+  })
+})
+
+describe('sortTodos', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(FIXED_TODAY)
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('ordena por título em ordem alfabética', () => {
+    const input = [
+      makeTodo({ id: 'z', titulo: 'Zebra' }),
+      makeTodo({ id: 'a', titulo: 'Abacaxi' }),
+      makeTodo({ id: 'm', titulo: 'Manga' }),
+    ]
+
+    expect(sortTodos(input, 'titulo', 'active').map((t) => t.id)).toEqual(['a', 'm', 'z'])
+  })
+
+  it('ordena por prioridade sem priorizar vencidas', () => {
+    const input = [
+      makeTodo({ id: 'baixa', prioridade: 'baixa', data_prevista: '2026-07-01' }),
+      makeTodo({ id: 'alta', prioridade: 'alta', data_prevista: '2026-07-10' }),
+    ]
+
+    expect(sortTodos(input, 'prioridade', 'active').map((t) => t.id)).toEqual(['alta', 'baixa'])
+  })
+
+  it('ordena concluídas por completed_at em modo recentes', () => {
+    const input = [
+      makeTodo({
+        id: 'older',
+        status: 'concluida',
+        completed_at: '2026-01-01T00:00:00.000Z',
+        created_at: '2026-01-01T00:00:00.000Z',
+      }),
+      makeTodo({
+        id: 'newer',
+        status: 'concluida',
+        completed_at: '2026-06-01T00:00:00.000Z',
+        created_at: '2026-01-01T00:00:00.000Z',
+      }),
+    ]
+
+    expect(sortTodos(input, 'recentes', 'final').map((t) => t.id)).toEqual(['newer', 'older'])
   })
 })
 

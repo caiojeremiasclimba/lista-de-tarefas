@@ -11,8 +11,10 @@ Stack: React 19, Vite 8, TypeScript, Tailwind CSS 4 e Supabase.
 
 - Login com e-mail/senha ou Google, recuperação de senha e opção "Lembrar-me"
 - Tarefas com status, prioridade, data prevista, busca, anexos e subtarefas
+- Ordenação da lista (inteligente, data prevista, prioridade, mais recentes ou título)
 - Recorrência (diária, semanal ou mensal) — ao concluir, cria automaticamente a próxima ocorrência
-- Categorias com filtros na sidebar (por status, categoria e prioridade)
+- Categorias com cores personalizáveis e filtros na sidebar (por status, categoria e prioridade)
+- Filtro "Vence hoje" e "Vencidas" na visão geral
 - Dashboard com indicadores de produtividade
 - Perfil com nome, avatar e troca de senha
 - Sincronização em tempo real entre abas (Supabase Realtime)

@@ -7,6 +7,7 @@ import {
   OVERDUE_TODOS,
   SEED_CATEGORIAS,
   SEED_TODOS_WITH_CATEGORIES,
+  SORTABLE_TODOS,
 } from './helpers/seed'
 import { login, setupSupabaseMock, type SupabaseMockState } from './helpers/supabaseMock'
 
@@ -19,6 +20,7 @@ type Fixtures = {
   authenticatedWithDueTodayTasks: SupabaseMockState
   authenticatedWithCancelledTasks: SupabaseMockState
   authenticatedWithMixedPriorities: SupabaseMockState
+  authenticatedWithSortableTasks: SupabaseMockState
 }
 
 export const test = base.extend<Fixtures>({
@@ -67,6 +69,12 @@ export const test = base.extend<Fixtures>({
 
   authenticatedWithMixedPriorities: async ({ page }, use) => {
     const state = await setupSupabaseMock(page, { todos: MIXED_PRIORITY_TODOS })
+    await login(page)
+    await use(state)
+  },
+
+  authenticatedWithSortableTasks: async ({ page }, use) => {
+    const state = await setupSupabaseMock(page, { todos: SORTABLE_TODOS })
     await login(page)
     await use(state)
   },

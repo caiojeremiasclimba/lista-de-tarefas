@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import type { FiltroTarefas } from '../components/FilterSidebar'
+import type { TodoOrdenacao } from '../constants/todoOrdenacao'
 import type { Categoria } from '../types/categoria'
 import type { Todo, TodoPrioridade } from '../types/todo'
 import { computeTodoFilters, getListaVaziaMensagem } from '../utils/todoFilters'
@@ -11,6 +12,7 @@ interface UseTodoFiltersOptions {
   filtroAtivo: FiltroTarefas
   filtroCategoria: string | null
   filtroPrioridade: TodoPrioridade | null
+  ordenacao: TodoOrdenacao
 }
 
 export function useTodoFilters({
@@ -20,6 +22,7 @@ export function useTodoFilters({
   filtroAtivo,
   filtroCategoria,
   filtroPrioridade,
+  ordenacao,
 }: UseTodoFiltersOptions) {
   const filters = useMemo(
     () =>
@@ -30,8 +33,9 @@ export function useTodoFilters({
         filtroAtivo,
         filtroCategoria,
         filtroPrioridade,
+        ordenacao,
       }),
-    [todos, categorias, busca, filtroAtivo, filtroCategoria, filtroPrioridade]
+    [todos, categorias, busca, filtroAtivo, filtroCategoria, filtroPrioridade, ordenacao]
   )
 
   const listaVaziaMensagem = useMemo(

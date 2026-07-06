@@ -1,4 +1,9 @@
 import type { AppView, FiltroTarefas } from '../components/FilterSidebar'
+import {
+  DEFAULT_TODO_ORDENACAO,
+  TODO_ORDENACOES,
+  type TodoOrdenacao,
+} from '../constants/todoOrdenacao'
 import { TODO_PRIORIDADES } from '../constants/todoPrioridade'
 import { TODO_STATUSES } from '../constants/todoStatus'
 import type { TodoPrioridade, TodoStatus } from '../types/todo'
@@ -29,6 +34,7 @@ export interface AppShellPreferences {
   filtroAtivo: FiltroTarefas
   filtroCategoria: string | null
   filtroPrioridade: TodoPrioridade | null
+  ordenacao: TodoOrdenacao
   secoesAbertas: SecoesAbertas
 }
 
@@ -39,6 +45,7 @@ export function getDefaultAppShellPreferences(): AppShellPreferences {
     filtroAtivo: 'todas',
     filtroCategoria: null,
     filtroPrioridade: null,
+    ordenacao: DEFAULT_TODO_ORDENACAO,
     secoesAbertas: { ...DEFAULT_SECOES_ABERTAS },
   }
 }
@@ -53,6 +60,10 @@ function isFiltroTarefas(value: unknown): value is FiltroTarefas {
 
 function isTodoPrioridade(value: unknown): value is TodoPrioridade {
   return typeof value === 'string' && TODO_PRIORIDADES.includes(value as TodoPrioridade)
+}
+
+function isTodoOrdenacao(value: unknown): value is TodoOrdenacao {
+  return typeof value === 'string' && TODO_ORDENACOES.includes(value as TodoOrdenacao)
 }
 
 function parseFiltroCategoria(value: unknown): string | null | undefined {
@@ -89,6 +100,8 @@ function parseStoredPreferences(raw: unknown): AppShellPreferences | null {
 
   if (data.filtroPrioridade !== null && !isTodoPrioridade(data.filtroPrioridade)) return null
 
+  const ordenacao = isTodoOrdenacao(data.ordenacao) ? data.ordenacao : DEFAULT_TODO_ORDENACAO
+
   const secoesAbertas = parseSecoesAbertas(data.secoesAbertas)
   if (!secoesAbertas) return null
 
@@ -98,6 +111,7 @@ function parseStoredPreferences(raw: unknown): AppShellPreferences | null {
     filtroAtivo: data.filtroAtivo,
     filtroCategoria,
     filtroPrioridade: data.filtroPrioridade as TodoPrioridade | null,
+    ordenacao,
     secoesAbertas,
   }
 }

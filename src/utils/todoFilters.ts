@@ -1,9 +1,10 @@
 import { TODO_STATUSES, TODO_STATUS_CONFIG } from '../constants/todoStatus'
 import { TODO_PRIORIDADES, TODO_PRIORIDADE_CONFIG } from '../constants/todoPrioridade'
+import { DEFAULT_TODO_ORDENACAO, type TodoOrdenacao } from '../constants/todoOrdenacao'
 import type { FiltroCounts } from '../components/FilterSidebar'
 import type { Categoria, CategoriaDisplay } from '../types/categoria'
 import type { Todo, TodoPrioridade, TodoStatus } from '../types/todo'
-import { sortActiveTodos, sortFinalTodos } from './sortTodos'
+import { sortTodos } from './sortTodos'
 import { isTodoDueToday, isTodoOverdue } from './todoDue'
 
 export type SecoesAbertas = Record<TodoStatus | 'vencidas' | 'vence_hoje', boolean>
@@ -15,6 +16,7 @@ export interface TodoFiltersInput {
   filtroAtivo: 'todas' | TodoStatus | 'vencidas' | 'vence_hoje'
   filtroCategoria: string | null
   filtroPrioridade: TodoPrioridade | null
+  ordenacao?: TodoOrdenacao
 }
 
 export interface TodoFiltersResult {
@@ -54,7 +56,15 @@ function matchesSearch(todo: Todo, termo: string): boolean {
 }
 
 export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
-  const { todos, categorias, busca, filtroAtivo, filtroCategoria, filtroPrioridade } = input
+  const {
+    todos,
+    categorias,
+    busca,
+    filtroAtivo,
+    filtroCategoria,
+    filtroPrioridade,
+    ordenacao = DEFAULT_TODO_ORDENACAO,
+  } = input
   const termo = busca.toLowerCase()
 
   const filtradosParaContadores = todos.filter((t) => matchesSearch(t, termo))
@@ -73,13 +83,21 @@ export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
     TODO_STATUSES.map((status) => [status, filtradosPorBusca.filter((t) => t.status === status)])
   ) as Record<TodoStatus, Todo[]>
 
-  grouped.pendente = sortActiveTodos(grouped.pendente)
-  grouped.em_andamento = sortActiveTodos(grouped.em_andamento)
-  grouped.concluida = sortFinalTodos(grouped.concluida)
-  grouped.cancelada = sortFinalTodos(grouped.cancelada)
+  grouped.pendente = sortTodos(grouped.pendente, ordenacao, 'active')
+  grouped.em_andamento = sortTodos(grouped.em_andamento, ordenacao, 'active')
+  grouped.concluida = sortTodos(grouped.concluida, ordenacao, 'final')
+  grouped.cancelada = sortTodos(grouped.cancelada, ordenacao, 'final')
 
-  const vencidas = sortActiveTodos(filtradosPorBusca.filter((t) => isTodoOverdue(t)))
-  const venceHoje = sortActiveTodos(filtradosPorBusca.filter((t) => isTodoDueToday(t)))
+  const vencidas = sortTodos(
+    filtradosPorBusca.filter((t) => isTodoOverdue(t)),
+    ordenacao,
+    'active'
+  )
+  const venceHoje = sortTodos(
+    filtradosPorBusca.filter((t) => isTodoDueToday(t)),
+    ordenacao,
+    'active'
+  )
 
   const countsPorCategoria = Object.fromEntries(
     categorias.map((c) => [

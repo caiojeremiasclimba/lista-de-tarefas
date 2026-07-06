@@ -62,6 +62,7 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
     filtroAtivo: shell.filtroAtivo,
     filtroCategoria: shell.filtroCategoria,
     filtroPrioridade: shell.filtroPrioridade,
+    ordenacao: shell.ordenacao,
   })
 
   const { title, subtitle } = formatTodayHeader()
@@ -194,6 +195,8 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
           <TasksView
             busca={shell.busca}
             onBuscaChange={shell.setBusca}
+            ordenacao={shell.ordenacao}
+            onOrdenacaoChange={shell.setOrdenacao}
             loading={loading}
             filtroAtivo={shell.filtroAtivo}
             tarefasVisiveis={filters.tarefasVisiveis}

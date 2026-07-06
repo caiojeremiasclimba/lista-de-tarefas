@@ -216,6 +216,26 @@ describe('computeTodoFilters', () => {
     expect(result.porStatus.cancelada.map((t) => t.id)).toEqual(['cancelada'])
   })
 
+  it('ordena pendentes por título quando ordenacao é titulo', () => {
+    const todos = buildFixtureTodos()
+    const result = computeTodoFilters({
+      todos,
+      categorias,
+      busca: '',
+      filtroAtivo: 'todas',
+      filtroCategoria: null,
+      filtroPrioridade: null,
+      ordenacao: 'titulo',
+    })
+
+    expect(result.porStatus.pendente.map((t) => t.titulo)).toEqual([
+      'Enviar relatório',
+      'Ligar para cliente',
+      'Projeto alpha',
+      'Revisar código',
+    ])
+  })
+
   it('calcula contadores por status e vencidas', () => {
     const todos = buildFixtureTodos()
     const result = computeTodoFilters({
