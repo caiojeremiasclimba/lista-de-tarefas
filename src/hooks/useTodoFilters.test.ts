@@ -1,7 +1,20 @@
 import { renderHook } from '@testing-library/react'
 import type { FiltroTarefas } from '../components/FilterSidebar'
+import type { TodoOrdenacao } from '../constants/todoOrdenacao'
 import { makeCategoria, makeTodo, FIXED_TODAY } from '../test/fixtures/todos'
 import { useTodoFilters } from './useTodoFilters'
+
+const baseOptions = {
+  categorias: [makeCategoria({ id: 'cat-1', nome: 'Trabalho' })],
+  todos: [
+    makeTodo({ id: '1', titulo: 'Tarefa A', categoria_id: 'cat-1' }),
+    makeTodo({ id: '2', titulo: 'Tarefa B', status: 'concluida' }),
+  ],
+  busca: '',
+  filtroCategoria: null as string | null,
+  filtroPrioridade: null,
+  ordenacao: 'inteligente' as TodoOrdenacao,
+}
 
 describe('useTodoFilters', () => {
   beforeEach(() => {
@@ -13,21 +26,11 @@ describe('useTodoFilters', () => {
     vi.useRealTimers()
   })
 
-  const categorias = [makeCategoria({ id: 'cat-1', nome: 'Trabalho' })]
-  const todos = [
-    makeTodo({ id: '1', titulo: 'Tarefa A', categoria_id: 'cat-1' }),
-    makeTodo({ id: '2', titulo: 'Tarefa B', status: 'concluida' }),
-  ]
-
   it('delega filtros para computeTodoFilters', () => {
     const { result } = renderHook(() =>
       useTodoFilters({
-        todos,
-        categorias,
-        busca: '',
+        ...baseOptions,
         filtroAtivo: 'todas',
-        filtroCategoria: null,
-        filtroPrioridade: null,
       })
     )
 
@@ -38,12 +41,9 @@ describe('useTodoFilters', () => {
   it('filtra por busca e expõe mensagem de lista vazia', () => {
     const { result } = renderHook(() =>
       useTodoFilters({
-        todos,
-        categorias,
+        ...baseOptions,
         busca: 'inexistente',
         filtroAtivo: 'todas',
-        filtroCategoria: null,
-        filtroPrioridade: null,
       })
     )
 
@@ -55,12 +55,8 @@ describe('useTodoFilters', () => {
     const { result, rerender } = renderHook(
       ({ filtroAtivo }: { filtroAtivo: FiltroTarefas }) =>
         useTodoFilters({
-          todos,
-          categorias,
-          busca: '',
+          ...baseOptions,
           filtroAtivo,
-          filtroCategoria: null,
-          filtroPrioridade: null,
         }),
       { initialProps: { filtroAtivo: 'todas' as FiltroTarefas } }
     )
