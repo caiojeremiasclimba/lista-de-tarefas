@@ -2,6 +2,7 @@ import { test, expect } from './fixtures'
 import {
   completeTaskViaToggle,
   createRecurringTask,
+  editTaskDetails,
   openNewTaskModal,
   taskCard,
   taskSection,
@@ -75,5 +76,32 @@ test.describe('Tarefas — recorrência', () => {
 
     await expect(page.getByText('Informe a data prevista para repetir a tarefa')).toBeVisible()
     await expect(page.getByRole('dialog', { name: 'Nova tarefa' })).toBeVisible()
+  })
+
+  test('ao salvar como concluída no formulário, cria próxima ocorrência pendente', async ({
+    page,
+    authenticatedPage: _auth,
+  }) => {
+    const titulo = 'Relatório semanal'
+
+    await createRecurringTask(page, titulo, {
+      data_prevista: '2026-07-02',
+      tipo: 'semanal',
+    })
+
+    await editTaskDetails(page, titulo, { status: 'Concluída' })
+
+    const pendentes = taskSection(page, 'PENDENTES')
+    const concluidas = taskSection(page, 'CONCLUÍDAS')
+
+    const concluidaCard = concluidas.locator('li').filter({ hasText: titulo })
+    const pendenteCard = pendentes.locator('li').filter({ hasText: titulo })
+
+    await expect(concluidaCard.getByRole('heading', { name: titulo })).toBeVisible()
+    await expect(concluidaCard.getByText('Concluída', { exact: true })).toBeVisible()
+
+    await expect(pendenteCard.getByRole('heading', { name: titulo })).toBeVisible()
+    await expect(pendenteCard.getByText('Pendente', { exact: true })).toBeVisible()
+    await expect(pendenteCard.getByText('09/07/2026')).toBeVisible()
   })
 })

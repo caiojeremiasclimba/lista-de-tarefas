@@ -1,4 +1,4 @@
-import type { Todo, TodoRecorrenciaTipo, TodoStatus } from '../types/todo'
+import type { Todo, TodoFormData, TodoRecorrenciaTipo, TodoStatus } from '../types/todo'
 
 type RecurrenceFields = Pick<
   Todo,
@@ -80,4 +80,29 @@ export function shouldCreateNextOccurrence(todo: RecurrenceFields, newStatus: To
   if (!nextDate) return false
 
   return !todo.recorrencia_fim || nextDate <= todo.recorrencia_fim
+}
+
+type SaveRecurrenceFields = Pick<
+  TodoFormData,
+  'status' | 'data_prevista' | 'recorrencia_tipo' | 'recorrencia_intervalo' | 'recorrencia_fim'
+>
+
+/** Gera próxima ocorrência ao salvar formulário com status concluída (não ao re-salvar já concluída). */
+export function shouldCreateNextOnSave(
+  data: SaveRecurrenceFields,
+  previousStatus?: TodoStatus | null
+): boolean {
+  if (data.status !== 'concluida' || previousStatus === 'concluida') return false
+
+  const hasRecorrencia = data.recorrencia_tipo !== 'nenhuma'
+
+  return shouldCreateNextOccurrence(
+    {
+      data_prevista: data.data_prevista || null,
+      recorrencia_tipo: data.recorrencia_tipo,
+      recorrencia_intervalo: hasRecorrencia ? data.recorrencia_intervalo : 1,
+      recorrencia_fim: hasRecorrencia ? data.recorrencia_fim || null : null,
+    },
+    'concluida'
+  )
 }

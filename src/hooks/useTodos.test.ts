@@ -63,7 +63,7 @@ describe('useTodos', () => {
 
   it('adiciona tarefa nova após submitTodo', async () => {
     const saved = makeTodo({ id: 'new-todo', titulo: 'Nova' })
-    mockSaveTodo.mockResolvedValue(saved)
+    mockSaveTodo.mockResolvedValue({ savedTodo: saved, createdNextTodo: null })
 
     const { result } = renderHook(() => useTodos(USER_ID))
     await waitFor(() => expect(result.current.loading).toBe(false))
@@ -79,7 +79,7 @@ describe('useTodos', () => {
     const existing = makeTodo({ id: 'todo-1', titulo: 'Antigo' })
     const updated = makeTodo({ id: 'todo-1', titulo: 'Novo' })
     mockFetchTodos.mockResolvedValue([existing])
-    mockSaveTodo.mockResolvedValue(updated)
+    mockSaveTodo.mockResolvedValue({ savedTodo: updated, createdNextTodo: null })
 
     const { result } = renderHook(() => useTodos(USER_ID))
     await waitFor(() => expect(result.current.loading).toBe(false))
@@ -89,6 +89,28 @@ describe('useTodos', () => {
     })
 
     expect(result.current.todos[0].titulo).toBe('Novo')
+  })
+
+  it('adiciona próxima ocorrência à lista ao salvar tarefa recorrente como concluída', async () => {
+    const existing = makeTodo({ id: 'todo-1', titulo: 'Reunião', status: 'pendente' })
+    const saved = makeTodo({ id: 'todo-1', titulo: 'Reunião', status: 'concluida' })
+    const next = makeTodo({ id: 'todo-2', titulo: 'Reunião', status: 'pendente' })
+    mockFetchTodos.mockResolvedValue([existing])
+    mockSaveTodo.mockResolvedValue({ savedTodo: saved, createdNextTodo: next })
+
+    const { result } = renderHook(() => useTodos(USER_ID))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    await act(async () => {
+      await result.current.submitTodo(
+        makeTodoFormData({ titulo: 'Reunião', status: 'concluida' }),
+        existing
+      )
+    })
+
+    expect(result.current.todos).toHaveLength(2)
+    expect(result.current.todos[0]).toEqual(next)
+    expect(result.current.todos[1]).toEqual(saved)
   })
 
   it('mantém lista e repassa erro quando submitTodo falha', async () => {

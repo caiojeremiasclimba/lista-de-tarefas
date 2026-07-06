@@ -253,7 +253,7 @@ describe('saveTodo', () => {
       completed_at: null,
       user_id: AUTH_USER.id,
     })
-    expect(result).toEqual({ ...created, subtarefas: [] })
+    expect(result).toEqual({ savedTodo: { ...created, subtarefas: [] }, createdNextTodo: null })
   })
 
   it('inclui recorrência no payload de criação', async () => {
@@ -344,7 +344,78 @@ describe('saveTodo', () => {
 
     const result = await saveTodo(makeTodoFormData({ titulo: 'Atualizado' }), editingTodo)
 
-    expect(result).toEqual(fetched)
+    expect(result).toEqual({ savedTodo: fetched, createdNextTodo: null })
+  })
+
+  it('cria próxima ocorrência ao salvar tarefa recorrente como concluída no formulário', async () => {
+    mockAuthenticatedUser()
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-07-02T12:00:00.000Z'))
+
+    const editingTodo = makeTodo({
+      id: 'todo-1',
+      status: 'pendente',
+      data_prevista: '2026-07-02',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+      subtarefas: [makeSubtarefa({ id: 'sub-1', titulo: 'Checklist' })],
+    })
+    const fetched = makeTodo({
+      id: 'todo-1',
+      status: 'concluida',
+      data_prevista: '2026-07-02',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+      subtarefas: [makeSubtarefa({ id: 'sub-1', titulo: 'Checklist' })],
+    })
+    const next = makeTodo({
+      id: 'todo-2',
+      status: 'pendente',
+      data_prevista: '2026-07-09',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+      recorrencia_origem_id: 'todo-1',
+      subtarefas: undefined,
+    })
+    const nextSubtarefas = [
+      makeSubtarefa({
+        id: 'sub-2',
+        tarefa_id: 'todo-2',
+        titulo: 'Checklist',
+        concluida: false,
+      }),
+    ]
+
+    let tarefasCalls = 0
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'tarefas') {
+        tarefasCalls++
+        if (tarefasCalls === 1) {
+          return createMockQueryBuilder({ data: null, error: null })
+        }
+        if (tarefasCalls === 2) {
+          return createMockQueryBuilder({ data: fetched, error: null })
+        }
+        return createMockQueryBuilder({ data: next, error: null })
+      }
+      return createMockQueryBuilder({ data: nextSubtarefas, error: null })
+    })
+
+    const result = await saveTodo(
+      makeTodoFormData({
+        status: 'concluida',
+        data_prevista: '2026-07-02',
+        recorrencia_tipo: 'semanal',
+        recorrencia_intervalo: 1,
+      }),
+      editingTodo
+    )
+
+    expect(result.savedTodo).toEqual(fetched)
+    expect(result.createdNextTodo).toEqual({ ...next, subtarefas: nextSubtarefas })
+    expect(tarefasCalls).toBe(3)
+
+    vi.useRealTimers()
   })
 
   it('cria nova tarefa com anexo e busca registro atualizado', async () => {
@@ -384,8 +455,55 @@ describe('saveTodo', () => {
     const result = await saveTodo(makeTodoFormData({ titulo: 'Com anexo', anexoFile }))
 
     expect(mockUploadAttachment).toHaveBeenCalledWith(AUTH_USER.id, 'new-todo', anexoFile)
-    expect(result).toEqual(fetched)
+    expect(result).toEqual({ savedTodo: fetched, createdNextTodo: null })
     expect(tarefasCalls).toBe(3)
+  })
+
+  it('não cria próxima ocorrência ao re-salvar tarefa já concluída', async () => {
+    mockAuthenticatedUser()
+    const editingTodo = makeTodo({
+      id: 'todo-1',
+      status: 'concluida',
+      data_prevista: '2026-07-02',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+      subtarefas: [],
+    })
+    const fetched = makeTodo({
+      id: 'todo-1',
+      titulo: 'Título atualizado',
+      status: 'concluida',
+      data_prevista: '2026-07-02',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+      subtarefas: [],
+    })
+
+    let tarefasCalls = 0
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'tarefas') {
+        tarefasCalls++
+        return createMockQueryBuilder({
+          data: tarefasCalls === 1 ? null : fetched,
+          error: null,
+        })
+      }
+      return createMockQueryBuilder({ data: null, error: null })
+    })
+
+    const result = await saveTodo(
+      makeTodoFormData({
+        titulo: 'Título atualizado',
+        status: 'concluida',
+        data_prevista: '2026-07-02',
+        recorrencia_tipo: 'semanal',
+        recorrencia_intervalo: 1,
+      }),
+      editingTodo
+    )
+
+    expect(result).toEqual({ savedTodo: fetched, createdNextTodo: null })
+    expect(tarefasCalls).toBe(2)
   })
 
   it('faz rollback da tarefa criada quando upload do anexo falha', async () => {
@@ -527,7 +645,7 @@ describe('saveTodo', () => {
 
     expect(mockUploadAttachment).toHaveBeenCalledWith(AUTH_USER.id, 'todo-1', anexoFile)
     expect(mockRemoveAttachment).toHaveBeenCalledWith('user-1/todo-1/antigo.pdf')
-    expect(result).toEqual(fetched)
+    expect(result).toEqual({ savedTodo: fetched, createdNextTodo: null })
   })
 
   it('faz rollback da edição quando sync de subtarefas falha', async () => {

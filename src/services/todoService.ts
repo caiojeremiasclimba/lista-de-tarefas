@@ -14,10 +14,19 @@ import {
   syncSubtarefas,
 } from '../utils/subtarefaSync'
 import { completedAtForStatusChange } from '../utils/todoCompletedAt'
-import { getNextRecurringDate, shouldCreateNextOccurrence } from '../utils/todoRecurrence'
+import {
+  getNextRecurringDate,
+  shouldCreateNextOccurrence,
+  shouldCreateNextOnSave,
+} from '../utils/todoRecurrence'
 
 export interface ToggleTodoStatusResult {
   updatedTodo: Todo
+  createdNextTodo: Todo | null
+}
+
+export interface SaveTodoResult {
+  savedTodo: Todo
   createdNextTodo: Todo | null
 }
 
@@ -199,7 +208,19 @@ async function rollbackEditedTodo(editingTodo: Todo, userId: string): Promise<vo
   }
 }
 
-export async function saveTodo(data: TodoFormData, editingTodo?: Todo | null): Promise<Todo> {
+async function maybeCreateNextRecurringOnSave(
+  savedTodo: Todo,
+  data: TodoFormData,
+  editingTodo?: Todo | null
+): Promise<Todo | null> {
+  if (!shouldCreateNextOnSave(data, editingTodo?.status ?? null)) return null
+  return createNextRecurringTodo(savedTodo)
+}
+
+export async function saveTodo(
+  data: TodoFormData,
+  editingTodo?: Todo | null
+): Promise<SaveTodoResult> {
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -223,7 +244,9 @@ export async function saveTodo(data: TodoFormData, editingTodo?: Todo | null): P
       throw err instanceof Error ? err : new Error('Erro ao salvar tarefa.')
     }
 
-    return fetchTodoWithSubtarefas(editingTodo.id)
+    const savedTodo = await fetchTodoWithSubtarefas(editingTodo.id)
+    const createdNextTodo = await maybeCreateNextRecurringOnSave(savedTodo, data, editingTodo)
+    return { savedTodo, createdNextTodo }
   }
 
   const { data: created, error: insertError } = await supabase
@@ -239,10 +262,14 @@ export async function saveTodo(data: TodoFormData, editingTodo?: Todo | null): P
 
     if (data.anexoFile) {
       await syncTodoAnexo(created.id, user.id, data)
-      return fetchTodoWithSubtarefas(created.id)
+      const savedTodo = await fetchTodoWithSubtarefas(created.id)
+      const createdNextTodo = await maybeCreateNextRecurringOnSave(savedTodo, data)
+      return { savedTodo, createdNextTodo }
     }
 
-    return { ...created, subtarefas }
+    const savedTodo = { ...created, subtarefas }
+    const createdNextTodo = await maybeCreateNextRecurringOnSave(savedTodo, data)
+    return { savedTodo, createdNextTodo }
   } catch (err) {
     await rollbackCreatedTodo(created.id)
     throw err instanceof Error ? err : new Error('Erro ao salvar tarefa.')
