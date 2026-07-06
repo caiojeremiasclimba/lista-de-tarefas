@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { TODO_STATUS_CONFIG } from '../constants/todoStatus'
 import { TODO_PRIORIDADE_CONFIG } from '../constants/todoPrioridade'
 import { TODO_RECORRENCIA_CONFIG } from '../constants/todoRecorrencia'
+import { getLembreteShortLabel } from '../utils/reminderEligibility'
 import type { Subtarefa } from '../types/subtarefa'
 import type { Todo } from '../types/todo'
 import { useAttachmentSignedUrl } from '../hooks/useAttachmentSignedUrl'
@@ -48,6 +49,8 @@ export default function TodoItem({
   const prioridadeConfig = TODO_PRIORIDADE_CONFIG[todo.prioridade]
   const recorrente = todo.recorrencia_tipo !== 'nenhuma'
   const recorrenciaLabel = TODO_RECORRENCIA_CONFIG[todo.recorrencia_tipo].label
+  const temLembrete = todo.lembrete_email && Boolean(todo.data_prevista)
+  const lembreteLabel = getLembreteShortLabel(todo.lembrete_tipo)
   const subtarefas = todo.subtarefas ?? []
   const { concluidas, total } = getSubtarefaProgress(subtarefas)
   const progressPercent = total > 0 ? Math.round((concluidas / total) * 100) : 0
@@ -168,6 +171,11 @@ export default function TodoItem({
             {recorrente && (
               <span className="rounded-full bg-cyan-100 px-1.5 py-0.5 text-[10px] font-medium text-cyan-700 sm:px-2 sm:text-xs">
                 Recorrente · {recorrenciaLabel}
+              </span>
+            )}
+            {temLembrete && (
+              <span className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-[10px] font-medium text-indigo-700 sm:px-2 sm:text-xs">
+                {lembreteLabel}
               </span>
             )}
             {categoriaNome && (
