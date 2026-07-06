@@ -6,8 +6,6 @@ export type TodoPrioridade = 'baixa' | 'media' | 'alta'
 
 export type TodoRecorrenciaTipo = 'nenhuma' | 'diaria' | 'semanal' | 'mensal'
 
-export type TodoLembreteTipo = 'no_dia' | 'um_dia_antes' | 'ambos'
-
 export interface Todo {
   id: string
   user_id: string
@@ -26,8 +24,6 @@ export interface Todo {
   recorrencia_intervalo: number
   recorrencia_fim: string | null
   recorrencia_origem_id: string | null
-  lembrete_email: boolean
-  lembrete_tipo: TodoLembreteTipo
   subtarefas?: Subtarefa[]
 }
 
@@ -44,8 +40,6 @@ export interface TodoFormData {
   recorrencia_tipo: TodoRecorrenciaTipo
   recorrencia_intervalo: number
   recorrencia_fim: string
-  lembrete_email: boolean
-  lembrete_tipo: TodoLembreteTipo
 }
 
 export interface TodoValidationErrors {

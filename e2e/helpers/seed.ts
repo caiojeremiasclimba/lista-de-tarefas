@@ -16,8 +16,6 @@ function baseTodo(
     recorrencia_intervalo: 1,
     recorrencia_fim: null,
     recorrencia_origem_id: null,
-    lembrete_email: false,
-    lembrete_tipo: 'no_dia',
     ...overrides,
   }
 }

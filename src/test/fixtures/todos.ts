@@ -18,8 +18,6 @@ export function makeTodo(overrides: Partial<Todo> = {}): Todo {
     recorrencia_intervalo: 1,
     recorrencia_fim: null,
     recorrencia_origem_id: null,
-    lembrete_email: false,
-    lembrete_tipo: 'no_dia',
     ...overrides,
   }
 }
@@ -59,8 +57,6 @@ export function makeTodoFormData(overrides: Partial<TodoFormData> = {}): TodoFor
     recorrencia_tipo: 'nenhuma',
     recorrencia_intervalo: 1,
     recorrencia_fim: '',
-    lembrete_email: false,
-    lembrete_tipo: 'no_dia',
     ...overrides,
   }
 }

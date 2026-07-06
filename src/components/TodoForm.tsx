@@ -5,13 +5,11 @@ import { createSubtarefaDraft } from '../types/subtarefa'
 import type {
   Todo,
   TodoFormData,
-  TodoLembreteTipo,
   TodoPrioridade,
   TodoRecorrenciaTipo,
   TodoStatus,
 } from '../types/todo'
 import { TODO_PRIORIDADE_CONFIG, TODO_PRIORIDADES } from '../constants/todoPrioridade'
-import { TODO_LEMBRETE_CONFIG, TODO_LEMBRETE_TIPOS } from '../constants/todoLembrete'
 import { TODO_RECORRENCIA_CONFIG, TODO_RECORRENCIA_TIPOS } from '../constants/todoRecorrencia'
 import { TODO_STATUS_CONFIG, TODO_STATUSES } from '../constants/todoStatus'
 import { validateAttachmentFile } from '../utils/attachmentStorage'
@@ -40,8 +38,6 @@ const emptyForm: TodoFormData = {
   recorrencia_tipo: 'nenhuma',
   recorrencia_intervalo: 1,
   recorrencia_fim: '',
-  lembrete_email: false,
-  lembrete_tipo: 'no_dia',
 }
 
 export default function TodoForm({
@@ -63,7 +59,6 @@ export default function TodoForm({
   const isEditing = Boolean(editingTodo)
   const hasExistingAnexo = Boolean(editingTodo?.anexo_path) && !form.removerAnexo && !form.anexoFile
   const hasRecorrencia = form.recorrencia_tipo !== 'nenhuma'
-  const canEnableLembrete = Boolean(form.data_prevista)
   const recorrenciaIntervalLabel = TODO_RECORRENCIA_CONFIG[form.recorrencia_tipo].intervalPlural
 
   useEffect(() => {
@@ -88,8 +83,6 @@ export default function TodoForm({
         recorrencia_tipo: editingTodo.recorrencia_tipo,
         recorrencia_intervalo: editingTodo.recorrencia_intervalo,
         recorrencia_fim: editingTodo.recorrencia_fim ?? '',
-        lembrete_email: editingTodo.lembrete_email,
-        lembrete_tipo: editingTodo.lembrete_tipo,
       })
     } else {
       setForm({
@@ -163,19 +156,7 @@ export default function TodoForm({
   }
 
   function handleDataPrevistaChange(value: string) {
-    setForm((prev) => ({
-      ...prev,
-      data_prevista: value,
-      lembrete_email: value ? prev.lembrete_email : false,
-    }))
-  }
-
-  function handleToggleLembrete(enabled: boolean) {
-    setForm((prev) => ({
-      ...prev,
-      lembrete_email: enabled,
-      lembrete_tipo: enabled ? prev.lembrete_tipo : 'no_dia',
-    }))
+    updateField('data_prevista', value)
   }
 
   async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
@@ -377,50 +358,6 @@ export default function TodoForm({
             ))}
           </select>
         </div>
-      </div>
-
-      <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-3">
-        <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-          <input
-            id="lembrete_email"
-            type="checkbox"
-            checked={form.lembrete_email}
-            disabled={!canEnableLembrete}
-            onChange={(e) => handleToggleLembrete(e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
-          />
-          Enviar lembrete por e-mail
-        </label>
-        {!canEnableLembrete && (
-          <p className="mt-2 text-xs text-slate-500">
-            Informe uma data prevista para ativar lembretes por e-mail.
-          </p>
-        )}
-        {form.lembrete_email && canEnableLembrete && (
-          <div className="mt-3">
-            <label
-              htmlFor="lembrete_tipo"
-              className="mb-1 block text-sm font-medium text-slate-700"
-            >
-              Quando lembrar
-            </label>
-            <select
-              id="lembrete_tipo"
-              value={form.lembrete_tipo}
-              onChange={(e) => updateField('lembrete_tipo', e.target.value as TodoLembreteTipo)}
-              className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            >
-              {TODO_LEMBRETE_TIPOS.map((tipo) => (
-                <option key={tipo} value={tipo}>
-                  {TODO_LEMBRETE_CONFIG[tipo].label}
-                </option>
-              ))}
-            </select>
-            <p className="mt-2 text-xs text-slate-500">
-              O horário do envio é configurado em Meu perfil.
-            </p>
-          </div>
-        )}
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-3">

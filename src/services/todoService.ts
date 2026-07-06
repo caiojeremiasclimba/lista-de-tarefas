@@ -107,8 +107,6 @@ function buildTodoPayload(data: TodoFormData, editingTodo?: Todo | null) {
     recorrencia_tipo: data.recorrencia_tipo,
     recorrencia_intervalo: hasRecorrencia ? data.recorrencia_intervalo : 1,
     recorrencia_fim: hasRecorrencia ? data.recorrencia_fim || null : null,
-    lembrete_email: Boolean(data.data_prevista && data.lembrete_email),
-    lembrete_tipo: data.lembrete_tipo,
     completed_at: completedAtForStatusChange(
       data.status,
       editingTodo?.status,
@@ -192,8 +190,6 @@ async function rollbackEditedTodo(editingTodo: Todo, userId: string): Promise<vo
       recorrencia_intervalo: editingTodo.recorrencia_intervalo,
       recorrencia_fim: editingTodo.recorrencia_fim,
       recorrencia_origem_id: editingTodo.recorrencia_origem_id,
-      lembrete_email: editingTodo.lembrete_email,
-      lembrete_tipo: editingTodo.lembrete_tipo,
     })
     .eq('id', editingTodo.id)
 
@@ -383,8 +379,6 @@ async function createNextRecurringTodo(todo: Todo): Promise<Todo | null> {
       recorrencia_intervalo: todo.recorrencia_intervalo,
       recorrencia_fim: todo.recorrencia_fim,
       recorrencia_origem_id: todo.recorrencia_origem_id ?? todo.id,
-      lembrete_email: todo.lembrete_email,
-      lembrete_tipo: todo.lembrete_tipo,
     })
     .select()
     .single()

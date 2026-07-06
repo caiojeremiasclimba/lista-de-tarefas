@@ -48,8 +48,6 @@ export interface MockTodo {
   recorrencia_intervalo: number
   recorrencia_fim: string | null
   recorrencia_origem_id: string | null
-  lembrete_email?: boolean
-  lembrete_tipo?: string
 }
 
 export interface MockCategoria {
@@ -68,18 +66,10 @@ interface MockSubtarefa {
   concluida: boolean
 }
 
-interface MockPreferenciasLembrete {
-  user_id: string
-  horario_local: string
-  timezone: string
-  updated_at: string
-}
-
 export interface SupabaseMockState {
   todos: MockTodo[]
   categorias: MockCategoria[]
   subtarefas: MockSubtarefa[]
-  preferenciasLembrete: MockPreferenciasLembrete[]
   user: MockUser
   /** Falhas REST simuladas (chave: "METHOD:tabela", consumidas uma vez). */
   restFailures?: Record<string, string>
@@ -156,7 +146,6 @@ function createEmptyState(): SupabaseMockState {
     todos: [],
     categorias: [],
     subtarefas: [],
-    preferenciasLembrete: [],
     user: structuredClone(E2E_USER),
   }
 }
@@ -441,8 +430,6 @@ function handleRest(route: Route, url: URL, state: SupabaseMockState) {
         recorrencia_intervalo: Number(body.recorrencia_intervalo ?? 1),
         recorrencia_fim: (body.recorrencia_fim as string | null) ?? null,
         recorrencia_origem_id: (body.recorrencia_origem_id as string | null) ?? null,
-        lembrete_email: Boolean(body.lembrete_email),
-        lembrete_tipo: String(body.lembrete_tipo ?? 'no_dia'),
       }
       state.todos.push(created)
       return json(route, created)
@@ -578,35 +565,6 @@ function handleRest(route: Route, url: URL, state: SupabaseMockState) {
     }
   }
 
-  if (table === 'preferencias_lembrete') {
-    if (method === 'GET') {
-      const userId = parseEqFilter(params, 'user_id')
-      if (userId) {
-        const prefs = state.preferenciasLembrete.find((item) => item.user_id === userId)
-        if (!prefs) return json(route, null)
-        return json(route, prefs)
-      }
-      return json(route, state.preferenciasLembrete)
-    }
-
-    if (method === 'POST') {
-      const body = route.request().postDataJSON() as Record<string, unknown>
-      const row: MockPreferenciasLembrete = {
-        user_id: String(body.user_id ?? E2E_USER.id),
-        horario_local: String(body.horario_local ?? '08:00:00'),
-        timezone: String(body.timezone ?? 'America/Sao_Paulo'),
-        updated_at: String(body.updated_at ?? new Date().toISOString()),
-      }
-      const index = state.preferenciasLembrete.findIndex((item) => item.user_id === row.user_id)
-      if (index === -1) {
-        state.preferenciasLembrete.push(row)
-      } else {
-        state.preferenciasLembrete[index] = row
-      }
-      return json(route, row)
-    }
-  }
-
   return json(route, { message: `REST mock não implementado: ${method} ${table}` }, 404)
 }
 
@@ -620,7 +578,6 @@ export async function setupSupabaseMock(
     todos: [...(initialState.todos ?? [])],
     categorias: [...(initialState.categorias ?? [])],
     subtarefas: [...(initialState.subtarefas ?? [])],
-    preferenciasLembrete: [...(initialState.preferenciasLembrete ?? [])],
     user: initialState.user ? structuredClone(initialState.user) : structuredClone(E2E_USER),
   }
 
