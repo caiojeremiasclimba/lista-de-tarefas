@@ -1,4 +1,8 @@
-import { TODO_ORDENACAO_CONFIG, TODO_ORDENACOES, type TodoOrdenacao } from '../constants/todoOrdenacao'
+import {
+  TODO_ORDENACAO_CONFIG,
+  TODO_ORDENACOES,
+  type TodoOrdenacao,
+} from '../constants/todoOrdenacao'
 
 interface SortSelectProps {
   value: TodoOrdenacao
