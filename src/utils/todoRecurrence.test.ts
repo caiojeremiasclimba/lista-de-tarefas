@@ -1,5 +1,5 @@
 import { makeTodo } from '../test/fixtures/todos'
-import { getNextRecurringDate, isRecurringTodo, shouldCreateNextOccurrence } from './todoRecurrence'
+import { getNextRecurringDate, isRecurringTodo, shouldCreateNextOccurrence, shouldCreateNextOnSave } from './todoRecurrence'
 
 describe('isRecurringTodo', () => {
   it('retorna false para recorrencia nenhuma', () => {
@@ -73,6 +73,53 @@ describe('shouldCreateNextOccurrence', () => {
           recorrencia_fim: '2026-07-05',
         }),
         'concluida'
+      )
+    ).toBe(false)
+  })
+})
+
+describe('shouldCreateNextOnSave', () => {
+  it('retorna true ao salvar tarefa recorrente como concluida', () => {
+    expect(
+      shouldCreateNextOnSave(
+        {
+          status: 'concluida',
+          data_prevista: '2026-07-02',
+          recorrencia_tipo: 'semanal',
+          recorrencia_intervalo: 1,
+          recorrencia_fim: '',
+        },
+        'pendente'
+      )
+    ).toBe(true)
+  })
+
+  it('retorna false ao re-salvar tarefa ja concluida', () => {
+    expect(
+      shouldCreateNextOnSave(
+        {
+          status: 'concluida',
+          data_prevista: '2026-07-02',
+          recorrencia_tipo: 'semanal',
+          recorrencia_intervalo: 1,
+          recorrencia_fim: '',
+        },
+        'concluida'
+      )
+    ).toBe(false)
+  })
+
+  it('retorna false quando status salvo nao e concluida', () => {
+    expect(
+      shouldCreateNextOnSave(
+        {
+          status: 'em_andamento',
+          data_prevista: '2026-07-02',
+          recorrencia_tipo: 'semanal',
+          recorrencia_intervalo: 1,
+          recorrencia_fim: '',
+        },
+        'pendente'
       )
     ).toBe(false)
   })

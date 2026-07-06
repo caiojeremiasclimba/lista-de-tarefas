@@ -35,12 +35,17 @@ export function useTodos(userId: string) {
   useSupabaseRealtime(userId, TODOS_REALTIME_TABLES, loadTodos)
 
   const submitTodo = useCallback(async (data: TodoFormData, editingTodo?: Todo | null) => {
-    const saved = await saveTodo(data, editingTodo)
+    const { savedTodo, createdNextTodo } = await saveTodo(data, editingTodo)
 
     if (editingTodo) {
-      setTodos((prev) => prev.map((t) => (t.id === editingTodo.id ? saved : t)))
+      setTodos((prev) => {
+        const updatedList = prev.map((t) => (t.id === editingTodo.id ? savedTodo : t))
+        return createdNextTodo ? [createdNextTodo, ...updatedList] : updatedList
+      })
     } else {
-      setTodos((prev) => [saved, ...prev])
+      setTodos((prev) =>
+        createdNextTodo ? [createdNextTodo, savedTodo, ...prev] : [savedTodo, ...prev]
+      )
     }
   }, [])
 
