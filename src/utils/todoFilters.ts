@@ -1,7 +1,7 @@
 import { TODO_STATUSES, TODO_STATUS_CONFIG } from '../constants/todoStatus'
 import { TODO_PRIORIDADES, TODO_PRIORIDADE_CONFIG } from '../constants/todoPrioridade'
 import type { FiltroCounts } from '../components/FilterSidebar'
-import type { CategoriaDisplay } from '../types/categoria'
+import type { Categoria, CategoriaDisplay } from '../types/categoria'
 import type { Todo, TodoPrioridade, TodoStatus } from '../types/todo'
 import { sortActiveTodos, sortFinalTodos } from './sortTodos'
 import { isTodoDueToday, isTodoOverdue } from './todoDue'
