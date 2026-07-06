@@ -9,9 +9,9 @@ import {
 
 describe('getRecurrenceSeriesRootId', () => {
   it('usa recorrencia_origem_id quando definido', () => {
-    expect(getRecurrenceSeriesRootId(makeTodo({ id: 'todo-2', recorrencia_origem_id: 'todo-1' }))).toBe(
-      'todo-1'
-    )
+    expect(
+      getRecurrenceSeriesRootId(makeTodo({ id: 'todo-2', recorrencia_origem_id: 'todo-1' }))
+    ).toBe('todo-1')
   })
 
   it('usa id da tarefa quando não há origem', () => {
