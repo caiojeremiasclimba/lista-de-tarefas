@@ -1,4 +1,5 @@
 import { TODO_STATUS_CONFIG } from '../../constants/todoStatus'
+import type { TodoOrdenacao } from '../../constants/todoOrdenacao'
 import type { FiltroTarefas } from '../FilterSidebar'
 import type { CategoriaDisplay } from '../../types/categoria'
 import type { Subtarefa } from '../../types/subtarefa'
@@ -6,11 +7,14 @@ import type { Todo, TodoStatus } from '../../types/todo'
 import type { SecoesAbertas } from '../../utils/todoFilters'
 import { formatTodayHeader } from '../../utils/formatTodoDate'
 import SearchBar from '../SearchBar'
+import SortSelect from '../SortSelect'
 import TaskSection from '../TaskSection'
 
 interface TasksViewProps {
   busca: string
   onBuscaChange: (value: string) => void
+  ordenacao: TodoOrdenacao
+  onOrdenacaoChange: (value: TodoOrdenacao) => void
   loading: boolean
   filtroAtivo: FiltroTarefas
   tarefasVisiveis: Todo[]
@@ -31,6 +35,8 @@ interface TasksViewProps {
 export default function TasksView({
   busca,
   onBuscaChange,
+  ordenacao,
+  onOrdenacaoChange,
   loading,
   filtroAtivo,
   tarefasVisiveis,
@@ -56,7 +62,10 @@ export default function TasksView({
         <p className="mt-1 text-sm text-slate-500 sm:text-base">{subtitle}</p>
       </header>
 
-      <SearchBar value={busca} onChange={onBuscaChange} />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+        <SearchBar value={busca} onChange={onBuscaChange} />
+        <SortSelect value={ordenacao} onChange={onOrdenacaoChange} />
+      </div>
 
       {loading ? (
         <p className="text-center text-slate-500">Carregando tarefas...</p>

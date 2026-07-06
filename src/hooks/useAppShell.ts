@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
+import type { AppView, FiltroTarefas } from '../components/FilterSidebar'
+import type { TodoOrdenacao } from '../constants/todoOrdenacao'
 import type { Categoria } from '../types/categoria'
 import type { Todo, TodoPrioridade, TodoStatus } from '../types/todo'
-import type { AppView, FiltroTarefas } from '../components/FilterSidebar'
 import {
   getDefaultAppShellPreferences,
   loadAppShellPreferences,
@@ -25,6 +26,7 @@ export function useAppShell() {
   const [filtroPrioridade, setFiltroPrioridade] = useState<TodoPrioridade | null>(
     () => readInitialPrefs().filtroPrioridade
   )
+  const [ordenacao, setOrdenacao] = useState<TodoOrdenacao>(() => readInitialPrefs().ordenacao)
   const [showForm, setShowForm] = useState(false)
   const [showCategoriaForm, setShowCategoriaForm] = useState(false)
   const [editingCategoria, setEditingCategoria] = useState<Categoria | null>(null)
@@ -42,9 +44,10 @@ export function useAppShell() {
       filtroAtivo,
       filtroCategoria,
       filtroPrioridade,
+      ordenacao,
       secoesAbertas,
     })
-  }, [view, filtroAtivo, filtroCategoria, filtroPrioridade, secoesAbertas])
+  }, [view, filtroAtivo, filtroCategoria, filtroPrioridade, ordenacao, secoesAbertas])
 
   const closeSidebar = useCallback(() => setSidebarOpen(false), [])
 
@@ -147,6 +150,8 @@ export function useAppShell() {
     setFiltroCategoria,
     filtroPrioridade,
     setFiltroPrioridade,
+    ordenacao,
+    setOrdenacao,
     showForm,
     showCategoriaForm,
     editingCategoria,

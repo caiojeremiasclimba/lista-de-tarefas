@@ -153,6 +153,24 @@ export const DUE_TODAY_TODOS: MockTodo[] = [
   }),
 ]
 
+/** Tarefas com títulos e datas distintos para testes de ordenação. */
+export const SORTABLE_TODOS: MockTodo[] = [
+  baseTodo({
+    id: 'e2e-sort-zebra',
+    titulo: 'Zebra ordenar',
+    status: 'pendente',
+    data_prevista: '2026-07-10',
+    created_at: '2026-06-01T10:00:00.000Z',
+  }),
+  baseTodo({
+    id: 'e2e-sort-abacaxi',
+    titulo: 'Abacaxi ordenar',
+    status: 'pendente',
+    data_prevista: '2026-07-05',
+    created_at: '2026-06-02T10:00:00.000Z',
+  }),
+]
+
 export const CANCELLED_TODOS: MockTodo[] = [
   baseTodo({
     id: 'e2e-todo-cancelada',

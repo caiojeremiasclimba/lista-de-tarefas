@@ -13,6 +13,7 @@ describe('useAppShell', () => {
 
     expect(result.current.busca).toBe('')
     expect(result.current.filtroAtivo).toBe('todas')
+    expect(result.current.ordenacao).toBe('inteligente')
     expect(result.current.view).toBe('tarefas')
     expect(result.current.showForm).toBe(false)
     expect(result.current.sidebarOpen).toBe(false)
@@ -125,6 +126,7 @@ describe('useAppShell', () => {
       result.current.handleFiltroChange('pendente')
       result.current.handleCategoriaChange('cat-1')
       result.current.handlePrioridadeChange('alta')
+      result.current.setOrdenacao('titulo')
       result.current.toggleSecao('concluida')
     })
 
@@ -136,6 +138,7 @@ describe('useAppShell', () => {
     expect(restored.current.filtroAtivo).toBe('pendente')
     expect(restored.current.filtroCategoria).toBe('cat-1')
     expect(restored.current.filtroPrioridade).toBe('alta')
+    expect(restored.current.ordenacao).toBe('titulo')
     expect(restored.current.secoesAbertas.concluida).toBe(false)
   })
 
