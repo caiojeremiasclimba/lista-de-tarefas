@@ -1,5 +1,10 @@
 import { makeTodo } from '../test/fixtures/todos'
-import { getNextRecurringDate, isRecurringTodo, shouldCreateNextOccurrence, shouldCreateNextOnSave } from './todoRecurrence'
+import {
+  getNextRecurringDate,
+  isRecurringTodo,
+  shouldCreateNextOccurrence,
+  shouldCreateNextOnSave,
+} from './todoRecurrence'
 
 describe('isRecurringTodo', () => {
   it('retorna false para recorrencia nenhuma', () => {
