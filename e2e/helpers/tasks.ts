@@ -148,3 +148,43 @@ export async function editTaskDetails(
   await page.getByRole('button', { name: 'Salvar alterações' }).click()
   await expect(page.getByText('Tarefa atualizada com sucesso.')).toBeVisible()
 }
+
+export function taskSection(page: Page, title: 'PENDENTES' | 'CONCLUÍDAS' | 'EM ANDAMENTO' | 'CANCELADAS') {
+  return page.locator('section').filter({
+    has: page.getByRole('button').filter({ hasText: title }),
+  })
+}
+
+export type RecorrenciaTipo = 'diaria' | 'semanal' | 'mensal'
+
+export async function createRecurringTask(
+  page: Page,
+  titulo: string,
+  options: {
+    data_prevista: string
+    tipo?: RecorrenciaTipo
+    recorrencia_fim?: string
+  }
+) {
+  await openNewTaskModal(page)
+  await page.getByLabel('Título *').fill(titulo)
+  await page.locator('#data_prevista').fill(options.data_prevista)
+  await page.locator('#recorrencia_ativa').check()
+
+  if (options.tipo) {
+    await page.locator('#recorrencia_tipo').selectOption(options.tipo)
+  }
+
+  if (options.recorrencia_fim) {
+    await page.locator('#recorrencia_fim').fill(options.recorrencia_fim)
+  }
+
+  await page.getByRole('button', { name: 'Adicionar tarefa' }).click()
+  await expect(page.getByText('Tarefa criada com sucesso.')).toBeVisible()
+}
+
+export async function completeTaskViaToggle(page: Page, titulo: string) {
+  const card = taskCard(page, titulo).first()
+  await card.getByRole('button', { name: 'Marcar como em andamento' }).click()
+  await card.getByRole('button', { name: 'Marcar como concluída' }).click()
+}
