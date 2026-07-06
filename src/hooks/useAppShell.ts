@@ -133,7 +133,7 @@ export function useAppShell() {
     setEditingCategoria(null)
   }, [])
 
-  const toggleSecao = useCallback((key: TodoStatus | 'vencidas') => {
+  const toggleSecao = useCallback((key: TodoStatus | 'vencidas' | 'vence_hoje') => {
     setSecoesAbertas((prev) => ({ ...prev, [key]: !prev[key] }))
   }, [])
 

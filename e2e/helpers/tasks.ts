@@ -87,7 +87,7 @@ function navFilterButton(page: Page, label: string) {
     .getByRole('button', { name: new RegExp(label, 'i') })
 }
 
-export async function filterByOverview(page: Page, label: 'Todas' | 'Vencidas') {
+export async function filterByOverview(page: Page, label: 'Todas' | 'Vence hoje' | 'Vencidas') {
   await navFilterButton(page, label).click()
 }
 

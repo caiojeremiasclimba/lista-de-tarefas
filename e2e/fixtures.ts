@@ -1,6 +1,7 @@
 import { test as base } from '@playwright/test'
 import {
   CANCELLED_TODOS,
+  DUE_TODAY_TODOS,
   MIXED_PRIORITY_TODOS,
   MIXED_STATUS_TODOS,
   OVERDUE_TODOS,
@@ -15,6 +16,7 @@ type Fixtures = {
   authenticatedWithMixedTasks: SupabaseMockState
   authenticatedWithCategories: SupabaseMockState
   authenticatedWithOverdueTasks: SupabaseMockState
+  authenticatedWithDueTodayTasks: SupabaseMockState
   authenticatedWithCancelledTasks: SupabaseMockState
   authenticatedWithMixedPriorities: SupabaseMockState
 }
@@ -47,6 +49,12 @@ export const test = base.extend<Fixtures>({
 
   authenticatedWithOverdueTasks: async ({ page }, use) => {
     const state = await setupSupabaseMock(page, { todos: OVERDUE_TODOS })
+    await login(page)
+    await use(state)
+  },
+
+  authenticatedWithDueTodayTasks: async ({ page }, use) => {
+    const state = await setupSupabaseMock(page, { todos: DUE_TODAY_TODOS })
     await login(page)
     await use(state)
   },

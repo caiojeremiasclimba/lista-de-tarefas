@@ -49,6 +49,13 @@ function buildFixtureTodos(): Todo[] {
       data_prevista: '2026-06-01',
     }),
     makeTodo({
+      id: 'pendente-hoje',
+      titulo: 'Ligar para cliente',
+      status: 'pendente',
+      categoria_id: 'cat-1',
+      data_prevista: '2026-07-02',
+    }),
+    makeTodo({
       id: 'com-subtarefa',
       titulo: 'Projeto alpha',
       descricao: null,
@@ -75,17 +82,28 @@ describe('getTarefasVisiveis', () => {
     pendente: [makeTodo({ id: 'p1' })],
   }
   const vencidas = [makeTodo({ id: 'v1' })]
+  const venceHoje = [makeTodo({ id: 'h1' })]
 
   it('retorna filtradosPorBusca quando filtroAtivo é todas', () => {
-    expect(getTarefasVisiveis('todas', filtrados, porStatus, vencidas)).toEqual(filtrados)
+    expect(getTarefasVisiveis('todas', filtrados, porStatus, vencidas, venceHoje)).toEqual(
+      filtrados
+    )
   })
 
   it('retorna vencidas quando filtroAtivo é vencidas', () => {
-    expect(getTarefasVisiveis('vencidas', filtrados, porStatus, vencidas)).toEqual(vencidas)
+    expect(getTarefasVisiveis('vencidas', filtrados, porStatus, vencidas, venceHoje)).toEqual(
+      vencidas
+    )
+  })
+
+  it('retorna venceHoje quando filtroAtivo é vence_hoje', () => {
+    expect(getTarefasVisiveis('vence_hoje', filtrados, porStatus, vencidas, venceHoje)).toEqual(
+      venceHoje
+    )
   })
 
   it('retorna porStatus do filtro quando filtroAtivo é um status', () => {
-    expect(getTarefasVisiveis('pendente', filtrados, porStatus, vencidas)).toEqual(
+    expect(getTarefasVisiveis('pendente', filtrados, porStatus, vencidas, venceHoje)).toEqual(
       porStatus.pendente
     )
   })
@@ -112,8 +130,8 @@ describe('computeTodoFilters', () => {
       filtroPrioridade: null,
     })
 
-    expect(result.counts.todas).toBe(6)
-    expect(result.tarefasVisiveis).toHaveLength(6)
+    expect(result.counts.todas).toBe(7)
+    expect(result.tarefasVisiveis).toHaveLength(7)
     expect(result.secoesVisiveis).toEqual(TODO_STATUSES)
     expect(result.categoriaAtivaNome).toBeNull()
   })
@@ -173,9 +191,9 @@ describe('computeTodoFilters', () => {
     })
 
     expect(result.filtradosPorBusca.map((t) => t.id).sort()).toEqual(
-      ['com-subtarefa', 'pendente-ok', 'pendente-vencida'].sort()
+      ['com-subtarefa', 'pendente-hoje', 'pendente-ok', 'pendente-vencida'].sort()
     )
-    expect(result.counts.todas).toBe(3)
+    expect(result.counts.todas).toBe(4)
     expect(result.categoriaAtivaNome).toBe('Trabalho')
   })
 
@@ -191,7 +209,7 @@ describe('computeTodoFilters', () => {
     })
 
     expect(result.porStatus.pendente.map((t) => t.id).sort()).toEqual(
-      ['com-subtarefa', 'pendente-ok', 'pendente-vencida'].sort()
+      ['com-subtarefa', 'pendente-hoje', 'pendente-ok', 'pendente-vencida'].sort()
     )
     expect(result.porStatus.em_andamento.map((t) => t.id)).toEqual(['em-andamento'])
     expect(result.porStatus.concluida.map((t) => t.id)).toEqual(['concluida'])
@@ -210,14 +228,16 @@ describe('computeTodoFilters', () => {
     })
 
     expect(result.counts).toMatchObject({
-      todas: 6,
-      pendente: 3,
+      todas: 7,
+      pendente: 4,
       em_andamento: 1,
       concluida: 1,
       cancelada: 1,
       vencidas: 1,
+      vence_hoje: 1,
     })
     expect(result.vencidas.map((t) => t.id)).toEqual(['pendente-vencida'])
+    expect(result.venceHoje.map((t) => t.id)).toEqual(['pendente-hoje'])
   })
 
   it('calcula countsPorCategoria com base na busca', () => {
@@ -232,7 +252,7 @@ describe('computeTodoFilters', () => {
     })
 
     expect(result.countsPorCategoria).toEqual({
-      'cat-1': 3,
+      'cat-1': 4,
       'cat-2': 2,
     })
   })
@@ -262,9 +282,24 @@ describe('computeTodoFilters', () => {
       TODO_STATUSES
     )
     expect(computeTodoFilters({ ...base, filtroAtivo: 'vencidas' }).secoesVisiveis).toEqual([])
+    expect(computeTodoFilters({ ...base, filtroAtivo: 'vence_hoje' }).secoesVisiveis).toEqual([])
     expect(computeTodoFilters({ ...base, filtroAtivo: 'pendente' }).secoesVisiveis).toEqual([
       'pendente',
     ])
+  })
+
+  it('retorna tarefasVisiveis de vence hoje quando filtroAtivo é vence_hoje', () => {
+    const todos = buildFixtureTodos()
+    const result = computeTodoFilters({
+      todos,
+      categorias,
+      busca: '',
+      filtroAtivo: 'vence_hoje',
+      filtroCategoria: null,
+      filtroPrioridade: null,
+    })
+
+    expect(result.tarefasVisiveis.map((t) => t.id)).toEqual(['pendente-hoje'])
   })
 
   it('retorna tarefasVisiveis do status quando filtroAtivo é específico', () => {
@@ -314,6 +349,12 @@ describe('getListaVaziaMensagem', () => {
     )
   })
 
+  it('combina busca e filtro vence hoje', () => {
+    expect(getListaVaziaMensagem('teste', null, 5, 'vence_hoje')).toBe(
+      'Nenhum resultado para "teste" em Vence hoje'
+    )
+  })
+
   it('combina busca e filtro de status', () => {
     expect(getListaVaziaMensagem('teste', null, 5, 'vencidas')).toBe(
       'Nenhum resultado para "teste" em Vencidas'
@@ -332,6 +373,10 @@ describe('getListaVaziaMensagem', () => {
 
   it('retorna mensagem só com categoria', () => {
     expect(getListaVaziaMensagem('', 'Trabalho', 5)).toBe('Nenhuma tarefa em "Trabalho"')
+  })
+
+  it('retorna mensagem só com filtro vence hoje', () => {
+    expect(getListaVaziaMensagem('', null, 5, 'vence_hoje')).toBe('Nenhuma tarefa que vence hoje')
   })
 
   it('retorna mensagem só com filtro de status', () => {

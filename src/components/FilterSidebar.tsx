@@ -4,6 +4,7 @@ import type { Categoria } from '../types/categoria'
 import type { TodoPrioridade, TodoStatus } from '../types/todo'
 import {
   AlertIcon,
+  CalendarIcon,
   ChartBarIcon,
   CheckCircleIcon,
   ChevronIcon,
@@ -17,7 +18,7 @@ import {
 
 export type AppView = 'tarefas' | 'dashboard' | 'perfil'
 
-export type FiltroTarefas = 'todas' | TodoStatus | 'vencidas'
+export type FiltroTarefas = 'todas' | 'vence_hoje' | 'vencidas' | TodoStatus
 
 export type FiltroCounts = Record<FiltroTarefas, number>
 
@@ -50,6 +51,7 @@ type FilterItem = { id: FiltroTarefas; label: string; Icon: typeof ListIcon }
 
 const overviewFilters: FilterItem[] = [
   { id: 'todas', label: 'Todas', Icon: ListIcon },
+  { id: 'vence_hoje', label: 'Vence hoje', Icon: CalendarIcon },
   { id: 'vencidas', label: 'Vencidas', Icon: AlertIcon },
 ]
 
@@ -100,6 +102,7 @@ function FilterButton({
   onChange: (filtro: FiltroTarefas) => void
 }) {
   const isActive = active === id
+  const isDueTodayHighlight = id === 'vence_hoje' && count > 0
   const isOverdueHighlight = id === 'vencidas' && count > 0
 
   return (
@@ -117,9 +120,11 @@ function FilterButton({
         className={`ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-xs font-medium ${
           isOverdueHighlight
             ? 'bg-red-50 text-red-600'
-            : isActive
-              ? 'bg-blue-100 text-blue-700'
-              : 'bg-slate-100 text-slate-500'
+            : isDueTodayHighlight
+              ? 'bg-amber-50 text-amber-700'
+              : isActive
+                ? 'bg-blue-100 text-blue-700'
+                : 'bg-slate-100 text-slate-500'
         }`}
       >
         {count}

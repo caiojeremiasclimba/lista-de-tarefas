@@ -4,6 +4,7 @@ import FilterSidebar, { type FiltroCounts } from './FilterSidebar'
 
 const defaultCounts: FiltroCounts = {
   todas: 10,
+  vence_hoje: 1,
   pendente: 3,
   em_andamento: 2,
   concluida: 4,
@@ -75,6 +76,14 @@ describe('FilterSidebar', () => {
     fireEvent.click(screen.getByRole('button', { name: /vencidas/i }))
 
     expect(onChange).toHaveBeenCalledWith('vencidas')
+  })
+
+  it('chama onChange ao selecionar filtro vence hoje', () => {
+    const { onChange } = renderSidebar()
+
+    fireEvent.click(screen.getByRole('button', { name: /vence hoje/i }))
+
+    expect(onChange).toHaveBeenCalledWith('vence_hoje')
   })
 
   it('expande status e chama onChange ao selecionar pendentes', () => {
