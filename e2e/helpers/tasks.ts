@@ -191,3 +191,9 @@ export async function completeTaskViaToggle(page: Page, titulo: string) {
   await card.getByRole('button', { name: 'Marcar como em andamento' }).click()
   await card.getByRole('button', { name: 'Marcar como concluída' }).click()
 }
+
+export async function reopenCompletedTaskViaToggle(page: Page, titulo: string) {
+  const concluidas = taskSection(page, 'CONCLUÍDAS')
+  const card = concluidas.locator('li').filter({ hasText: titulo })
+  await card.getByRole('button', { name: 'Marcar como pendente' }).click()
+}

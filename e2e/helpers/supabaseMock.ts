@@ -187,6 +187,54 @@ function parseInFilter(searchParams: URLSearchParams, column: string): string[] 
   return inner.split(',')
 }
 
+function parseNeqFilter(searchParams: URLSearchParams, column: string): string | null {
+  const value = searchParams.get(column)
+  if (!value?.startsWith('neq.')) return null
+  return value.slice(4)
+}
+
+function matchesOrFilter(todo: MockTodo, orValue: string): boolean {
+  const inner = orValue.replace(/^\(|\)$/g, '')
+  return inner.split(',').some((condition) => {
+    const [field, op, val] = condition.split('.')
+    if (op !== 'eq') return false
+    if (field === 'recorrencia_origem_id') return todo.recorrencia_origem_id === val
+    if (field === 'id') return todo.id === val
+    return false
+  })
+}
+
+function applyTodoListFilters(todos: MockTodo[], params: URLSearchParams): MockTodo[] {
+  let filtered = todos
+
+  const userId = parseEqFilter(params, 'user_id')
+  if (userId) {
+    filtered = filtered.filter((todo) => todo.user_id === userId)
+  }
+
+  const statusIn = parseInFilter(params, 'status')
+  if (statusIn) {
+    filtered = filtered.filter((todo) => statusIn.includes(todo.status))
+  }
+
+  const excludeId = parseNeqFilter(params, 'id')
+  if (excludeId) {
+    filtered = filtered.filter((todo) => todo.id !== excludeId)
+  }
+
+  const excludeRecurrence = parseNeqFilter(params, 'recorrencia_tipo')
+  if (excludeRecurrence) {
+    filtered = filtered.filter((todo) => todo.recorrencia_tipo !== excludeRecurrence)
+  }
+
+  const orValue = params.get('or')
+  if (orValue) {
+    filtered = filtered.filter((todo) => matchesOrFilter(todo, orValue))
+  }
+
+  return filtered
+}
+
 function withSubtarefas(state: SupabaseMockState, todo: MockTodo) {
   const subtarefas = state.subtarefas
     .filter((sub) => sub.tarefa_id === todo.id)
@@ -342,7 +390,7 @@ function handleRest(route: Route, url: URL, state: SupabaseMockState) {
 
     if (method === 'GET') {
       const id = parseEqFilter(params, 'id')
-      const todos = [...state.todos].sort(
+      let todos = [...state.todos].sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       )
 
@@ -350,6 +398,21 @@ function handleRest(route: Route, url: URL, state: SupabaseMockState) {
         const todo = todos.find((item) => item.id === id)
         if (!todo) return json(route, { message: 'Not found' }, 404)
         return json(route, withSubtarefas(state, todo))
+      }
+
+      todos = applyTodoListFilters(todos, params)
+
+      const limit = params.get('limit')
+      if (limit) {
+        todos = todos.slice(0, Number(limit))
+      }
+
+      const select = params.get('select')
+      if (select === 'id') {
+        return json(
+          route,
+          todos.map((todo) => ({ id: todo.id }))
+        )
       }
 
       return json(

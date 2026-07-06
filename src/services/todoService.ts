@@ -16,6 +16,7 @@ import {
 import { completedAtForStatusChange } from '../utils/todoCompletedAt'
 import {
   getNextRecurringDate,
+  getRecurrenceSeriesRootId,
   shouldCreateNextOccurrence,
   shouldCreateNextOnSave,
 } from '../utils/todoRecurrence'
@@ -333,6 +334,25 @@ export async function deleteTodo(id: string, anexoPath?: string | null): Promise
   }
 }
 
+async function hasActiveOccurrenceInSeries(
+  userId: string,
+  seriesRootId: string,
+  excludeTodoId: string
+): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('tarefas')
+    .select('id')
+    .eq('user_id', userId)
+    .in('status', ['pendente', 'em_andamento'])
+    .neq('id', excludeTodoId)
+    .or(`recorrencia_origem_id.eq.${seriesRootId},id.eq.${seriesRootId}`)
+    .neq('recorrencia_tipo', 'nenhuma')
+    .limit(1)
+
+  if (error) throw new Error(error.message)
+  return (data?.length ?? 0) > 0
+}
+
 async function createNextRecurringTodo(todo: Todo): Promise<Todo | null> {
   const nextDate = getNextRecurringDate(
     todo.data_prevista,
@@ -340,6 +360,11 @@ async function createNextRecurringTodo(todo: Todo): Promise<Todo | null> {
     todo.recorrencia_intervalo
   )
   if (!nextDate) return null
+
+  const seriesRootId = getRecurrenceSeriesRootId(todo)
+  if (await hasActiveOccurrenceInSeries(todo.user_id, seriesRootId, todo.id)) {
+    return null
+  }
 
   const { data: created, error: insertError } = await supabase
     .from('tarefas')

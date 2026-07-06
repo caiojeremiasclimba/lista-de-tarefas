@@ -15,6 +15,9 @@ export function createMockQueryBuilder(result: MockQueryResult = { data: null, e
     delete: vi.fn(),
     eq: vi.fn(),
     in: vi.fn(),
+    neq: vi.fn(),
+    or: vi.fn(),
+    limit: vi.fn(),
     order: vi.fn(),
     single: vi.fn(async () => resolved),
     then(
@@ -31,6 +34,9 @@ export function createMockQueryBuilder(result: MockQueryResult = { data: null, e
   builder.delete.mockReturnValue(builder)
   builder.eq.mockReturnValue(builder)
   builder.in.mockReturnValue(builder)
+  builder.neq.mockReturnValue(builder)
+  builder.or.mockReturnValue(builder)
+  builder.limit.mockReturnValue(builder)
   builder.order.mockReturnValue(builder)
 
   return builder

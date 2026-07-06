@@ -11,6 +11,13 @@ import {
 } from '../test/mocks/supabase'
 import { deleteTodo, fetchTodos, saveTodo, toggleSubtarefa, toggleTodoStatus } from './todoService'
 
+function createSeriesCheckBuilder(activeIds: string[] = []) {
+  return createMockQueryBuilder({
+    data: activeIds.map((id) => ({ id })),
+    error: null,
+  })
+}
+
 const mockUploadAttachment = vi.hoisted(() => vi.fn())
 const mockRemoveAttachment = vi.hoisted(() => vi.fn())
 
@@ -126,7 +133,9 @@ describe('toggleTodoStatus', () => {
     mockFrom.mockImplementation((table: string) => {
       if (table === 'tarefas') {
         tarefasCalls++
-        return tarefasCalls === 1 ? updateBuilder : insertTodoBuilder
+        if (tarefasCalls === 1) return updateBuilder
+        if (tarefasCalls === 2) return createSeriesCheckBuilder()
+        return insertTodoBuilder
       }
       return insertSubtarefasBuilder
     })
@@ -193,7 +202,8 @@ describe('toggleTodoStatus', () => {
       if (table === 'tarefas') {
         tarefasCalls++
         if (tarefasCalls === 1) return updateBuilder
-        if (tarefasCalls === 2) return insertTodoBuilder
+        if (tarefasCalls === 2) return createSeriesCheckBuilder()
+        if (tarefasCalls === 3) return insertTodoBuilder
         return rollbackBuilder
       }
       return createMockQueryBuilder({ data: [], error: null })
@@ -209,7 +219,42 @@ describe('toggleTodoStatus', () => {
       status: 'em_andamento',
       completed_at: null,
     })
-    expect(tarefasCalls).toBe(3)
+    expect(tarefasCalls).toBe(4)
+  })
+
+  it('não cria próxima ocorrência se já existe pendente na série', async () => {
+    const todo = makeTodo({
+      id: 'todo-1',
+      status: 'em_andamento',
+      data_prevista: '2026-07-02',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+    })
+    const updated = makeTodo({
+      id: 'todo-1',
+      status: 'concluida',
+      data_prevista: '2026-07-02',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+    })
+    const updateBuilder = createMockQueryBuilder({ data: updated, error: null })
+    const seriesCheckBuilder = createSeriesCheckBuilder(['todo-2'])
+
+    let tarefasCalls = 0
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'tarefas') {
+        tarefasCalls++
+        if (tarefasCalls === 1) return updateBuilder
+        return seriesCheckBuilder
+      }
+      return createMockQueryBuilder({ data: [], error: null })
+    })
+
+    const result = await toggleTodoStatus(todo)
+
+    expect(result.updatedTodo.status).toBe('concluida')
+    expect(result.createdNextTodo).toBeNull()
+    expect(tarefasCalls).toBe(2)
   })
 
   it('lança erro para tarefa cancelada', async () => {
@@ -446,6 +491,9 @@ describe('saveTodo', () => {
         if (tarefasCalls === 2) {
           return createMockQueryBuilder({ data: fetched, error: null })
         }
+        if (tarefasCalls === 3) {
+          return createSeriesCheckBuilder()
+        }
         return createMockQueryBuilder({ data: next, error: null })
       }
       return createMockQueryBuilder({ data: nextSubtarefas, error: null })
@@ -463,7 +511,7 @@ describe('saveTodo', () => {
 
     expect(result.savedTodo).toEqual(fetched)
     expect(result.createdNextTodo).toEqual({ ...next, subtarefas: nextSubtarefas })
-    expect(tarefasCalls).toBe(3)
+    expect(tarefasCalls).toBe(4)
 
     vi.useRealTimers()
   })
@@ -497,6 +545,9 @@ describe('saveTodo', () => {
           })
         }
         if (tarefasUpdateCalls === 3) {
+          return createSeriesCheckBuilder()
+        }
+        if (tarefasUpdateCalls === 4) {
           return createMockQueryBuilder({
             data: null,
             error: { message: 'Falha ao criar próxima ocorrência' },
@@ -520,7 +571,7 @@ describe('saveTodo', () => {
       )
     ).rejects.toThrow('Falha ao criar próxima ocorrência')
 
-    expect(tarefasUpdateCalls).toBe(4)
+    expect(tarefasUpdateCalls).toBe(5)
 
     vi.useRealTimers()
   })
