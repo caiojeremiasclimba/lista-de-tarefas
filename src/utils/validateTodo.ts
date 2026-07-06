@@ -10,8 +10,6 @@ export function validateTodo(data: TodoFormData): TodoValidationErrors {
 
   if (hasRecorrencia && !data.data_prevista) {
     erros.data_prevista = 'Informe a data prevista para repetir a tarefa'
-  } else if (data.lembrete_email && !data.data_prevista) {
-    erros.data_prevista = 'Informe a data prevista para receber lembrete por e-mail'
   } else if (data.data_prevista) {
     const dataObj = new Date(data.data_prevista + 'T00:00:00')
     if (isNaN(dataObj.getTime())) erros.data_prevista = 'Data inválida'

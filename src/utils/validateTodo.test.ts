@@ -32,18 +32,6 @@ describe('validateTodo', () => {
     expect(erros).toEqual({})
   })
 
-  it('exige data prevista quando lembrete por e-mail está ativo', () => {
-    const erros = validateTodo(
-      makeTodoFormData({
-        titulo: 'Tarefa',
-        lembrete_email: true,
-        data_prevista: '',
-      })
-    )
-
-    expect(erros.data_prevista).toBe('Informe a data prevista para receber lembrete por e-mail')
-  })
-
   it('não valida data quando data_prevista está vazia', () => {
     const erros = validateTodo(makeTodoFormData({ titulo: 'Tarefa sem data', data_prevista: '' }))
 

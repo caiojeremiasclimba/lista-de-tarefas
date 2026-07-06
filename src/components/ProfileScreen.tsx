@@ -3,12 +3,6 @@ import type { SubmitEvent, ChangeEvent } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { removeAvatar, uploadAvatar } from '../utils/avatarStorage'
-import {
-  fetchPreferenciasLembrete,
-  getDefaultTimezone,
-  savePreferenciasLembrete,
-} from '../services/lembreteService'
-import { LEMBRETE_HORARIO_OPCOES } from '../constants/todoLembrete'
 import { getUserAvatarUrl, hasEmailPasswordIdentity } from '../utils/userDisplay'
 import { AuthAlert, AuthField, EyeIcon, EyeOffIcon, LockIcon, MailIcon, UserIcon } from './AuthUi'
 import UserAvatar from './UserAvatar'
@@ -63,12 +57,6 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
   const [showNovaSenha, setShowNovaSenha] = useState(false)
   const [showConfirmarSenha, setShowConfirmarSenha] = useState(false)
 
-  const [lembreteHorario, setLembreteHorario] = useState('08:00')
-  const [lembreteTimezone, setLembreteTimezone] = useState(getDefaultTimezone)
-  const [savingLembrete, setSavingLembrete] = useState(false)
-  const [lembreteError, setLembreteError] = useState<string | null>(null)
-  const [lembreteSuccess, setLembreteSuccess] = useState<string | null>(null)
-
   useEffect(() => {
     let cancelled = false
 
@@ -94,19 +82,6 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
       setEmail(currentUser.email ?? '')
       setHasAvatar(Boolean(getUserAvatarUrl(currentUser)))
       setPreviewUrl(null)
-
-      try {
-        const prefs = await fetchPreferenciasLembrete(currentUser.id)
-        if (!cancelled) {
-          setLembreteHorario(prefs.horario_local.slice(0, 5))
-          setLembreteTimezone(prefs.timezone)
-        }
-      } catch {
-        if (!cancelled) {
-          setLembreteHorario('08:00')
-          setLembreteTimezone(getDefaultTimezone())
-        }
-      }
 
       setLoading(false)
     }
@@ -147,25 +122,6 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
     }
 
     setSaving(false)
-  }
-
-  async function handleLembreteSubmit(e: SubmitEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setLembreteError(null)
-    setLembreteSuccess(null)
-    setSavingLembrete(true)
-
-    try {
-      await savePreferenciasLembrete(user.id, {
-        horario_local: lembreteHorario,
-        timezone: lembreteTimezone.trim() || getDefaultTimezone(),
-      })
-      setLembreteSuccess('Preferências de lembrete salvas com sucesso!')
-    } catch (err) {
-      setLembreteError(err instanceof Error ? err.message : 'Erro ao salvar lembretes.')
-    } finally {
-      setSavingLembrete(false)
-    }
   }
 
   async function handleAvatarChange(e: ChangeEvent<HTMLInputElement>) {
@@ -365,66 +321,6 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
           className="rounded-xl bg-blue-600 px-6 py-2.5 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
         >
           {saving ? 'Salvando...' : 'Salvar'}
-        </button>
-      </form>
-
-      <form onSubmit={handleLembreteSubmit} className={cardClass}>
-        <h2 className="text-lg font-semibold text-slate-800">Lembretes por e-mail</h2>
-        <p className="text-sm text-slate-500">
-          Ative o lembrete em cada tarefa com data prevista. Os e-mails serão enviados para{' '}
-          <span className="font-medium text-slate-700">{email || 'sua conta'}</span>.
-        </p>
-
-        <div>
-          <label
-            htmlFor="lembrete-horario"
-            className="mb-1 block text-sm font-medium text-slate-700"
-          >
-            Horário do envio
-          </label>
-          <select
-            id="lembrete-horario"
-            value={lembreteHorario}
-            onChange={(e) => setLembreteHorario(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          >
-            {LEMBRETE_HORARIO_OPCOES.map((horario) => (
-              <option key={horario} value={horario}>
-                {horario.replace(':', 'h')}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label
-            htmlFor="lembrete-timezone"
-            className="mb-1 block text-sm font-medium text-slate-700"
-          >
-            Fuso horário
-          </label>
-          <input
-            id="lembrete-timezone"
-            type="text"
-            value={lembreteTimezone}
-            onChange={(e) => setLembreteTimezone(e.target.value)}
-            placeholder="America/Sao_Paulo"
-            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          />
-          <p className="mt-1.5 text-xs text-slate-400">
-            Use o identificador IANA do seu fuso (ex.: America/Sao_Paulo).
-          </p>
-        </div>
-
-        {lembreteError && <AuthAlert type="error">{lembreteError}</AuthAlert>}
-        {lembreteSuccess && <AuthAlert type="success">{lembreteSuccess}</AuthAlert>}
-
-        <button
-          type="submit"
-          disabled={savingLembrete}
-          className="rounded-xl bg-blue-600 px-6 py-2.5 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-        >
-          {savingLembrete ? 'Salvando...' : 'Salvar lembretes'}
         </button>
       </form>
 

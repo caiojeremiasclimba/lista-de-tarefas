@@ -62,32 +62,6 @@ describe('TodoForm', () => {
     expect(screen.getByLabelText(/repetir até/i)).toBeInTheDocument()
   })
 
-  it('exige data prevista ao ativar lembrete por e-mail', async () => {
-    const onSubmit = vi.fn()
-    render(<TodoForm categorias={categorias} onSubmit={onSubmit} />)
-
-    fireEvent.change(screen.getByLabelText(/título/i), {
-      target: { value: 'Tarefa com lembrete' },
-    })
-
-    expect(screen.getByLabelText(/enviar lembrete por e-mail/i)).toBeDisabled()
-
-    fireEvent.change(screen.getByLabelText(/data prevista/i), {
-      target: { value: '2026-07-10' },
-    })
-    fireEvent.click(screen.getByLabelText(/enviar lembrete por e-mail/i))
-
-    expect(screen.getByLabelText(/quando lembrar/i)).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /adicionar tarefa/i }))
-
-    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
-    expect(onSubmit.mock.calls[0][0]).toMatchObject({
-      lembrete_email: true,
-      lembrete_tipo: 'no_dia',
-      data_prevista: '2026-07-10',
-    })
-  })
-
   it('envia dados de recorrência no submit', async () => {
     const onSubmit = vi.fn().mockResolvedValue(undefined)
     render(<TodoForm categorias={categorias} onSubmit={onSubmit} />)
