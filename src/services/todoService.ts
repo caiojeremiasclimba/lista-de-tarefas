@@ -253,7 +253,9 @@ async function maybeCreateNextRecurringOnSave(
     )
   }
 
-  return createNextRecurringTodo(savedTodo)
+  return createNextRecurringTodoWithRollback(savedTodo, () =>
+    rollbackTodoStatus(savedTodo.id, 'pendente', null)
+  )
 }
 
 export async function saveTodo(
@@ -301,23 +303,23 @@ export async function saveTodo(
 
   if (insertError) throw new Error(insertError.message)
 
+  let savedTodo: Todo
   try {
     const subtarefas = await insertSubtarefas(created.id, user.id, data.subtarefas)
 
     if (data.anexoFile) {
       await syncTodoAnexo(created.id, user.id, data)
-      const savedTodo = await fetchTodoWithSubtarefas(created.id)
-      const createdNextTodo = await maybeCreateNextRecurringOnSave(savedTodo, data)
-      return { savedTodo, createdNextTodo }
+      savedTodo = await fetchTodoWithSubtarefas(created.id)
+    } else {
+      savedTodo = { ...created, subtarefas }
     }
-
-    const savedTodo = { ...created, subtarefas }
-    const createdNextTodo = await maybeCreateNextRecurringOnSave(savedTodo, data)
-    return { savedTodo, createdNextTodo }
   } catch (err) {
     await rollbackCreatedTodo(created.id)
     throw err instanceof Error ? err : new Error('Erro ao salvar tarefa.')
   }
+
+  const createdNextTodo = await maybeCreateNextRecurringOnSave(savedTodo, data)
+  return { savedTodo, createdNextTodo }
 }
 
 export async function deleteTodo(id: string, anexoPath?: string | null): Promise<void> {
