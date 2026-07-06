@@ -110,12 +110,12 @@ No Supabase (Authentication → URL Configuration), cadastre:
 
 O schema do banco está versionado em `supabase/migrations/`:
 
-| Migration                                    | Conteúdo                                                                                              |
-| -------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `20260702120000_initial_schema.sql`          | Tabelas, RLS e buckets de Storage                                                                     |
-| `20260702130000_delete_categoria_atomic.sql` | RPC `delete_categoria_com_tarefas` (exclusão atômica de categoria)                                    |
-| `20260702140000_enable_realtime.sql`         | Realtime nas tabelas `categorias`, `tarefas` e `subtarefas`                                           |
-| `20260703100000_add_prioridade.sql`          | Coluna `prioridade` (`baixa`, `media`, `alta`) na tabela `tarefas`                                    |
+| Migration                                    | Conteúdo                                                                                                         |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `20260702120000_initial_schema.sql`          | Tabelas, RLS e buckets de Storage                                                                                |
+| `20260702130000_delete_categoria_atomic.sql` | RPC `delete_categoria_com_tarefas` (exclusão atômica de categoria)                                               |
+| `20260702140000_enable_realtime.sql`         | Realtime nas tabelas `categorias`, `tarefas` e `subtarefas`                                                      |
+| `20260703100000_add_prioridade.sql`          | Coluna `prioridade` (`baixa`, `media`, `alta`) na tabela `tarefas`                                               |
 | `20260703110000_add_recorrencia.sql`         | Colunas de recorrência (`recorrencia_tipo`, `recorrencia_intervalo`, `recorrencia_fim`, `recorrencia_origem_id`) |
 
 A migration inicial cria:
@@ -144,12 +144,12 @@ Se as tabelas e buckets já foram criados manualmente, **não reaplique** a migr
 
 Exemplos de migrations incrementais (aplique somente as que ainda não foram aplicadas):
 
-| Se faltar no banco…              | Arquivo a aplicar                              |
-| -------------------------------- | ---------------------------------------------- |
-| Exclusão atômica de categorias   | `20260702130000_delete_categoria_atomic.sql`   |
-| Realtime entre abas              | `20260702140000_enable_realtime.sql`           |
-| Prioridade nas tarefas           | `20260703100000_add_prioridade.sql`            |
-| Recorrência nas tarefas          | `20260703110000_add_recorrencia.sql`          |
+| Se faltar no banco…            | Arquivo a aplicar                            |
+| ------------------------------ | -------------------------------------------- |
+| Exclusão atômica de categorias | `20260702130000_delete_categoria_atomic.sql` |
+| Realtime entre abas            | `20260702140000_enable_realtime.sql`         |
+| Prioridade nas tarefas         | `20260703100000_add_prioridade.sql`          |
+| Recorrência nas tarefas        | `20260703110000_add_recorrencia.sql`         |
 
 ### Storage
 

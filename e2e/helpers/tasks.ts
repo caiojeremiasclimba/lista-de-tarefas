@@ -149,7 +149,10 @@ export async function editTaskDetails(
   await expect(page.getByText('Tarefa atualizada com sucesso.')).toBeVisible()
 }
 
-export function taskSection(page: Page, title: 'PENDENTES' | 'CONCLUÍDAS' | 'EM ANDAMENTO' | 'CANCELADAS') {
+export function taskSection(
+  page: Page,
+  title: 'PENDENTES' | 'CONCLUÍDAS' | 'EM ANDAMENTO' | 'CANCELADAS'
+) {
   return page.locator('section').filter({
     has: page.getByRole('button').filter({ hasText: title }),
   })
