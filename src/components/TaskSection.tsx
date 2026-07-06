@@ -3,7 +3,14 @@ import { TODO_STATUS_CONFIG } from '../constants/todoStatus'
 import type { Todo } from '../types/todo'
 import type { Subtarefa } from '../types/subtarefa'
 import TodoItem from './TodoItem'
-import { CheckCircleIcon, ChevronIcon, ClockIcon, PlayCircleIcon, XCircleIcon, CalendarIcon } from './TodosUi'
+import {
+  CheckCircleIcon,
+  ChevronIcon,
+  ClockIcon,
+  PlayCircleIcon,
+  XCircleIcon,
+  CalendarIcon,
+} from './TodosUi'
 
 interface TaskSectionProps {
   title: string

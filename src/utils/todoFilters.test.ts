@@ -376,9 +376,7 @@ describe('getListaVaziaMensagem', () => {
   })
 
   it('retorna mensagem só com filtro vence hoje', () => {
-    expect(getListaVaziaMensagem('', null, 5, 'vence_hoje')).toBe(
-      'Nenhuma tarefa que vence hoje'
-    )
+    expect(getListaVaziaMensagem('', null, 5, 'vence_hoje')).toBe('Nenhuma tarefa que vence hoje')
   })
 
   it('retorna mensagem só com filtro de status', () => {
