@@ -1,10 +1,25 @@
 import { makeTodo } from '../test/fixtures/todos'
 import {
   getNextRecurringDate,
+  getRecurrenceSeriesRootId,
   isRecurringTodo,
   shouldCreateNextOccurrence,
   shouldCreateNextOnSave,
 } from './todoRecurrence'
+
+describe('getRecurrenceSeriesRootId', () => {
+  it('usa recorrencia_origem_id quando definido', () => {
+    expect(
+      getRecurrenceSeriesRootId(makeTodo({ id: 'todo-2', recorrencia_origem_id: 'todo-1' }))
+    ).toBe('todo-1')
+  })
+
+  it('usa id da tarefa quando não há origem', () => {
+    expect(getRecurrenceSeriesRootId(makeTodo({ id: 'todo-1', recorrencia_origem_id: null }))).toBe(
+      'todo-1'
+    )
+  })
+})
 
 describe('isRecurringTodo', () => {
   it('retorna false para recorrencia nenhuma', () => {

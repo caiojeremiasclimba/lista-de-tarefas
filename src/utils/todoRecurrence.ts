@@ -43,6 +43,12 @@ export function isRecurringTodo(todo: Pick<Todo, 'recorrencia_tipo'>): boolean {
   return todo.recorrencia_tipo !== 'nenhuma'
 }
 
+export function getRecurrenceSeriesRootId(
+  todo: Pick<Todo, 'id' | 'recorrencia_origem_id'>
+): string {
+  return todo.recorrencia_origem_id ?? todo.id
+}
+
 export function getNextRecurringDate(
   dataPrevista: string | null,
   tipo: TodoRecorrenciaTipo,

@@ -5,6 +5,7 @@ import {
   createRecurringTask,
   editTaskDetails,
   openNewTaskModal,
+  reopenCompletedTaskViaToggle,
   taskCard,
   taskSection,
 } from './helpers/tasks'
@@ -45,6 +46,45 @@ test.describe('Tarefas — recorrência', () => {
     await expect(pendenteCard.getByText('Pendente', { exact: true })).toBeVisible()
     await expect(pendenteCard.getByText('09/07/2026')).toBeVisible()
     await expect(pendenteCard.getByText('Recorrente · Semanal')).toBeVisible()
+  })
+
+  test('não duplica ocorrência ao reabrir tarefa concluída e concluir de novo', async ({
+    page,
+    authenticatedPage: _auth,
+  }) => {
+    const titulo = 'Reunião duplicada'
+
+    await createRecurringTask(page, titulo, {
+      data_prevista: '2026-07-02',
+      tipo: 'semanal',
+    })
+
+    await completeTaskViaToggle(page, titulo)
+
+    const pendentes = taskSection(page, 'PENDENTES')
+    const concluidas = taskSection(page, 'CONCLUÍDAS')
+
+    await expect(pendentes.getByRole('heading', { name: titulo })).toHaveCount(1)
+    await expect(concluidas.getByRole('heading', { name: titulo })).toHaveCount(1)
+
+    await reopenCompletedTaskViaToggle(page, titulo)
+
+    const reopenedCard = pendentes
+      .locator('li')
+      .filter({ hasText: titulo })
+      .filter({ hasText: 'Vence hoje' })
+    await reopenedCard.getByRole('button', { name: 'Marcar como em andamento' }).click()
+
+    const emAndamento = taskSection(page, 'EM ANDAMENTO')
+    const reopenedInProgress = emAndamento
+      .locator('li')
+      .filter({ hasText: titulo })
+      .filter({ hasText: 'Vence hoje' })
+    await reopenedInProgress.getByRole('button', { name: 'Marcar como concluída' }).click()
+
+    await expect(pendentes.getByRole('heading', { name: titulo })).toHaveCount(1)
+    await expect(concluidas.getByRole('heading', { name: titulo })).toHaveCount(1)
+    await expect(pendentes.getByText('09/07/2026')).toBeVisible()
   })
 
   test('não cria próxima ocorrência quando passa de recorrencia_fim', async ({
