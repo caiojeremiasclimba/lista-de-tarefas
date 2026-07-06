@@ -1,5 +1,6 @@
 import { TODO_STATUS_CONFIG } from '../../constants/todoStatus'
 import type { FiltroTarefas } from '../FilterSidebar'
+import type { CategoriaDisplay } from '../../types/categoria'
 import type { Subtarefa } from '../../types/subtarefa'
 import type { Todo, TodoStatus } from '../../types/todo'
 import type { SecoesAbertas } from '../../utils/todoFilters'
@@ -24,7 +25,7 @@ interface TasksViewProps {
   onDelete: (id: string) => void
   onToggleStatus: (todo: Todo) => void
   onToggleSubtarefa: (sub: Subtarefa) => void
-  categoriasPorId: Record<string, string>
+  categoriasPorId: Record<string, CategoriaDisplay>
 }
 
 export default function TasksView({

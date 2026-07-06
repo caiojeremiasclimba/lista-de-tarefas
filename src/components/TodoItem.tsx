@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { TODO_STATUS_CONFIG } from '../constants/todoStatus'
 import { TODO_PRIORIDADE_CONFIG } from '../constants/todoPrioridade'
 import { TODO_RECORRENCIA_CONFIG } from '../constants/todoRecorrencia'
+import { getCategoriaCorConfig } from '../constants/categoriaCor'
+import type { CategoriaDisplay } from '../types/categoria'
 import type { Subtarefa } from '../types/subtarefa'
 import type { Todo } from '../types/todo'
 import { useAttachmentSignedUrl } from '../hooks/useAttachmentSignedUrl'
@@ -13,7 +15,7 @@ import { CalendarIcon, ChevronIcon, DocumentIcon, DotsVerticalIcon } from './Tod
 
 interface TodoItemProps {
   todo: Todo
-  categoriaNome?: string
+  categoria?: CategoriaDisplay
   onEdit: (todo: Todo) => void
   onDelete: (id: string) => void
   onToggleStatus: (todo: Todo) => void
@@ -22,7 +24,7 @@ interface TodoItemProps {
 
 export default function TodoItem({
   todo,
-  categoriaNome,
+  categoria,
   onEdit,
   onDelete,
   onToggleStatus,
@@ -170,9 +172,11 @@ export default function TodoItem({
                 Recorrente · {recorrenciaLabel}
               </span>
             )}
-            {categoriaNome && (
-              <span className="rounded-full bg-violet-100 px-1.5 py-0.5 text-[10px] font-medium text-violet-700 sm:px-2 sm:text-xs">
-                {categoriaNome}
+            {categoria && (
+              <span
+                className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium sm:px-2 sm:text-xs ${getCategoriaCorConfig(categoria.cor).badgeClass}`}
+              >
+                {categoria.nome}
               </span>
             )}
             {overdue && (

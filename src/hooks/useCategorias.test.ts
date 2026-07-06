@@ -66,7 +66,7 @@ describe('useCategorias', () => {
     await waitFor(() => expect(result.current.categorias).toHaveLength(1))
 
     await act(async () => {
-      await result.current.handleCreateCategoria('Estudos')
+      await result.current.handleCreateCategoria({ nome: 'Estudos', cor: 'blue' })
     })
 
     expect(setFiltroCategoria).toHaveBeenCalledWith('cat-new')
@@ -81,7 +81,7 @@ describe('useCategorias', () => {
     await waitFor(() => expect(result.current.categorias).toHaveLength(1))
 
     await act(async () => {
-      await result.current.handleUpdateCategoria('cat-1', 'Pessoal')
+      await result.current.handleUpdateCategoria('cat-1', { nome: 'Pessoal', cor: 'emerald' })
     })
 
     expect(result.current.categorias[0].nome).toBe('Pessoal')

@@ -29,11 +29,22 @@ test.describe('Categorias', () => {
   })
 
   test('associa categoria ao criar tarefa', async ({ page, authenticatedPage: _auth }) => {
-    await createCategory(page, 'Finanças')
+    await createCategory(page, 'Finanças', 'Rosa')
     await createTaskWithCategory(page, 'Pagar contas', 'Finanças')
 
     const card = page.locator('li').filter({ hasText: 'Pagar contas' })
-    await expect(card.getByText('Finanças')).toBeVisible()
+    await expect(card.getByText('Finanças')).toHaveClass(/bg-rose-100/)
+  })
+
+  test('exibe cor da categoria no card da tarefa', async ({
+    page,
+    authenticatedWithCategories: _state,
+  }) => {
+    const trabalho = page.locator('li').filter({ hasText: 'Reunião de equipe' })
+    await expect(trabalho.getByText('Trabalho')).toHaveClass(/bg-blue-100/)
+
+    const pessoal = page.locator('li').filter({ hasText: 'Comprar presente' })
+    await expect(pessoal.getByText('Pessoal')).toHaveClass(/bg-emerald-100/)
   })
 
   test('edita nome da categoria', async ({ page, authenticatedWithCategories: _state }) => {

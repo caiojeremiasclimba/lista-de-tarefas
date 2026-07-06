@@ -7,6 +7,7 @@ import { useConfirmDialog } from '../hooks/useConfirmDialog'
 import { useTodoFilters } from '../hooks/useTodoFilters'
 import { useTodos } from '../hooks/useTodos'
 import { toast } from '../lib/toast'
+import type { CategoriaFormData } from '../types/categoria'
 import type { TodoFormData } from '../types/todo'
 import { formatTodayHeader } from '../utils/formatTodoDate'
 import ProductivityDashboard from './ProductivityDashboard'
@@ -94,12 +95,12 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
     )
   }
 
-  async function handleSubmitCategoria(nome: string) {
+  async function handleSubmitCategoria(data: CategoriaFormData) {
     if (shell.editingCategoria) {
-      await handleUpdateCategoria(shell.editingCategoria.id, nome)
+      await handleUpdateCategoria(shell.editingCategoria.id, data)
       toast.success('Categoria atualizada com sucesso.')
     } else {
-      await handleCreateCategoria(nome)
+      await handleCreateCategoria(data)
       toast.success('Categoria criada com sucesso.')
     }
     shell.closeCategoriaForm()

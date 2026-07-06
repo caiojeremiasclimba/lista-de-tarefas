@@ -54,6 +54,7 @@ export interface MockCategoria {
   id: string
   user_id: string
   nome: string
+  cor: string
   created_at: string
 }
 
@@ -485,6 +486,7 @@ function handleRest(route: Route, url: URL, state: SupabaseMockState) {
         id: crypto.randomUUID(),
         user_id: String(body.user_id ?? E2E_USER.id),
         nome: String(body.nome ?? ''),
+        cor: String(body.cor ?? 'slate'),
         created_at: new Date().toISOString(),
       }
       state.categorias.push(created)
