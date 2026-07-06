@@ -576,6 +576,62 @@ describe('saveTodo', () => {
     vi.useRealTimers()
   })
 
+  it('desfaz conclusão ao falhar próxima ocorrência ao criar tarefa recorrente como concluída', async () => {
+    mockAuthenticatedUser()
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-07-02T12:00:00.000Z'))
+
+    const created = makeTodo({
+      id: 'new-todo',
+      status: 'concluida',
+      data_prevista: '2026-07-02',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+      subtarefas: [],
+    })
+
+    let tarefasCalls = 0
+    let deleteCalled = false
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'tarefas') {
+        tarefasCalls++
+        const builder =
+          tarefasCalls === 1
+            ? createMockQueryBuilder({ data: created, error: null })
+            : tarefasCalls === 2
+              ? createSeriesCheckBuilder()
+              : tarefasCalls === 3
+                ? createMockQueryBuilder({
+                    data: null,
+                    error: { message: 'Falha ao criar próxima ocorrência' },
+                  })
+                : createMockQueryBuilder({ data: null, error: null })
+        builder.delete.mockImplementation(() => {
+          deleteCalled = true
+          return builder
+        })
+        return builder
+      }
+      return createMockQueryBuilder({ data: [], error: null })
+    })
+
+    await expect(
+      saveTodo(
+        makeTodoFormData({
+          status: 'concluida',
+          data_prevista: '2026-07-02',
+          recorrencia_tipo: 'semanal',
+          recorrencia_intervalo: 1,
+        })
+      )
+    ).rejects.toThrow('Falha ao criar próxima ocorrência')
+
+    expect(tarefasCalls).toBe(4)
+    expect(deleteCalled).toBe(false)
+
+    vi.useRealTimers()
+  })
+
   it('cria nova tarefa com anexo e busca registro atualizado', async () => {
     mockAuthenticatedUser()
     const anexoFile = makeFile('relatorio.pdf', 'application/pdf', 1024)
