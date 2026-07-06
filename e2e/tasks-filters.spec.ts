@@ -4,6 +4,7 @@ import {
   filterByOverview,
   filterByPrioridade,
   filterByStatus,
+  overviewFilterButton,
   taskCard,
 } from './helpers/tasks'
 
@@ -81,6 +82,54 @@ test.describe('Tarefas — filtros e busca', () => {
     await expect(hoje.getByText('Vence hoje', { exact: true })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Tarefa futura' })).not.toBeVisible()
     await expect(page.getByRole('heading', { name: 'Tarefa vencida filtro' })).not.toBeVisible()
+  })
+
+  test('exibe contador destacado de vence hoje na sidebar', async ({
+    page,
+    authenticatedWithDueTodayTasks: _state,
+  }) => {
+    await page.clock.install({ time: new Date('2026-07-02T12:00:00') })
+    await page.reload()
+
+    const venceHojeBtn = overviewFilterButton(page, 'Vence hoje')
+    await expect(venceHojeBtn.getByText('1', { exact: true })).toBeVisible()
+    await expect(venceHojeBtn.locator('.bg-amber-50')).toBeVisible()
+  })
+
+  test('exibe mensagem vazia no filtro vence hoje sem tarefas', async ({
+    page,
+    authenticatedWithMixedTasks: _state,
+  }) => {
+    await filterByOverview(page, 'Vence hoje')
+
+    await expect(page.getByText('Nenhuma tarefa que vence hoje')).toBeVisible()
+  })
+
+  test('volta a exibir todas após filtro vence hoje', async ({
+    page,
+    authenticatedWithDueTodayTasks: _state,
+  }) => {
+    await page.clock.install({ time: new Date('2026-07-02T12:00:00') })
+
+    await filterByOverview(page, 'Vence hoje')
+    await expect(page.getByRole('heading', { name: 'Tarefa futura' })).not.toBeVisible()
+
+    await filterByOverview(page, 'Todas')
+
+    await expect(page.getByRole('heading', { name: 'Tarefa vence hoje' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Tarefa futura' })).toBeVisible()
+  })
+
+  test('busca sem resultado no filtro vence hoje', async ({
+    page,
+    authenticatedWithDueTodayTasks: _state,
+  }) => {
+    await page.clock.install({ time: new Date('2026-07-02T12:00:00') })
+
+    await filterByOverview(page, 'Vence hoje')
+    await page.getByPlaceholder('Buscar...').fill('inexistente')
+
+    await expect(page.getByText('Nenhum resultado para "inexistente" em Vence hoje')).toBeVisible()
   })
 
   test('filtra tarefas canceladas', async ({ page, authenticatedWithCancelledTasks: _state }) => {

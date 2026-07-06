@@ -69,6 +69,19 @@ export async function editCategory(page: Page, nomeAtual: string, novoNome: stri
   await expect(page.getByText('Categoria atualizada com sucesso.')).toBeVisible()
 }
 
+export async function editCategoryColor(page: Page, nome: string, corLabel: string) {
+  await openCategoryMenu(page, nome)
+  await page.getByRole('button', { name: 'Editar' }).click()
+  await expect(page.getByRole('dialog', { name: 'Editar categoria' })).toBeVisible()
+  await page.getByRole('button', { name: `Cor ${corLabel}` }).click()
+  await page.getByRole('button', { name: 'Salvar' }).click()
+  await expect(page.getByText('Categoria atualizada com sucesso.')).toBeVisible()
+}
+
+export function categoryFilterButton(page: Page, nome: string) {
+  return sidebarNav(page).getByRole('button', { name: new RegExp(`^${nome}\\s+\\d`, 'i') })
+}
+
 export async function deleteCategory(page: Page, nome: string) {
   await openCategoryMenu(page, nome)
   await page.getByRole('button', { name: 'Excluir' }).click()
