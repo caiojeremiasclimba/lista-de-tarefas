@@ -91,6 +91,10 @@ export async function filterByOverview(page: Page, label: 'Todas' | 'Vence hoje'
   await navFilterButton(page, label).click()
 }
 
+export function overviewFilterButton(page: Page, label: 'Todas' | 'Vence hoje' | 'Vencidas') {
+  return navFilterButton(page, label)
+}
+
 export async function createTaskWithSubtarefas(page: Page, titulo: string, subtarefas: string[]) {
   await openNewTaskModal(page)
   await page.getByLabel('Título *').fill(titulo)

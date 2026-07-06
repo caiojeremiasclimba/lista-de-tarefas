@@ -1,9 +1,11 @@
 import { test, expect } from './fixtures'
 import {
   cancelDeleteCategory,
+  categoryFilterButton,
   createCategory,
   deleteCategory,
   editCategory,
+  editCategoryColor,
   expandCategoryFilters,
   filterByCategory,
 } from './helpers/categories'
@@ -45,6 +47,38 @@ test.describe('Categorias', () => {
 
     const pessoal = page.locator('li').filter({ hasText: 'Comprar presente' })
     await expect(pessoal.getByText('Pessoal')).toHaveClass(/bg-emerald-100/)
+  })
+
+  test('exibe bolinha colorida da categoria na sidebar', async ({
+    page,
+    authenticatedWithCategories: _state,
+  }) => {
+    await expandCategoryFilters(page)
+
+    await expect(categoryFilterButton(page, 'Trabalho').locator('.bg-blue-500')).toBeVisible()
+    await expect(categoryFilterButton(page, 'Pessoal').locator('.bg-emerald-500')).toBeVisible()
+  })
+
+  test('usa cor cinza padrão ao criar categoria sem escolher cor', async ({
+    page,
+    authenticatedPage: _auth,
+  }) => {
+    await createCategory(page, 'Geral')
+    await createTaskWithCategory(page, 'Organizar armário', 'Geral')
+
+    const card = page.locator('li').filter({ hasText: 'Organizar armário' })
+    await expect(card.getByText('Geral')).toHaveClass(/bg-slate-100/)
+  })
+
+  test('edita cor da categoria e atualiza badge na tarefa', async ({
+    page,
+    authenticatedWithCategories: _state,
+  }) => {
+    await editCategoryColor(page, 'Trabalho', 'Violeta')
+
+    const trabalho = page.locator('li').filter({ hasText: 'Reunião de equipe' })
+    await expect(trabalho.getByText('Trabalho')).toHaveClass(/bg-violet-100/)
+    await expect(categoryFilterButton(page, 'Trabalho').locator('.bg-violet-500')).toBeVisible()
   })
 
   test('edita nome da categoria', async ({ page, authenticatedWithCategories: _state }) => {
