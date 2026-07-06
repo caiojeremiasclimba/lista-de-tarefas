@@ -16,9 +16,10 @@ interface TasksViewProps {
   listaVaziaMensagem: string
   porStatus: Record<TodoStatus, Todo[]>
   vencidas: Todo[]
+  venceHoje: Todo[]
   secoesVisiveis: TodoStatus[]
   secoesAbertas: SecoesAbertas
-  onToggleSecao: (key: TodoStatus | 'vencidas') => void
+  onToggleSecao: (key: TodoStatus | 'vencidas' | 'vence_hoje') => void
   onEdit: (todo: Todo) => void
   onDelete: (id: string) => void
   onToggleStatus: (todo: Todo) => void
@@ -35,6 +36,7 @@ export default function TasksView({
   listaVaziaMensagem,
   porStatus,
   vencidas,
+  venceHoje,
   secoesVisiveis,
   secoesAbertas,
   onToggleSecao,
@@ -68,6 +70,19 @@ export default function TasksView({
               todos={vencidas}
               isOpen={secoesAbertas.vencidas}
               onToggle={() => onToggleSecao('vencidas')}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onToggleStatus={onToggleStatus}
+              onToggleSubtarefa={onToggleSubtarefa}
+              categoriasPorId={categoriasPorId}
+            />
+          ) : filtroAtivo === 'vence_hoje' ? (
+            <TaskSection
+              title="VENCE HOJE"
+              variant="vence_hoje"
+              todos={venceHoje}
+              isOpen={secoesAbertas.vence_hoje}
+              onToggle={() => onToggleSecao('vence_hoje')}
               onEdit={onEdit}
               onDelete={onDelete}
               onToggleStatus={onToggleStatus}

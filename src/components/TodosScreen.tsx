@@ -72,6 +72,7 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
     if (shell.view !== 'tarefas') return null
     if (shell.filtroCategoria && filters.categoriaAtivaNome) return filters.categoriaAtivaNome
     if (shell.filtroPrioridade && filters.prioridadeAtivaLabel) return filters.prioridadeAtivaLabel
+    if (shell.filtroAtivo === 'vence_hoje') return 'Vence hoje'
     if (shell.filtroAtivo === 'vencidas') return 'Vencidas'
     if (shell.filtroAtivo !== 'todas') return TODO_STATUS_CONFIG[shell.filtroAtivo].label
     return subtitle
@@ -198,6 +199,7 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
             listaVaziaMensagem={filters.listaVaziaMensagem}
             porStatus={filters.porStatus}
             vencidas={filters.vencidas}
+            venceHoje={filters.venceHoje}
             secoesVisiveis={filters.secoesVisiveis}
             secoesAbertas={shell.secoesAbertas}
             onToggleSecao={shell.toggleSecao}

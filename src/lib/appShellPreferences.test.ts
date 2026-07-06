@@ -26,6 +26,7 @@ describe('appShellPreferences', () => {
         em_andamento: false,
         concluida: false,
         cancelada: true,
+        vence_hoje: true,
         vencidas: true,
       },
     }

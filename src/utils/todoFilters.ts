@@ -4,15 +4,15 @@ import type { FiltroCounts } from '../components/FilterSidebar'
 import type { Categoria } from '../types/categoria'
 import type { Todo, TodoPrioridade, TodoStatus } from '../types/todo'
 import { sortActiveTodos, sortFinalTodos } from './sortTodos'
-import { isTodoOverdue } from './todoDue'
+import { isTodoDueToday, isTodoOverdue } from './todoDue'
 
-export type SecoesAbertas = Record<TodoStatus | 'vencidas', boolean>
+export type SecoesAbertas = Record<TodoStatus | 'vencidas' | 'vence_hoje', boolean>
 
 export interface TodoFiltersInput {
   todos: Todo[]
   categorias: Categoria[]
   busca: string
-  filtroAtivo: 'todas' | TodoStatus | 'vencidas'
+  filtroAtivo: 'todas' | TodoStatus | 'vencidas' | 'vence_hoje'
   filtroCategoria: string | null
   filtroPrioridade: TodoPrioridade | null
 }
@@ -22,6 +22,7 @@ export interface TodoFiltersResult {
   tarefasVisiveis: Todo[]
   porStatus: Record<TodoStatus, Todo[]>
   vencidas: Todo[]
+  venceHoje: Todo[]
   counts: FiltroCounts
   countsPorCategoria: Record<string, number>
   countsPorPrioridade: Record<TodoPrioridade, number>
@@ -35,10 +36,12 @@ export function getTarefasVisiveis(
   filtroAtivo: TodoFiltersInput['filtroAtivo'],
   filtradosPorBusca: Todo[],
   porStatus: Record<TodoStatus, Todo[]>,
-  vencidas: Todo[]
+  vencidas: Todo[],
+  venceHoje: Todo[]
 ): Todo[] {
   if (filtroAtivo === 'todas') return filtradosPorBusca
   if (filtroAtivo === 'vencidas') return vencidas
+  if (filtroAtivo === 'vence_hoje') return venceHoje
   return porStatus[filtroAtivo]
 }
 
@@ -76,6 +79,7 @@ export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
   grouped.cancelada = sortFinalTodos(grouped.cancelada)
 
   const vencidas = sortActiveTodos(filtradosPorBusca.filter((t) => isTodoOverdue(t)))
+  const venceHoje = sortActiveTodos(filtradosPorBusca.filter((t) => isTodoDueToday(t)))
 
   const countsPorCategoria = Object.fromEntries(
     categorias.map((c) => [
@@ -98,6 +102,7 @@ export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
     concluida: filtradosPorPrioridade.filter((t) => t.status === 'concluida').length,
     cancelada: filtradosPorPrioridade.filter((t) => t.status === 'cancelada').length,
     vencidas: filtradosPorPrioridade.filter((t) => isTodoOverdue(t)).length,
+    vence_hoje: filtradosPorPrioridade.filter((t) => isTodoDueToday(t)).length,
   }
 
   const categoriasPorId = Object.fromEntries(categorias.map((c) => [c.id, c.nome]))
@@ -111,15 +116,26 @@ export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
     : null
 
   const secoesVisiveis =
-    filtroAtivo === 'todas' ? TODO_STATUSES : filtroAtivo === 'vencidas' ? [] : [filtroAtivo]
+    filtroAtivo === 'todas'
+      ? TODO_STATUSES
+      : filtroAtivo === 'vencidas' || filtroAtivo === 'vence_hoje'
+        ? []
+        : [filtroAtivo]
 
-  const tarefasVisiveis = getTarefasVisiveis(filtroAtivo, filtradosPorBusca, grouped, vencidas)
+  const tarefasVisiveis = getTarefasVisiveis(
+    filtroAtivo,
+    filtradosPorBusca,
+    grouped,
+    vencidas,
+    venceHoje
+  )
 
   return {
     filtradosPorBusca,
     tarefasVisiveis,
     porStatus: grouped,
     vencidas,
+    venceHoje,
     counts,
     countsPorCategoria,
     countsPorPrioridade,
@@ -133,12 +149,14 @@ export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
 function getFiltroNome(filtroAtivo: TodoFiltersInput['filtroAtivo']): string | null {
   if (filtroAtivo === 'todas') return null
   if (filtroAtivo === 'vencidas') return 'Vencidas'
+  if (filtroAtivo === 'vence_hoje') return 'Vence hoje'
   return TODO_STATUS_CONFIG[filtroAtivo].label
 }
 
 function getFiltroVazioFrase(filtroAtivo: TodoFiltersInput['filtroAtivo']): string | null {
   if (filtroAtivo === 'todas') return null
   if (filtroAtivo === 'vencidas') return 'vencida'
+  if (filtroAtivo === 'vence_hoje') return 'que vence hoje'
   return TODO_STATUS_CONFIG[filtroAtivo].label.toLowerCase()
 }
 

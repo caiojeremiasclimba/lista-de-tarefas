@@ -126,6 +126,30 @@ export const OVERDUE_TODOS: MockTodo[] = [
   }),
 ]
 
+export const DUE_TODAY_TODOS: MockTodo[] = [
+  baseTodo({
+    id: 'e2e-todo-hoje',
+    titulo: 'Tarefa vence hoje',
+    status: 'pendente',
+    data_prevista: '2026-07-02',
+    created_at: '2026-06-07T10:00:00.000Z',
+  }),
+  baseTodo({
+    id: 'e2e-todo-futura',
+    titulo: 'Tarefa futura',
+    status: 'pendente',
+    data_prevista: '2026-07-10',
+    created_at: '2026-06-08T10:00:00.000Z',
+  }),
+  baseTodo({
+    id: 'e2e-todo-vencida-filtro',
+    titulo: 'Tarefa vencida filtro',
+    status: 'pendente',
+    data_prevista: '2026-07-01',
+    created_at: '2026-06-09T10:00:00.000Z',
+  }),
+]
+
 export const CANCELLED_TODOS: MockTodo[] = [
   baseTodo({
     id: 'e2e-todo-cancelada',

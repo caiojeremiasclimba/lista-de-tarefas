@@ -68,6 +68,21 @@ test.describe('Tarefas — filtros e busca', () => {
     await expect(page.getByRole('heading', { name: 'Tarefa em dia' })).not.toBeVisible()
   })
 
+  test('filtra tarefas que vencem hoje', async ({
+    page,
+    authenticatedWithDueTodayTasks: _state,
+  }) => {
+    await page.clock.install({ time: new Date('2026-07-02T12:00:00') })
+
+    await filterByOverview(page, 'Vence hoje')
+
+    const hoje = taskCard(page, 'Tarefa vence hoje')
+    await expect(hoje.getByRole('heading', { name: 'Tarefa vence hoje' })).toBeVisible()
+    await expect(hoje.getByText('Vence hoje', { exact: true })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Tarefa futura' })).not.toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Tarefa vencida filtro' })).not.toBeVisible()
+  })
+
   test('filtra tarefas canceladas', async ({ page, authenticatedWithCancelledTasks: _state }) => {
     await filterByStatus(page, 'Canceladas')
 

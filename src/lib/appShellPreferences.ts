@@ -7,14 +7,19 @@ import type { SecoesAbertas } from '../utils/todoFilters'
 export const APP_SHELL_PREFS_KEY = 'lista-tarefas:app-shell'
 
 const APP_VIEWS: AppView[] = ['tarefas', 'dashboard', 'perfil']
-const FILTRO_TAREFAS: FiltroTarefas[] = ['todas', 'vencidas', ...TODO_STATUSES]
-const SECOES_KEYS: (TodoStatus | 'vencidas')[] = [...TODO_STATUSES, 'vencidas']
+const FILTRO_TAREFAS: FiltroTarefas[] = ['todas', 'vence_hoje', 'vencidas', ...TODO_STATUSES]
+const SECOES_KEYS: (TodoStatus | 'vencidas' | 'vence_hoje')[] = [
+  ...TODO_STATUSES,
+  'vence_hoje',
+  'vencidas',
+]
 
 export const DEFAULT_SECOES_ABERTAS: SecoesAbertas = {
   pendente: true,
   em_andamento: true,
   concluida: true,
   cancelada: true,
+  vence_hoje: true,
   vencidas: true,
 }
 

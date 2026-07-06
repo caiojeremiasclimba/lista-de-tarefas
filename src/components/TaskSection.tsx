@@ -3,11 +3,11 @@ import { TODO_STATUS_CONFIG } from '../constants/todoStatus'
 import type { Todo } from '../types/todo'
 import type { Subtarefa } from '../types/subtarefa'
 import TodoItem from './TodoItem'
-import { CheckCircleIcon, ChevronIcon, ClockIcon, PlayCircleIcon, XCircleIcon } from './TodosUi'
+import { CheckCircleIcon, ChevronIcon, ClockIcon, PlayCircleIcon, XCircleIcon, CalendarIcon } from './TodosUi'
 
 interface TaskSectionProps {
   title: string
-  variant: TodoStatus | 'vencidas'
+  variant: TodoStatus | 'vencidas' | 'vence_hoje'
   todos: Todo[]
   isOpen: boolean
   onToggle: () => void
@@ -24,6 +24,7 @@ const SECTION_ICONS = {
   concluida: CheckCircleIcon,
   cancelada: XCircleIcon,
   vencidas: ClockIcon,
+  vence_hoje: CalendarIcon,
 } as const
 
 export default function TaskSection({
@@ -40,7 +41,11 @@ export default function TaskSection({
 }: TaskSectionProps) {
   const Icon = SECTION_ICONS[variant]
   const headerColor =
-    variant === 'vencidas' ? 'text-red-600' : TODO_STATUS_CONFIG[variant as TodoStatus].headerClass
+    variant === 'vencidas'
+      ? 'text-red-600'
+      : variant === 'vence_hoje'
+        ? 'text-amber-600'
+        : TODO_STATUS_CONFIG[variant as TodoStatus].headerClass
 
   return (
     <section className="space-y-4">
