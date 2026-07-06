@@ -150,6 +150,8 @@ describe('toggleTodoStatus', () => {
       recorrencia_intervalo: 1,
       recorrencia_fim: null,
       recorrencia_origem_id: 'todo-1',
+      lembrete_email: false,
+      lembrete_tipo: 'no_dia',
     })
     expect(insertSubtarefasBuilder.insert).toHaveBeenCalledWith([
       {
@@ -297,6 +299,8 @@ describe('saveTodo', () => {
       recorrencia_intervalo: 1,
       recorrencia_fim: null,
       completed_at: null,
+      lembrete_email: false,
+      lembrete_tipo: 'no_dia',
       user_id: AUTH_USER.id,
     })
     expect(result).toEqual({ savedTodo: { ...created, subtarefas: [] }, createdNextTodo: null })

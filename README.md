@@ -12,6 +12,7 @@ Stack: React 19, Vite 8, TypeScript, Tailwind CSS 4 e Supabase.
 - Login com e-mail/senha ou Google, recuperação de senha e opção "Lembrar-me"
 - Tarefas com status, prioridade, data prevista, busca, anexos e subtarefas
 - Recorrência (diária, semanal ou mensal) — ao concluir, cria automaticamente a próxima ocorrência
+- Lembretes por e-mail por tarefa (opt-in no formulário) com horário configurável no perfil
 - Categorias com filtros na sidebar (por status, categoria e prioridade)
 - Dashboard com indicadores de produtividade
 - Perfil com nome, avatar e troca de senha
@@ -117,6 +118,7 @@ O schema do banco está versionado em `supabase/migrations/`:
 | `20260702140000_enable_realtime.sql`         | Realtime nas tabelas `categorias`, `tarefas` e `subtarefas`                                                      |
 | `20260703100000_add_prioridade.sql`          | Coluna `prioridade` (`baixa`, `media`, `alta`) na tabela `tarefas`                                               |
 | `20260703110000_add_recorrencia.sql`         | Colunas de recorrência (`recorrencia_tipo`, `recorrencia_intervalo`, `recorrencia_fim`, `recorrencia_origem_id`) |
+| `20260706100000_add_lembretes.sql`           | Lembretes por e-mail (`lembrete_email`, `lembrete_tipo`), `preferencias_lembrete` e `lembretes_enviados`         |
 
 A migration inicial cria:
 
@@ -129,6 +131,24 @@ A migration inicial cria:
 `20260703100000_add_prioridade.sql` adiciona prioridade às tarefas, com default `media` para registros existentes.
 
 `20260703110000_add_recorrencia.sql` adiciona suporte a tarefas recorrentes (`nenhuma`, `diaria`, `semanal`, `mensal`), intervalo, data limite e referência à ocorrência de origem.
+
+`20260706100000_add_lembretes.sql` adiciona lembrete por e-mail por tarefa, preferências de horário/fuso no perfil e log de envios para evitar duplicatas.
+
+### Lembretes por e-mail (Edge Function)
+
+1. Crie uma conta em [Resend](https://resend.com) e verifique o domínio de envio.
+2. Deploy da function `send-reminders`:
+   ```bash
+   supabase functions deploy send-reminders
+   ```
+3. Configure os secrets no Supabase:
+   - `RESEND_API_KEY`
+   - `RESEND_FROM_EMAIL` (ex.: `Lembretes <lembretes@seudominio.com>`)
+   - `CRON_SECRET` (string aleatória longa)
+   - `APP_URL` (URL do app em produção)
+4. Agende a function (ex.: a cada hora via `pg_cron` + `pg_net`) passando o header `x-cron-secret`.
+
+Sem `RESEND_API_KEY`, a function responde com sucesso e ignora o envio (útil em desenvolvimento).
 
 ### Projeto Supabase novo
 
@@ -150,6 +170,7 @@ Exemplos de migrations incrementais (aplique somente as que ainda não foram apl
 | Realtime entre abas            | `20260702140000_enable_realtime.sql`         |
 | Prioridade nas tarefas         | `20260703100000_add_prioridade.sql`          |
 | Recorrência nas tarefas        | `20260703110000_add_recorrencia.sql`         |
+| Lembretes por e-mail           | `20260706100000_add_lembretes.sql`           |
 
 ### Storage
 
