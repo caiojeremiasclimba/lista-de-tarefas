@@ -23,6 +23,7 @@ export interface TodoFiltersResult {
   filtradosPorBusca: Todo[]
   tarefasVisiveis: Todo[]
   porStatus: Record<TodoStatus, Todo[]>
+  porStatusVisaoGeral: Record<TodoStatus, Todo[]>
   vencidas: Todo[]
   venceHoje: Todo[]
   counts: FiltroCounts
@@ -99,6 +100,14 @@ export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
     'active'
   )
 
+  const idsDestacados = new Set([...vencidas, ...venceHoje].map((t) => t.id))
+  const porStatusVisaoGeral: Record<TodoStatus, Todo[]> = {
+    pendente: grouped.pendente.filter((t) => !idsDestacados.has(t.id)),
+    em_andamento: grouped.em_andamento.filter((t) => !idsDestacados.has(t.id)),
+    concluida: grouped.concluida,
+    cancelada: grouped.cancelada,
+  }
+
   const filtradosParaCountsCategoria = filtroPrioridade
     ? filtradosParaContadores.filter((t) => t.prioridade === filtroPrioridade)
     : filtradosParaContadores
@@ -158,6 +167,7 @@ export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
     filtradosPorBusca,
     tarefasVisiveis,
     porStatus: grouped,
+    porStatusVisaoGeral,
     vencidas,
     venceHoje,
     counts,

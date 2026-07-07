@@ -202,6 +202,7 @@ export default function TodosScreen({ user, onLogout }: TodosScreenProps) {
             tarefasVisiveis={filters.tarefasVisiveis}
             listaVaziaMensagem={filters.listaVaziaMensagem}
             porStatus={filters.porStatus}
+            porStatusVisaoGeral={filters.porStatusVisaoGeral}
             vencidas={filters.vencidas}
             venceHoje={filters.venceHoje}
             secoesVisiveis={filters.secoesVisiveis}

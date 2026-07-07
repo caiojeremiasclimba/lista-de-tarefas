@@ -246,6 +246,27 @@ describe('computeTodoFilters', () => {
     expect(result.porStatus.cancelada.map((t) => t.id)).toEqual(['cancelada'])
   })
 
+  it('porStatusVisaoGeral remove vencidas e vence hoje das seções de status', () => {
+    const todos = buildFixtureTodos()
+    const result = computeTodoFilters({
+      todos,
+      categorias,
+      busca: '',
+      filtroAtivo: 'todas',
+      filtroCategoria: null,
+      filtroPrioridade: null,
+    })
+
+    expect(result.porStatusVisaoGeral.pendente.map((t) => t.id).sort()).toEqual(
+      ['com-subtarefa', 'pendente-ok'].sort()
+    )
+    expect(result.porStatusVisaoGeral.em_andamento.map((t) => t.id)).toEqual(['em-andamento'])
+    expect(result.porStatusVisaoGeral.concluida.map((t) => t.id)).toEqual(['concluida'])
+    expect(result.porStatusVisaoGeral.cancelada.map((t) => t.id)).toEqual(['cancelada'])
+    expect(result.vencidas.map((t) => t.id)).toEqual(['pendente-vencida'])
+    expect(result.venceHoje.map((t) => t.id)).toEqual(['pendente-hoje'])
+  })
+
   it('ordena pendentes por título quando ordenacao é titulo', () => {
     const todos = buildFixtureTodos()
     const result = computeTodoFilters({

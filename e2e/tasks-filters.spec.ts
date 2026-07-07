@@ -6,6 +6,7 @@ import {
   filterByStatus,
   overviewFilterButton,
   taskCard,
+  taskSection,
 } from './helpers/tasks'
 
 test.describe('Tarefas — filtros e busca', () => {
@@ -67,6 +68,20 @@ test.describe('Tarefas — filtros e busca', () => {
     await expect(vencida.getByRole('heading', { name: 'Tarefa vencida' })).toBeVisible()
     await expect(vencida.getByText('Vencida', { exact: true })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Tarefa em dia' })).not.toBeVisible()
+  })
+
+  test('exibe seção Vencidas no topo da visão Todas sem duplicar em Pendentes', async ({
+    page,
+    authenticatedWithOverdueTasks: _state,
+  }) => {
+    const vencidasSection = taskSection(page, 'VENCIDAS')
+    await expect(vencidasSection.getByRole('heading', { name: 'Tarefa vencida' })).toBeVisible()
+
+    const pendentesSection = taskSection(page, 'PENDENTES')
+    await expect(pendentesSection.getByRole('heading', { name: 'Tarefa em dia' })).toBeVisible()
+    await expect(
+      pendentesSection.getByRole('heading', { name: 'Tarefa vencida' })
+    ).not.toBeVisible()
   })
 
   test('filtra tarefas que vencem hoje', async ({
