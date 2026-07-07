@@ -108,7 +108,7 @@ export default function Modal({
         aria-labelledby={labelledBy}
         aria-label={ariaLabel}
         tabIndex={-1}
-        className={`rounded-2xl bg-white p-6 shadow-xl outline-none ${panelClassName}`}
+        className={`rounded-2xl bg-white p-6 shadow-xl outline-none dark:bg-slate-800 ${panelClassName}`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}

@@ -60,6 +60,13 @@ function isDestacadaPorPrazo(todo: Todo): boolean {
   return isTodoOverdue(todo) || isTodoDueToday(todo)
 }
 
+function contaNoGrupoSidebar(todo: Todo): boolean {
+  if (todo.status === 'pendente' || todo.status === 'em_andamento') {
+    return !isDestacadaPorPrazo(todo)
+  }
+  return true
+}
+
 export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
   const {
     todos,
@@ -119,14 +126,16 @@ export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
   const countsPorCategoria = Object.fromEntries(
     categorias.map((c) => [
       c.id,
-      filtradosParaCountsCategoria.filter((t) => t.categoria_id === c.id).length,
+      filtradosParaCountsCategoria.filter((t) => t.categoria_id === c.id && contaNoGrupoSidebar(t))
+        .length,
     ])
   )
 
   const countsPorPrioridade = Object.fromEntries(
     TODO_PRIORIDADES.map((prioridade) => [
       prioridade,
-      filtradosPorCategoria.filter((t) => t.prioridade === prioridade).length,
+      filtradosPorCategoria.filter((t) => t.prioridade === prioridade && contaNoGrupoSidebar(t))
+        .length,
     ])
   ) as Record<TodoPrioridade, number>
 

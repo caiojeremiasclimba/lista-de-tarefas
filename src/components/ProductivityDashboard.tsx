@@ -30,12 +30,12 @@ function StatusDonutChart({ slices }: { slices: StatusChartSlice[] }) {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-center">
         <div
-          className="flex h-40 w-40 items-center justify-center rounded-full border-8 border-slate-100"
+          className="flex h-40 w-40 items-center justify-center rounded-full border-8 border-slate-100 dark:border-slate-700"
           aria-hidden
         >
-          <span className="text-sm text-slate-400">Sem dados</span>
+          <span className="text-sm text-slate-400 dark:text-slate-500">Sem dados</span>
         </div>
-        <p className="mt-4 text-sm text-slate-500">Nenhuma tarefa ainda</p>
+        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Nenhuma tarefa ainda</p>
       </div>
     )
   }
@@ -51,7 +51,7 @@ function StatusDonutChart({ slices }: { slices: StatusChartSlice[] }) {
             cy={SIZE / 2}
             r={RADIUS}
             fill="none"
-            stroke="#f1f5f9"
+            stroke="var(--app-chart-track)"
             strokeWidth={STROKE}
           />
           {slices.map((slice) => {
@@ -78,8 +78,8 @@ function StatusDonutChart({ slices }: { slices: StatusChartSlice[] }) {
           })}
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold text-slate-800">{total}</span>
-          <span className="text-xs text-slate-500">tarefas</span>
+          <span className="text-2xl font-bold text-slate-800 dark:text-slate-100">{total}</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">tarefas</span>
         </div>
       </div>
 
@@ -91,8 +91,10 @@ function StatusDonutChart({ slices }: { slices: StatusChartSlice[] }) {
               style={{ backgroundColor: slice.color }}
               aria-hidden
             />
-            <span className="text-slate-600">{slice.label}</span>
-            <span className="ml-auto font-medium text-slate-800">{slice.value}</span>
+            <span className="text-slate-600 dark:text-slate-300">{slice.label}</span>
+            <span className="ml-auto font-medium text-slate-800 dark:text-slate-100">
+              {slice.value}
+            </span>
           </li>
         ))}
       </ul>
@@ -111,29 +113,35 @@ export default function ProductivityDashboard({ todos, loading }: ProductivityDa
   const chartData = useMemo(() => buildStatusChartData(todos), [todos])
 
   if (loading) {
-    return <p className="text-center text-slate-500">Carregando indicadores...</p>
+    return (
+      <p className="text-center text-slate-500 dark:text-slate-400">Carregando indicadores...</p>
+    )
   }
 
   return (
     <div className="space-y-6">
       <header className="text-left">
-        <h1 className="text-2xl font-bold text-slate-800 sm:text-3xl">Dashboard</h1>
-        <p className="mt-1 text-sm text-slate-500 sm:text-base">{subtitle}</p>
-        <p className="mt-2 text-xs text-slate-400">
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 sm:text-3xl">
+          Dashboard
+        </h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 sm:text-base">{subtitle}</p>
+        <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">
           Indicadores derivados das suas tarefas em tempo real — sem tabela separada.
         </p>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-800 dark:ring-slate-700/60">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
             % concluído
           </p>
-          <p className="mt-2 text-3xl font-bold text-green-600">{percentConcluido}%</p>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-2 text-3xl font-bold text-green-600 dark:text-green-400">
+            {percentConcluido}%
+          </p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {totaisPorStatus.concluida} de {totalElegivel} tarefas
           </p>
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+          <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
             <div
               className="h-full rounded-full bg-green-500 transition-all"
               style={{ width: `${percentConcluido}%` }}
@@ -141,8 +149,10 @@ export default function ProductivityDashboard({ todos, loading }: ProductivityDa
           </div>
         </div>
 
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Por status</p>
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-800 dark:ring-slate-700/60">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+            Por status
+          </p>
           <ul className="mt-3 space-y-2">
             {TODO_STATUSES.map((status) => (
               <li key={status} className="flex items-center justify-between text-sm">
@@ -151,14 +161,16 @@ export default function ProductivityDashboard({ todos, loading }: ProductivityDa
                 >
                   {TODO_STATUS_CONFIG[status].label}
                 </span>
-                <span className="font-semibold text-slate-800">{totaisPorStatus[status]}</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-100">
+                  {totaisPorStatus[status]}
+                </span>
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-800 dark:ring-slate-700/60">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
             Por prioridade
           </p>
           <ul className="mt-3 space-y-2">
@@ -169,7 +181,7 @@ export default function ProductivityDashboard({ todos, loading }: ProductivityDa
                 >
                   {TODO_PRIORIDADE_CONFIG[prioridade].label}
                 </span>
-                <span className="font-semibold text-slate-800">
+                <span className="font-semibold text-slate-800 dark:text-slate-100">
                   {totaisPorPrioridade[prioridade]}
                 </span>
               </li>
@@ -177,17 +189,21 @@ export default function ProductivityDashboard({ todos, loading }: ProductivityDa
           </ul>
         </div>
 
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-800 dark:ring-slate-700/60">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
             Concluídas na semana
           </p>
-          <p className="mt-2 text-3xl font-bold text-blue-600">{concluidasNaSemana}</p>
-          <p className="mt-1 text-sm text-slate-500">Marcadas como concluídas nesta semana</p>
+          <p className="mt-2 text-3xl font-bold text-blue-600 dark:text-blue-400">
+            {concluidasNaSemana}
+          </p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Marcadas como concluídas nesta semana
+          </p>
         </div>
       </div>
 
-      <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+      <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-800 dark:ring-slate-700/60">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
           Distribuição por status
         </h2>
         <div className="mt-6">

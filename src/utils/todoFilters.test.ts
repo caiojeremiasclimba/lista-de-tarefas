@@ -335,6 +335,24 @@ describe('computeTodoFilters', () => {
     expect(result.counts.vence_hoje).toBe(2)
   })
 
+  it('contadores de categoria e prioridade excluem tarefas em Vencidas e Vence hoje', () => {
+    const todos = buildFixtureTodos()
+    const result = computeTodoFilters({
+      todos,
+      categorias,
+      busca: '',
+      filtroAtivo: 'todas',
+      filtroCategoria: null,
+      filtroPrioridade: null,
+    })
+
+    expect(result.countsPorCategoria).toEqual({
+      'cat-1': 2,
+      'cat-2': 2,
+    })
+    expect(result.countsPorPrioridade).toEqual({ alta: 0, media: 5, baixa: 0 })
+  })
+
   it('calcula contadores por status e vencidas', () => {
     const todos = buildFixtureTodos()
     const result = computeTodoFilters({
@@ -371,7 +389,7 @@ describe('computeTodoFilters', () => {
     })
 
     expect(result.countsPorCategoria).toEqual({
-      'cat-1': 4,
+      'cat-1': 2,
       'cat-2': 2,
     })
   })

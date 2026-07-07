@@ -227,6 +227,26 @@ export const OVERDUE_EM_ANDAMENTO_TODOS: MockTodo[] = [
   }),
 ]
 
+/** Tarefas na mesma categoria com e sem atraso para contadores da sidebar. */
+export const OVERDUE_CATEGORY_TODOS: MockTodo[] = [
+  baseTodo({
+    id: 'e2e-cat-todo-vencida',
+    titulo: 'Tarefa vencida',
+    status: 'pendente',
+    categoria_id: 'e2e-cat-trabalho',
+    data_prevista: '2020-01-01',
+    created_at: '2026-06-07T10:00:00.000Z',
+  }),
+  baseTodo({
+    id: 'e2e-cat-todo-em-dia',
+    titulo: 'Tarefa em dia',
+    status: 'pendente',
+    categoria_id: 'e2e-cat-trabalho',
+    data_prevista: '2099-12-31',
+    created_at: '2026-06-08T10:00:00.000Z',
+  }),
+]
+
 export const CANCELLED_TODOS: MockTodo[] = [
   baseTodo({
     id: 'e2e-todo-cancelada',

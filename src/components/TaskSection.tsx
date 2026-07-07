@@ -49,9 +49,9 @@ export default function TaskSection({
   const Icon = SECTION_ICONS[variant]
   const headerColor =
     variant === 'vencidas'
-      ? 'text-red-600'
+      ? 'text-red-600 dark:text-red-400'
       : variant === 'vence_hoje'
-        ? 'text-amber-600'
+        ? 'text-amber-600 dark:text-amber-400'
         : TODO_STATUS_CONFIG[variant as TodoStatus].headerClass
 
   return (
@@ -63,18 +63,18 @@ export default function TaskSection({
       >
         <Icon className="h-4 w-4" />
         <span>{title}</span>
-        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-500">
+        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-500 dark:bg-slate-700 dark:text-slate-300">
           {todos.length}
         </span>
         <span className="ml-auto">
-          <ChevronIcon up={isOpen} className="h-4 w-4 text-slate-400" />
+          <ChevronIcon up={isOpen} className="h-4 w-4 text-slate-400 dark:text-slate-500" />
         </span>
       </button>
 
       {isOpen && (
         <ul className="space-y-3">
           {todos.length === 0 ? (
-            <li className="rounded-2xl border border-dashed border-slate-200 py-8 text-center text-sm text-slate-400">
+            <li className="rounded-2xl border border-dashed border-slate-200 py-8 text-center text-sm text-slate-400 dark:border-slate-700 dark:text-slate-500">
               Nenhuma tarefa nesta seção.
             </li>
           ) : (

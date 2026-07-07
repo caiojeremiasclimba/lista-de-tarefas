@@ -41,7 +41,9 @@ export function useCategorias({
     void loadCategorias()
   }, [loadCategorias])
 
-  useSupabaseRealtime(userId, CATEGORIAS_REALTIME_TABLES, loadCategorias)
+  useSupabaseRealtime(userId, CATEGORIAS_REALTIME_TABLES, () => void loadCategorias(), {
+    debounceMs: 300,
+  })
 
   const handleCreateCategoria = useCallback(
     async (data: CategoriaFormData) => {

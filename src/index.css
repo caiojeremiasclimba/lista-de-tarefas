@@ -1,5 +1,38 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-app-background: var(--app-background);
+  --color-app-foreground: var(--app-foreground);
+  --color-app-card: var(--app-card);
+  --color-app-muted: var(--app-muted);
+  --color-app-border: var(--app-border);
+  --color-app-chart-track: var(--app-chart-track);
+}
+
+:root {
+  color-scheme: light;
+
+  --app-background: #f0f9ff;
+  --app-foreground: #1e293b;
+  --app-card: #ffffff;
+  --app-muted: #64748b;
+  --app-border: #e2e8f0;
+  --app-chart-track: #f1f5f9;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --app-background: #0f172a;
+  --app-foreground: #f1f5f9;
+  --app-card: #1e293b;
+  --app-muted: #94a3b8;
+  --app-border: #334155;
+  --app-chart-track: #334155;
+}
+
 html,
 body {
   margin: 0;

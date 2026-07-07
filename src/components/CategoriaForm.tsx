@@ -62,12 +62,15 @@ export default function CategoriaForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 id={titleId} className="text-lg font-semibold text-slate-800">
+      <h2 id={titleId} className="text-lg font-semibold text-slate-800 dark:text-slate-100">
         {isEditing ? 'Editar categoria' : 'Nova categoria'}
       </h2>
 
       <div>
-        <label htmlFor="categoria-nome" className="mb-1 block text-sm font-medium text-slate-700">
+        <label
+          htmlFor="categoria-nome"
+          className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200"
+        >
           Nome *
         </label>
         <input
@@ -75,14 +78,16 @@ export default function CategoriaForm({
           type="text"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
-          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
           placeholder="Ex: Trabalho"
         />
-        {erro && <p className="mt-1 text-sm text-red-600">{erro}</p>}
+        {erro && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{erro}</p>}
       </div>
 
       <fieldset>
-        <legend className="mb-2 block text-sm font-medium text-slate-700">Cor</legend>
+        <legend className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+          Cor
+        </legend>
         <div className="flex flex-wrap gap-2">
           {CATEGORIA_CORES.map((corOption) => {
             const config = CATEGORIA_COR_CONFIG[corOption]
@@ -96,7 +101,9 @@ export default function CategoriaForm({
                 aria-pressed={isSelected}
                 onClick={() => setCor(corOption)}
                 className={`flex h-9 w-9 items-center justify-center rounded-full border-2 transition ${
-                  isSelected ? 'border-slate-800' : 'border-transparent hover:border-slate-300'
+                  isSelected
+                    ? 'border-slate-800 dark:border-slate-100'
+                    : 'border-transparent hover:border-slate-300 dark:hover:border-slate-500'
                 }`}
               >
                 <span className={`h-6 w-6 rounded-full ${config.dotClass}`} aria-hidden />
@@ -107,7 +114,9 @@ export default function CategoriaForm({
       </fieldset>
 
       {submitError && (
-        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{submitError}</p>
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/40 dark:text-red-400">
+          {submitError}
+        </p>
       )}
 
       <div className="flex gap-2 pt-1">
@@ -123,7 +132,7 @@ export default function CategoriaForm({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-slate-200 px-4 py-2.5 text-slate-700 hover:bg-slate-50"
+            className="rounded-xl border border-slate-200 px-4 py-2.5 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-600"
           >
             Cancelar
           </button>

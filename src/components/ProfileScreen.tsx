@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import { removeAvatar, uploadAvatar } from '../utils/avatarStorage'
 import { getUserAvatarUrl, hasEmailPasswordIdentity } from '../utils/userDisplay'
 import { AuthAlert, AuthField, EyeIcon, EyeOffIcon, LockIcon, MailIcon, UserIcon } from './AuthUi'
+import ThemeToggle from './ThemeToggle'
 import UserAvatar from './UserAvatar'
 
 interface ProfileScreenProps {
@@ -226,18 +227,20 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
   }
 
   if (loading) {
-    return <p className="text-center text-slate-500">Carregando perfil...</p>
+    return <p className="text-center text-slate-500 dark:text-slate-400">Carregando perfil...</p>
   }
 
   const cardClass =
-    'space-y-5 rounded-2xl border border-slate-200/60 bg-white/80 p-6 shadow-sm backdrop-blur-sm'
+    'space-y-5 rounded-2xl border border-slate-200/60 bg-white/80 p-6 shadow-sm backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-800/80'
   const canChangePassword = hasEmailPasswordIdentity(user)
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
       <header className="text-left">
-        <h1 className="text-2xl font-bold text-slate-800 sm:text-3xl">Meu perfil</h1>
-        <p className="mt-1 text-sm text-slate-500 sm:text-base">
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 sm:text-3xl">
+          Meu perfil
+        </h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 sm:text-base">
           Gerencie suas informações pessoais
         </p>
       </header>
@@ -245,7 +248,15 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
       {error && !loading && <AuthAlert type="error">{error}</AuthAlert>}
 
       <section className={cardClass}>
-        <h2 className="text-lg font-semibold text-slate-800">Foto de perfil</h2>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Aparência</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Escolha entre modo claro e escuro.
+        </p>
+        <ThemeToggle showLabel />
+      </section>
+
+      <section className={cardClass}>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Foto de perfil</h2>
 
         <div className="flex items-center gap-4">
           <UserAvatar user={user} size="lg" previewUrl={previewUrl} />
@@ -263,7 +274,7 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
                 type="button"
                 onClick={handleRemoveAvatar}
                 disabled={uploadingAvatar || removingAvatar}
-                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-600"
               >
                 {removingAvatar ? 'Removendo...' : 'Remover foto'}
               </button>
@@ -279,14 +290,16 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
           onChange={handleAvatarChange}
         />
 
-        <p className="text-xs text-slate-400">JPEG, PNG ou WebP. Máximo 2 MB.</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500">
+          JPEG, PNG ou WebP. Máximo 2 MB.
+        </p>
 
         {avatarError && <AuthAlert type="error">{avatarError}</AuthAlert>}
         {avatarSuccess && <AuthAlert type="success">{avatarSuccess}</AuthAlert>}
       </section>
 
       <form onSubmit={handleSubmit} className={cardClass}>
-        <h2 className="text-lg font-semibold text-slate-800">Dados pessoais</h2>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Dados pessoais</h2>
 
         <AuthField
           id="profile-nome"
@@ -297,7 +310,7 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
           placeholder="Seu nome"
           icon={<UserIcon className="h-5 w-5 text-slate-400" />}
         />
-        {erro && <p className="-mt-3 text-sm text-red-600">{erro}</p>}
+        {erro && <p className="-mt-3 text-sm text-red-600 dark:text-red-400">{erro}</p>}
 
         <div>
           <AuthField
@@ -310,7 +323,9 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
             icon={<MailIcon />}
             readOnly
           />
-          <p className="mt-1.5 text-xs text-slate-400">O e-mail não pode ser alterado aqui.</p>
+          <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
+            O e-mail não pode ser alterado aqui.
+          </p>
         </div>
 
         {success && <AuthAlert type="success">{success}</AuthAlert>}
@@ -326,7 +341,9 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
 
       {canChangePassword ? (
         <form onSubmit={handlePasswordSubmit} className={cardClass}>
-          <h2 className="text-lg font-semibold text-slate-800">Alterar senha</h2>
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+            Alterar senha
+          </h2>
 
           <AuthField
             id="profile-senha-atual"
@@ -391,8 +408,8 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
         </form>
       ) : (
         <section className={cardClass}>
-          <h2 className="text-lg font-semibold text-slate-800">Senha</h2>
-          <p className="text-sm text-slate-500">
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Senha</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Sua conta usa login com Google. A senha é gerenciada pela sua conta Google.
           </p>
         </section>

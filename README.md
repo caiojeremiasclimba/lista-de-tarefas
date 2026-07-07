@@ -40,7 +40,7 @@ Os números ao lado de cada filtro refletem as tarefas **após busca** e **filtr
 2. As mesmas tarefas **não são repetidas** nas seções Pendentes ou Em andamento.
 3. Seções de status **sem tarefas** (ex.: Canceladas vazia) **não são exibidas**.
 
-**Contadores de categoria e prioridade** contam todas as tarefas do grupo, incluindo vencidas e que vencem hoje — são filtros independentes da divisão por prazo.
+**Contadores de categoria e prioridade** seguem a mesma regra de exclusão de **Pendentes** e **Em andamento**: tarefas ativas vencidas ou que vencem hoje não entram no número ao lado do filtro. Ao clicar no filtro, a lista ainda mostra **todas** as tarefas daquela categoria ou prioridade (incluindo vencidas e que vencem hoje). Tarefas concluídas e canceladas sempre entram no contador.
 
 A ordenação escolhida (inteligente, data prevista, prioridade etc.) aplica-se dentro de cada seção visível, inclusive Vencidas e Vence hoje.
 
