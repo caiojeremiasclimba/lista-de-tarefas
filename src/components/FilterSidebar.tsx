@@ -80,7 +80,9 @@ function ViewButton({
       onClick={() => onChange(id)}
       aria-current={isActive ? 'page' : undefined}
       className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
-        isActive ? 'bg-blue-50 font-medium text-blue-700' : 'text-slate-600 hover:bg-slate-50'
+        isActive
+          ? 'bg-blue-50 font-medium text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
+          : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-600'
       }`}
     >
       <Icon className="h-4 w-4 shrink-0" />
@@ -111,7 +113,9 @@ function FilterButton({
       onClick={() => onChange(id)}
       aria-current={isActive ? 'page' : undefined}
       className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
-        isActive ? 'bg-blue-50 font-medium text-blue-700' : 'text-slate-600 hover:bg-slate-50'
+        isActive
+          ? 'bg-blue-50 font-medium text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
+          : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-600'
       }`}
     >
       <Icon className="h-4 w-4 shrink-0" />
@@ -119,12 +123,12 @@ function FilterButton({
       <span
         className={`ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-xs font-medium ${
           isOverdueHighlight
-            ? 'bg-red-50 text-red-600'
+            ? 'bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400'
             : isDueTodayHighlight
-              ? 'bg-amber-50 text-amber-700'
+              ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'
               : isActive
-                ? 'bg-blue-100 text-blue-700'
-                : 'bg-slate-100 text-slate-500'
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+                : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
         }`}
       >
         {count}
@@ -153,7 +157,9 @@ function PriorityFilterButton({
       onClick={() => onChange(isActive ? null : prioridade)}
       aria-current={isActive ? 'page' : undefined}
       className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
-        isActive ? 'bg-blue-50 font-medium text-blue-700' : 'text-slate-600 hover:bg-slate-50'
+        isActive
+          ? 'bg-blue-50 font-medium text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
+          : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-600'
       }`}
     >
       <span
@@ -169,7 +175,9 @@ function PriorityFilterButton({
       <span className="truncate">{config.label}</span>
       <span
         className={`ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-xs font-medium ${
-          isActive ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'
+          isActive
+            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+            : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
         }`}
       >
         {count}
@@ -223,7 +231,7 @@ function CategoryFilterButton({
   return (
     <div
       className={`flex items-center gap-0.5 rounded-xl pr-1 transition-colors ${
-        isActive ? 'bg-blue-50' : 'hover:bg-slate-50'
+        isActive ? 'bg-blue-50 dark:bg-blue-950/40' : 'hover:bg-slate-50 dark:hover:bg-slate-600'
       }`}
     >
       <button
@@ -231,7 +239,7 @@ function CategoryFilterButton({
         onClick={() => onChange(isActive ? null : categoria.id)}
         aria-current={isActive ? 'page' : undefined}
         className={`flex min-w-0 flex-1 items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
-          isActive ? 'font-medium text-blue-700' : 'text-slate-600'
+          isActive ? 'font-medium text-blue-700 dark:text-blue-300' : 'text-slate-600 dark:text-slate-300'
         }`}
       >
         <span
@@ -241,7 +249,9 @@ function CategoryFilterButton({
         <span className="truncate">{categoria.nome}</span>
         <span
           className={`ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-xs font-medium ${
-            isActive ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'
+            isActive
+            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+            : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
           }`}
         >
           {count}
@@ -253,24 +263,24 @@ function CategoryFilterButton({
           type="button"
           onClick={() => setMenuOpen((prev) => !prev)}
           aria-label={`Ações da categoria ${categoria.nome}`}
-          className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+          className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-600 dark:hover:text-slate-300"
         >
           <DotsVerticalIcon className="h-4 w-4" />
         </button>
 
         {menuOpen && (
-          <div className="absolute right-0 z-10 mt-1 w-36 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
+          <div className="absolute right-0 z-10 mt-1 w-36 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-800">
             <button
               type="button"
               onClick={handleEdit}
-              className="w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+              className="w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-600"
             >
               Editar
             </button>
             <button
               type="button"
               onClick={handleDelete}
-              className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+              className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
             >
               Excluir
             </button>
@@ -298,7 +308,7 @@ function CollapsibleFilterSection({
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="flex w-full items-center justify-between px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-400 hover:text-slate-600"
+        className="flex w-full items-center justify-between px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
       >
         <span>{title}</span>
         <ChevronIcon up={open} className="h-3.5 w-3.5" />
@@ -323,7 +333,7 @@ function FilterGroup({
 }) {
   return (
     <div className="space-y-1">
-      <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">{title}</p>
+      <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{title}</p>
       {items.map((item) => (
         <FilterButton
           key={item.id}
@@ -362,7 +372,7 @@ export default function FilterSidebar({
   return (
     <nav aria-label="Navegação e filtros" className="space-y-6 px-3 py-6">
       <div className="space-y-1">
-        <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
           Navegação
         </p>
         {viewItems.map((item) => (
@@ -371,9 +381,9 @@ export default function FilterSidebar({
       </div>
 
       <div className={filtersMuted ? 'opacity-50' : undefined}>
-        <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Filtros</p>
+        <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">Filtros</p>
         {filtersMuted && (
-          <p className="px-3 pb-2 text-xs text-slate-400">Aplicam-se à visão Tarefas</p>
+          <p className="px-3 pb-2 text-xs text-slate-400 dark:text-slate-500">Aplicam-se à visão Tarefas</p>
         )}
       </div>
       <div className={filtersMuted ? 'pointer-events-none space-y-6 opacity-50' : 'space-y-6'}>
@@ -420,7 +430,7 @@ export default function FilterSidebar({
           onToggle={() => setCategoriaOpen((o) => !o)}
         >
           {categorias.length === 0 ? (
-            <p className="px-3 py-2 text-sm text-slate-500">Nenhuma categoria ainda</p>
+            <p className="px-3 py-2 text-sm text-slate-500 dark:text-slate-400">Nenhuma categoria ainda</p>
           ) : (
             categorias.map((cat) => (
               <CategoryFilterButton
@@ -437,7 +447,7 @@ export default function FilterSidebar({
           <button
             type="button"
             onClick={onNovaCategoria}
-            className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50"
+            className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/40"
           >
             <span aria-hidden>+</span>
             Nova categoria

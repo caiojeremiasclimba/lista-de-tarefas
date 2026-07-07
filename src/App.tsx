@@ -82,8 +82,8 @@ function App() {
   if (loading) {
     return (
       <>
-        <div className="flex min-h-screen items-center justify-center">
-          <p className="text-gray-500">Carregando...</p>
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900">
+          <p className="text-gray-500 dark:text-slate-400">Carregando...</p>
         </div>
         <AppToaster />
       </>

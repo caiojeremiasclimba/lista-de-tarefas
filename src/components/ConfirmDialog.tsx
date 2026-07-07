@@ -30,10 +30,10 @@ export default function ConfirmDialog({
     <Modal open={open} onClose={onCancel} ariaLabelledBy={titleId} panelClassName="w-full max-w-sm">
       <div className="space-y-4">
         <div>
-          <h2 id={titleId} className="text-lg font-semibold text-slate-800">
+          <h2 id={titleId} className="text-lg font-semibold text-slate-800 dark:text-slate-100">
             {title}
           </h2>
-          <p className="mt-2 text-sm text-slate-600">{description}</p>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{description}</p>
         </div>
 
         <div className="flex gap-2 pt-1">
@@ -41,7 +41,7 @@ export default function ConfirmDialog({
             type="button"
             onClick={onCancel}
             disabled={loading}
-            className="rounded-xl border border-slate-200 px-4 py-2.5 text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+            className="rounded-xl border border-slate-200 px-4 py-2.5 text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-600"
           >
             {cancelLabel}
           </button>

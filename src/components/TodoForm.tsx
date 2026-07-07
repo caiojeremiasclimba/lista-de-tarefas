@@ -193,12 +193,12 @@ export default function TodoForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 id={titleId} className="text-lg font-semibold text-slate-800">
+      <h2 id={titleId} className="text-lg font-semibold text-slate-800 dark:text-slate-100">
         {isEditing ? 'Editar tarefa' : 'Nova tarefa'}
       </h2>
 
       <div>
-        <label htmlFor="titulo" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="titulo" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
           Título *
         </label>
         <input
@@ -206,14 +206,14 @@ export default function TodoForm({
           type="text"
           value={form.titulo}
           onChange={(e) => updateField('titulo', e.target.value)}
-          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
           placeholder="Ex: Estudar React"
         />
-        {erros.titulo && <p className="mt-1 text-sm text-red-600">{erros.titulo}</p>}
+        {erros.titulo && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{erros.titulo}</p>}
       </div>
 
       <div>
-        <label htmlFor="descricao" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="descricao" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
           Descrição
         </label>
         <textarea
@@ -221,26 +221,26 @@ export default function TodoForm({
           value={form.descricao}
           onChange={(e) => updateField('descricao', e.target.value)}
           rows={3}
-          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
           placeholder="Detalhes da tarefa (opcional)"
         />
       </div>
 
       <div>
-        <label htmlFor="anexo" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="anexo" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
           Anexo
         </label>
-        <p className="mb-2 text-xs text-slate-500">Imagem (JPEG, PNG, WebP) ou PDF, até 5 MB</p>
+        <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">Imagem (JPEG, PNG, WebP) ou PDF, até 5 MB</p>
 
         {hasExistingAnexo && (
-          <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-            <span className="min-w-0 truncate text-sm text-slate-700">
+          <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900">
+            <span className="min-w-0 truncate text-sm text-slate-700 dark:text-slate-200">
               {editingTodo?.anexo_nome ?? 'Anexo atual'}
             </span>
             <button
               type="button"
               onClick={handleRemoveAnexo}
-              className="shrink-0 text-sm font-medium text-red-600 hover:text-red-700"
+              className="shrink-0 text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
             >
               Remover
             </button>
@@ -248,7 +248,7 @@ export default function TodoForm({
         )}
 
         {form.anexoFile && (
-          <div className="mb-2 space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <div className="mb-2 space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900">
             {anexoPreviewUrl ? (
               <img
                 src={anexoPreviewUrl}
@@ -256,7 +256,7 @@ export default function TodoForm({
                 className="max-h-32 rounded-lg object-contain"
               />
             ) : (
-              <p className="text-sm text-slate-700">{form.anexoFile.name}</p>
+              <p className="text-sm text-slate-700 dark:text-slate-200">{form.anexoFile.name}</p>
             )}
             <button
               type="button"
@@ -267,7 +267,7 @@ export default function TodoForm({
                   removerAnexo: hasExistingAnexo ? false : prev.removerAnexo,
                 }))
               }
-              className="text-sm font-medium text-red-600 hover:text-red-700"
+              className="text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
             >
               Cancelar seleção
             </button>
@@ -285,15 +285,15 @@ export default function TodoForm({
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-600"
         >
           {hasExistingAnexo || form.anexoFile ? 'Trocar arquivo' : 'Escolher arquivo'}
         </button>
-        {anexoError && <p className="mt-1 text-sm text-red-600">{anexoError}</p>}
+        {anexoError && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{anexoError}</p>}
       </div>
 
       <div>
-        <label htmlFor="categoria_id" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="categoria_id" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
           Categoria
         </label>
         <select
@@ -301,7 +301,7 @@ export default function TodoForm({
           value={form.categoria_id}
           onChange={(e) => updateField('categoria_id', e.target.value)}
           disabled={categorias.length === 0}
-          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-50 disabled:text-slate-400"
+          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 disabled:bg-slate-50 disabled:text-slate-400 dark:disabled:bg-slate-800 dark:disabled:text-slate-500"
         >
           <option value="">Sem categoria</option>
           {categorias.map((c) => (
@@ -311,12 +311,12 @@ export default function TodoForm({
           ))}
         </select>
         {categorias.length === 0 && (
-          <p className="mt-1 text-sm text-slate-500">Crie uma categoria na sidebar</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Crie uma categoria na sidebar</p>
         )}
       </div>
 
       <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700">Subtarefas</label>
+        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Subtarefas</label>
         <SubtarefaList
           mode="editable"
           subtarefas={form.subtarefas}
@@ -326,7 +326,7 @@ export default function TodoForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="data_prevista" className="mb-1 block text-sm font-medium text-slate-700">
+          <label htmlFor="data_prevista" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
             Data prevista
           </label>
           <input
@@ -334,22 +334,22 @@ export default function TodoForm({
             type="date"
             value={form.data_prevista}
             onChange={(e) => handleDataPrevistaChange(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
           />
           {erros.data_prevista && (
-            <p className="mt-1 text-sm text-red-600">{erros.data_prevista}</p>
+            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{erros.data_prevista}</p>
           )}
         </div>
 
         <div>
-          <label htmlFor="prioridade" className="mb-1 block text-sm font-medium text-slate-700">
+          <label htmlFor="prioridade" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
             Prioridade
           </label>
           <select
             id="prioridade"
             value={form.prioridade}
             onChange={(e) => updateField('prioridade', e.target.value as TodoPrioridade)}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
           >
             {TODO_PRIORIDADES.map((prioridade) => (
               <option key={prioridade} value={prioridade}>
@@ -360,14 +360,14 @@ export default function TodoForm({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-3">
-        <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+      <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-3 dark:border-slate-700 dark:bg-slate-900/40">
+        <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
           <input
             id="recorrencia_ativa"
             type="checkbox"
             checked={hasRecorrencia}
             onChange={(e) => handleToggleRecorrencia(e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-900"
           />
           Repetir tarefa
         </label>
@@ -377,7 +377,7 @@ export default function TodoForm({
             <div>
               <label
                 htmlFor="recorrencia_tipo"
-                className="mb-1 block text-sm font-medium text-slate-700"
+                className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200"
               >
                 Frequência
               </label>
@@ -387,7 +387,7 @@ export default function TodoForm({
                 onChange={(e) =>
                   updateField('recorrencia_tipo', e.target.value as TodoRecorrenciaTipo)
                 }
-                className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
               >
                 {TODO_RECORRENCIA_TIPOS.map((tipo) => (
                   <option key={tipo} value={tipo}>
@@ -400,7 +400,7 @@ export default function TodoForm({
             <div>
               <label
                 htmlFor="recorrencia_intervalo"
-                className="mb-1 block text-sm font-medium text-slate-700"
+                className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200"
               >
                 Intervalo
               </label>
@@ -411,19 +411,19 @@ export default function TodoForm({
                   min={1}
                   value={form.recorrencia_intervalo}
                   onChange={(e) => updateField('recorrencia_intervalo', Number(e.target.value))}
-                  className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
                 />
-                <span className="shrink-0 text-sm text-slate-500">{recorrenciaIntervalLabel}</span>
+                <span className="shrink-0 text-sm text-slate-500 dark:text-slate-400">{recorrenciaIntervalLabel}</span>
               </div>
               {erros.recorrencia_intervalo && (
-                <p className="mt-1 text-sm text-red-600">{erros.recorrencia_intervalo}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{erros.recorrencia_intervalo}</p>
               )}
             </div>
 
             <div>
               <label
                 htmlFor="recorrencia_fim"
-                className="mb-1 block text-sm font-medium text-slate-700"
+                className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200"
               >
                 Repetir até
               </label>
@@ -432,10 +432,10 @@ export default function TodoForm({
                 type="date"
                 value={form.recorrencia_fim}
                 onChange={(e) => updateField('recorrencia_fim', e.target.value)}
-                className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
               />
               {erros.recorrencia_fim && (
-                <p className="mt-1 text-sm text-red-600">{erros.recorrencia_fim}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{erros.recorrencia_fim}</p>
               )}
             </div>
           </div>
@@ -443,14 +443,14 @@ export default function TodoForm({
       </div>
 
       <div>
-        <label htmlFor="status" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="status" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
           Status
         </label>
         <select
           id="status"
           value={form.status}
           onChange={(e) => updateField('status', e.target.value as TodoStatus)}
-          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
         >
           {TODO_STATUSES.map((status) => (
             <option key={status} value={status}>
@@ -461,7 +461,7 @@ export default function TodoForm({
       </div>
 
       {submitError && (
-        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{submitError}</p>
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/40 dark:text-red-400">{submitError}</p>
       )}
 
       <div className="flex gap-2 pt-1">
@@ -477,7 +477,7 @@ export default function TodoForm({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-slate-200 px-4 py-2.5 text-slate-700 hover:bg-slate-50"
+            className="rounded-xl border border-slate-200 px-4 py-2.5 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-600"
           >
             Cancelar
           </button>

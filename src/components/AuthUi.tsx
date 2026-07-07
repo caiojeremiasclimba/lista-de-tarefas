@@ -158,7 +158,7 @@ export function AuthField({
 }: AuthFieldProps) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-sm font-semibold text-slate-700">
+      <label htmlFor={id} className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-200">
         {label}
       </label>
       <div className="relative">
@@ -172,10 +172,10 @@ export function AuthField({
           readOnly={readOnly}
           minLength={minLength}
           placeholder={placeholder}
-          className={`w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-10 text-slate-800 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${readOnly ? 'cursor-default bg-slate-50 text-slate-500' : ''}`}
+          className={`w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-10 text-slate-800 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 ${readOnly ? 'cursor-default bg-slate-50 text-slate-500 dark:bg-slate-800 dark:text-slate-400' : ''}`}
         />
         {rightSlot && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
             {rightSlot}
           </div>
         )}
@@ -230,10 +230,10 @@ export function AuthDivider({ label = 'ou continue com' }: { label?: string }) {
   return (
     <div className="relative my-6">
       <div className="absolute inset-0 flex items-center">
-        <div className="w-full border-t border-slate-200" />
+        <div className="w-full border-t border-slate-200 dark:border-slate-700" />
       </div>
       <div className="relative flex justify-center text-xs uppercase">
-        <span className="bg-white px-3 font-medium text-slate-400">{label}</span>
+        <span className="bg-white px-3 font-medium text-slate-400 dark:bg-slate-800 dark:text-slate-500">{label}</span>
       </div>
     </div>
   )
@@ -242,8 +242,8 @@ export function AuthDivider({ label = 'ou continue com' }: { label?: string }) {
 export function AuthAlert({ type, children }: { type: 'error' | 'success'; children: ReactNode }) {
   const styles =
     type === 'error'
-      ? 'bg-red-50 text-red-600 border-red-100'
-      : 'bg-green-50 text-green-700 border-green-100'
+      ? 'bg-red-50 text-red-600 border-red-100 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900'
+      : 'bg-green-50 text-green-700 border-green-100 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900'
 
   return <p className={`rounded-xl border px-3 py-2.5 text-sm ${styles}`}>{children}</p>
 }

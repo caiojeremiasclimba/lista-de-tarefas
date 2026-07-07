@@ -73,7 +73,7 @@ export default function SignUpForm() {
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            className="text-slate-400 hover:text-slate-600"
+            className="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
             aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
           >
             {showPassword ? <EyeOffIcon /> : <EyeIcon />}

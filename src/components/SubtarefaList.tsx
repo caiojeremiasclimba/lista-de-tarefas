@@ -33,10 +33,10 @@ export default function SubtarefaList(props: SubtarefaListProps) {
               aria-label={sub.concluida ? 'Desmarcar subtarefa' : 'Marcar subtarefa'}
               className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
                 disabled
-                  ? 'cursor-not-allowed border-slate-200 bg-slate-50 opacity-50'
+                  ? 'cursor-not-allowed border-slate-200 bg-slate-50 opacity-50 dark:border-slate-600 dark:bg-slate-700'
                   : sub.concluida
                     ? 'border-green-500 bg-green-500 text-white'
-                    : 'border-slate-300 bg-white hover:border-blue-400'
+                    : 'border-slate-300 bg-white hover:border-blue-400 dark:border-slate-600 dark:bg-slate-900'
               }`}
             >
               {sub.concluida && (
@@ -53,7 +53,9 @@ export default function SubtarefaList(props: SubtarefaListProps) {
             </button>
             <span
               className={`text-sm ${
-                sub.concluida ? 'line-through text-slate-400' : 'text-slate-700'
+                sub.concluida
+                  ? 'line-through text-slate-400 dark:text-slate-500'
+                  : 'text-slate-700 dark:text-slate-200'
               }`}
             >
               {sub.titulo}
@@ -99,7 +101,7 @@ export default function SubtarefaList(props: SubtarefaListProps) {
             className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
               sub.concluida
                 ? 'border-green-500 bg-green-500 text-white'
-                : 'border-slate-300 bg-white hover:border-blue-400'
+                : 'border-slate-300 bg-white hover:border-blue-400 dark:border-slate-600 dark:bg-slate-900'
             }`}
           >
             {sub.concluida && (
@@ -119,13 +121,13 @@ export default function SubtarefaList(props: SubtarefaListProps) {
             value={sub.titulo}
             onChange={(e) => updateTitulo(index, e.target.value)}
             placeholder="Descrição da subtarefa"
-            className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
           />
           <button
             type="button"
             onClick={() => removeItem(index)}
             aria-label="Remover subtarefa"
-            className="shrink-0 rounded-lg px-2 py-2 text-sm text-red-600 hover:bg-red-50"
+            className="shrink-0 rounded-lg px-2 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
           >
             Remover
           </button>
@@ -135,7 +137,7 @@ export default function SubtarefaList(props: SubtarefaListProps) {
       <button
         type="button"
         onClick={addItem}
-        className="text-sm font-medium text-blue-600 hover:text-blue-700"
+        className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
       >
         + Adicionar subtarefa
       </button>

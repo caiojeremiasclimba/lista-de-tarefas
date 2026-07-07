@@ -66,8 +66,8 @@ export default function TasksView({
   return (
     <>
       <header className="text-left">
-        <h1 className="text-2xl font-bold text-slate-800 sm:text-3xl">{title}</h1>
-        <p className="mt-1 text-sm text-slate-500 sm:text-base">{subtitle}</p>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 sm:text-3xl">{title}</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 sm:text-base">{subtitle}</p>
       </header>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
@@ -76,9 +76,9 @@ export default function TasksView({
       </div>
 
       {loading ? (
-        <p className="text-center text-slate-500">Carregando tarefas...</p>
+        <p className="text-center text-slate-500 dark:text-slate-400">Carregando tarefas...</p>
       ) : tarefasVisiveis.length === 0 ? (
-        <p className="text-center text-slate-500">{listaVaziaMensagem}</p>
+        <p className="text-center text-slate-500 dark:text-slate-400">{listaVaziaMensagem}</p>
       ) : (
         <div className="space-y-10">
           {filtroAtivo === 'vencidas' ? (

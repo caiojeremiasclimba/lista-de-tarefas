@@ -24,7 +24,7 @@ export default function UserAvatar({ user, size = 'sm', previewUrl }: UserAvatar
 
   return (
     <div
-      className={`flex shrink-0 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-600 ${sizeClass}`}
+      className={`flex shrink-0 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-600 dark:bg-blue-900/50 dark:text-blue-300 ${sizeClass}`}
       aria-hidden
     >
       {getUserInitial(user)}
