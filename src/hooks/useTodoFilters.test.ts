@@ -68,4 +68,39 @@ describe('useTodoFilters', () => {
     expect(result.current.tarefasVisiveis).toHaveLength(1)
     expect(result.current.tarefasVisiveis[0].id).toBe('2')
   })
+
+  it('expõe mensagem vazia com busca e prioridade ativa', () => {
+    const { result } = renderHook(() =>
+      useTodoFilters({
+        ...baseOptions,
+        busca: 'inexistente',
+        filtroPrioridade: 'alta',
+        filtroAtivo: 'todas',
+      })
+    )
+
+    expect(result.current.listaVaziaMensagem).toBe(
+      'Nenhum resultado para "inexistente" em prioridade alta'
+    )
+  })
+
+  it('expõe mensagem vazia com categoria, prioridade e filtro de status', () => {
+    const { result } = renderHook(() =>
+      useTodoFilters({
+        ...baseOptions,
+        busca: '',
+        filtroCategoria: 'cat-1',
+        filtroPrioridade: 'alta',
+        filtroAtivo: 'pendente',
+        todos: [
+          makeTodo({ id: '1', titulo: 'Urgente', categoria_id: 'cat-1', prioridade: 'baixa' }),
+        ],
+      })
+    )
+
+    expect(result.current.tarefasVisiveis).toHaveLength(0)
+    expect(result.current.listaVaziaMensagem).toBe(
+      'Nenhuma tarefa pendente com prioridade alta em "Trabalho"'
+    )
+  })
 })
