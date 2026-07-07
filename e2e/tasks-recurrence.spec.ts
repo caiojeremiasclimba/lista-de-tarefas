@@ -69,14 +69,15 @@ test.describe('Tarefas — recorrência', () => {
 
     await reopenCompletedTaskViaToggle(page, titulo)
 
-    const reopenedCard = pendentes
+    const venceHoje = taskSection(page, 'VENCE HOJE')
+
+    const reopenedCard = venceHoje
       .locator('li')
       .filter({ hasText: titulo })
       .filter({ hasText: 'Vence hoje' })
     await reopenedCard.getByRole('button', { name: 'Marcar como em andamento' }).click()
 
-    const emAndamento = taskSection(page, 'EM ANDAMENTO')
-    const reopenedInProgress = emAndamento
+    const reopenedInProgress = venceHoje
       .locator('li')
       .filter({ hasText: titulo })
       .filter({ hasText: 'Vence hoje' })
@@ -168,7 +169,7 @@ test.describe('Tarefas — recorrência', () => {
     await expect(card.getByText('Em andamento')).toBeVisible()
     await expect(card.getByText('Concluída', { exact: true })).not.toBeVisible()
     await expect(
-      taskSection(page, 'EM ANDAMENTO').getByRole('heading', { name: titulo })
+      taskSection(page, 'VENCE HOJE').getByRole('heading', { name: titulo })
     ).toBeVisible()
     await expect(
       taskSection(page, 'CONCLUÍDAS').getByRole('heading', { name: titulo })

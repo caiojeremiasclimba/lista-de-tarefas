@@ -74,9 +74,7 @@ test.describe('Tarefas — filtros e busca', () => {
     page,
     authenticatedWithOverdueTasks: _state,
   }) => {
-    const vencidasSection = page.locator('section').filter({
-      has: page.getByRole('button').filter({ hasText: 'VENCIDAS' }),
-    })
+    const vencidasSection = taskSection(page, 'VENCIDAS')
     await expect(vencidasSection.getByRole('heading', { name: 'Tarefa vencida' })).toBeVisible()
 
     const pendentesSection = taskSection(page, 'PENDENTES')

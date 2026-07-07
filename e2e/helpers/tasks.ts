@@ -155,7 +155,7 @@ export async function editTaskDetails(
 
 export function taskSection(
   page: Page,
-  title: 'PENDENTES' | 'CONCLUÍDAS' | 'EM ANDAMENTO' | 'CANCELADAS'
+  title: 'PENDENTES' | 'CONCLUÍDAS' | 'EM ANDAMENTO' | 'CANCELADAS' | 'VENCIDAS' | 'VENCE HOJE'
 ) {
   return page.locator('section').filter({
     has: page.getByRole('button').filter({ hasText: title }),
