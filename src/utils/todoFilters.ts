@@ -99,10 +99,14 @@ export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
     'active'
   )
 
+  const filtradosParaCountsCategoria = filtroPrioridade
+    ? filtradosParaContadores.filter((t) => t.prioridade === filtroPrioridade)
+    : filtradosParaContadores
+
   const countsPorCategoria = Object.fromEntries(
     categorias.map((c) => [
       c.id,
-      filtradosParaContadores.filter((t) => t.categoria_id === c.id).length,
+      filtradosParaCountsCategoria.filter((t) => t.categoria_id === c.id).length,
     ])
   )
 
