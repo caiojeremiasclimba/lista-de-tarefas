@@ -255,6 +255,84 @@ describe('toggleTodoStatus', () => {
     expect(tarefasCalls).toBe(2)
   })
 
+  it('consulta série com filtros corretos antes de criar próxima ocorrência', async () => {
+    const todo = makeTodo({
+      id: 'todo-1',
+      status: 'em_andamento',
+      data_prevista: '2026-07-02',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+    })
+    const updated = makeTodo({
+      id: 'todo-1',
+      status: 'concluida',
+      data_prevista: '2026-07-02',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+    })
+    const updateBuilder = createMockQueryBuilder({ data: updated, error: null })
+    const seriesCheckBuilder = createSeriesCheckBuilder([])
+
+    let tarefasCalls = 0
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'tarefas') {
+        tarefasCalls++
+        if (tarefasCalls === 1) return updateBuilder
+        return seriesCheckBuilder
+      }
+      return createMockQueryBuilder({ data: [], error: null })
+    })
+
+    await toggleTodoStatus(todo)
+
+    expect(seriesCheckBuilder.select).toHaveBeenCalledWith('id')
+    expect(seriesCheckBuilder.eq).toHaveBeenCalledWith('user_id', 'user-1')
+    expect(seriesCheckBuilder.in).toHaveBeenCalledWith('status', ['pendente', 'em_andamento'])
+    expect(seriesCheckBuilder.neq).toHaveBeenCalledWith('id', 'todo-1')
+    expect(seriesCheckBuilder.or).toHaveBeenCalledWith(
+      'recorrencia_origem_id.eq.todo-1,id.eq.todo-1'
+    )
+    expect(seriesCheckBuilder.neq).toHaveBeenCalledWith('recorrencia_tipo', 'nenhuma')
+    expect(seriesCheckBuilder.gte).toHaveBeenCalledWith('data_prevista', '2026-07-09')
+    expect(seriesCheckBuilder.limit).toHaveBeenCalledWith(1)
+  })
+
+  it('não duplica ao concluir tarefa reaberta quando já existe pendente na próxima data', async () => {
+    const todo = makeTodo({
+      id: 'todo-1',
+      status: 'em_andamento',
+      data_prevista: '2026-07-02',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+      recorrencia_origem_id: null,
+    })
+    const updated = makeTodo({
+      id: 'todo-1',
+      status: 'concluida',
+      data_prevista: '2026-07-02',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+    })
+    const updateBuilder = createMockQueryBuilder({ data: updated, error: null })
+    const seriesCheckBuilder = createSeriesCheckBuilder(['todo-2'])
+
+    let tarefasCalls = 0
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'tarefas') {
+        tarefasCalls++
+        if (tarefasCalls === 1) return updateBuilder
+        return seriesCheckBuilder
+      }
+      return createMockQueryBuilder({ data: [], error: null })
+    })
+
+    const result = await toggleTodoStatus(todo)
+
+    expect(seriesCheckBuilder.gte).toHaveBeenCalledWith('data_prevista', '2026-07-09')
+    expect(result.createdNextTodo).toBeNull()
+    expect(tarefasCalls).toBe(2)
+  })
+
   it('cria próxima ocorrência mesmo com ocorrência anterior reaberta na série', async () => {
     const todo = makeTodo({
       id: 'todo-2',
@@ -566,6 +644,60 @@ describe('saveTodo', () => {
     expect(result.savedTodo).toEqual(fetched)
     expect(result.createdNextTodo).toEqual({ ...next, subtarefas: nextSubtarefas })
     expect(tarefasCalls).toBe(4)
+
+    vi.useRealTimers()
+  })
+
+  it('não duplica ao salvar como concluída quando série já tem pendente na próxima data', async () => {
+    mockAuthenticatedUser()
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-07-02T12:00:00.000Z'))
+
+    const editingTodo = makeTodo({
+      id: 'todo-1',
+      status: 'em_andamento',
+      data_prevista: '2026-07-02',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+      subtarefas: [],
+    })
+    const fetched = makeTodo({
+      id: 'todo-1',
+      status: 'concluida',
+      data_prevista: '2026-07-02',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+      subtarefas: [],
+    })
+
+    let tarefasCalls = 0
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'tarefas') {
+        tarefasCalls++
+        if (tarefasCalls === 1) {
+          return createMockQueryBuilder({ data: null, error: null })
+        }
+        if (tarefasCalls === 2) {
+          return createMockQueryBuilder({ data: fetched, error: null })
+        }
+        return createSeriesCheckBuilder(['todo-2'])
+      }
+      return createMockQueryBuilder({ data: null, error: null })
+    })
+
+    const result = await saveTodo(
+      makeTodoFormData({
+        status: 'concluida',
+        data_prevista: '2026-07-02',
+        recorrencia_tipo: 'semanal',
+        recorrencia_intervalo: 1,
+      }),
+      editingTodo
+    )
+
+    expect(result.savedTodo).toEqual(fetched)
+    expect(result.createdNextTodo).toBeNull()
+    expect(tarefasCalls).toBe(3)
 
     vi.useRealTimers()
   })

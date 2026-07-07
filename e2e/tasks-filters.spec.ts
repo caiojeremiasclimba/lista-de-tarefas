@@ -72,6 +72,20 @@ test.describe('Tarefas — filtros e busca', () => {
     await expect(page.getByText('Nenhum resultado para "inexistente"')).toBeVisible()
   })
 
+  test('contador de Em andamento na sidebar exclui tarefas vencidas', async ({
+    page,
+    authenticatedWithOverdueEmAndamentoTasks: _state,
+  }) => {
+    await expandStatusFilters(page)
+
+    const nav = page.getByRole('navigation', { name: 'Navegação e filtros' })
+    const emAndamentoBtn = nav.getByRole('button', { name: /Em andamento/i })
+    await expect(emAndamentoBtn.getByText('1', { exact: true })).toBeVisible()
+
+    const vencidasBtn = overviewFilterButton(page, 'Vencidas')
+    await expect(vencidasBtn.getByText('1', { exact: true })).toBeVisible()
+  })
+
   test('contador de Pendentes na sidebar exclui tarefas vencidas', async ({
     page,
     authenticatedWithOverdueTasks: _state,
