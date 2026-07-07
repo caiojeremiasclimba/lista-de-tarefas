@@ -56,6 +56,10 @@ function matchesSearch(todo: Todo, termo: string): boolean {
   )
 }
 
+function isDestacadaPorPrazo(todo: Todo): boolean {
+  return isTodoOverdue(todo) || isTodoDueToday(todo)
+}
+
 export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
   const {
     todos,
@@ -128,8 +132,12 @@ export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
 
   const counts: FiltroCounts = {
     todas: filtradosPorPrioridade.length,
-    pendente: filtradosPorPrioridade.filter((t) => t.status === 'pendente').length,
-    em_andamento: filtradosPorPrioridade.filter((t) => t.status === 'em_andamento').length,
+    pendente: filtradosPorPrioridade.filter(
+      (t) => t.status === 'pendente' && !isDestacadaPorPrazo(t)
+    ).length,
+    em_andamento: filtradosPorPrioridade.filter(
+      (t) => t.status === 'em_andamento' && !isDestacadaPorPrazo(t)
+    ).length,
     concluida: filtradosPorPrioridade.filter((t) => t.status === 'concluida').length,
     cancelada: filtradosPorPrioridade.filter((t) => t.status === 'cancelada').length,
     vencidas: filtradosPorPrioridade.filter((t) => isTodoOverdue(t)).length,
