@@ -4,6 +4,7 @@ import {
   DUE_TODAY_TODOS,
   MIXED_PRIORITY_TODOS,
   MIXED_STATUS_TODOS,
+  OVERDUE_CATEGORY_TODOS,
   OVERDUE_EM_ANDAMENTO_TODOS,
   OVERDUE_TODOS,
   SEED_CATEGORIAS,
@@ -27,6 +28,7 @@ type Fixtures = {
   authenticatedWithSortableOverdueTasks: SupabaseMockState
   authenticatedWithSortableDueTodayTasks: SupabaseMockState
   authenticatedWithOverdueEmAndamentoTasks: SupabaseMockState
+  authenticatedWithOverdueCategoryTasks: SupabaseMockState
 }
 
 export const test = base.extend<Fixtures>({
@@ -99,6 +101,15 @@ export const test = base.extend<Fixtures>({
 
   authenticatedWithOverdueEmAndamentoTasks: async ({ page }, use) => {
     const state = await setupSupabaseMock(page, { todos: OVERDUE_EM_ANDAMENTO_TODOS })
+    await login(page)
+    await use(state)
+  },
+
+  authenticatedWithOverdueCategoryTasks: async ({ page }, use) => {
+    const state = await setupSupabaseMock(page, {
+      categorias: SEED_CATEGORIAS,
+      todos: OVERDUE_CATEGORY_TODOS,
+    })
     await login(page)
     await use(state)
   },

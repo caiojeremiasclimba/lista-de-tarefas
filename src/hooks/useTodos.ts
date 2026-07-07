@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from '../lib/toast'
 import type { Subtarefa } from '../types/subtarefa'
 import type { Todo, TodoFormData } from '../types/todo'
@@ -10,6 +10,7 @@ import {
   toggleTodoStatus,
 } from '../services/todoService'
 import { useSupabaseRealtime } from './useSupabaseRealtime'
+import { createTodosRealtimeHandler } from './useTodosRealtime'
 
 const TODOS_REALTIME_TABLES = ['tarefas', 'subtarefas'] as const
 
@@ -32,7 +33,12 @@ export function useTodos(userId: string) {
     void loadTodos()
   }, [loadTodos])
 
-  useSupabaseRealtime(userId, TODOS_REALTIME_TABLES, loadTodos)
+  const handleRealtimeChange = useMemo(
+    () => createTodosRealtimeHandler({ setTodos, loadTodos }),
+    [loadTodos]
+  )
+
+  useSupabaseRealtime(userId, TODOS_REALTIME_TABLES, handleRealtimeChange)
 
   const submitTodo = useCallback(async (data: TodoFormData, editingTodo?: Todo | null) => {
     const { savedTodo, createdNextTodo } = await saveTodo(data, editingTodo)

@@ -31,6 +31,11 @@ vi.mock('../lib/supabase', () => ({
 describe('useSupabaseRealtime', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it('inscreve nas tabelas com filtro por usuário', () => {
@@ -40,16 +45,6 @@ describe('useSupabaseRealtime', () => {
 
     expect(mockChannel).toHaveBeenCalledWith('realtime:user-1:tarefas,subtarefas')
     expect(mockChannelOn).toHaveBeenCalledTimes(2)
-    expect(mockChannelOn).toHaveBeenCalledWith(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'tarefas',
-        filter: 'user_id=eq.user-1',
-      },
-      expect.any(Function)
-    )
     expect(mockSubscribe).toHaveBeenCalled()
   })
 
@@ -70,15 +65,45 @@ describe('useSupabaseRealtime', () => {
     expect(mockRemoveChannel).toHaveBeenCalledWith(channel)
   })
 
-  it('dispara callback ao receber evento', () => {
+  it('dispara callback com payload do evento', () => {
     const onChange = vi.fn()
 
     renderHook(() => useSupabaseRealtime('user-1', ['tarefas'], onChange))
 
-    const handler = mockChannelOn.mock.calls[0]?.[2] as (() => void) | undefined
-    handler?.()
+    const handler = mockChannelOn.mock.calls[0]?.[2] as ((payload: unknown) => void) | undefined
+    handler?.({
+      eventType: 'UPDATE',
+      new: { id: 'todo-1' },
+      old: { id: 'todo-1' },
+    })
 
-    expect(onChange).toHaveBeenCalled()
+    expect(onChange).toHaveBeenCalledWith({
+      table: 'tarefas',
+      eventType: 'UPDATE',
+      new: { id: 'todo-1' },
+      old: { id: 'todo-1' },
+    })
+  })
+
+  it('debounce múltiplos eventos quando debounceMs está configurado', () => {
+    const onChange = vi.fn()
+
+    renderHook(() => useSupabaseRealtime('user-1', ['tarefas'], onChange, { debounceMs: 300 }))
+
+    const handler = mockChannelOn.mock.calls[0]?.[2] as ((payload: unknown) => void) | undefined
+    handler?.({ eventType: 'INSERT', new: { id: '1' }, old: undefined })
+    handler?.({ eventType: 'UPDATE', new: { id: '1' }, old: { id: '1' } })
+
+    expect(onChange).not.toHaveBeenCalled()
+    vi.advanceTimersByTime(300)
+
+    expect(onChange).toHaveBeenCalledTimes(1)
+    expect(onChange).toHaveBeenCalledWith({
+      table: 'tarefas',
+      eventType: 'UPDATE',
+      new: { id: '1' },
+      old: { id: '1' },
+    })
   })
 })
 

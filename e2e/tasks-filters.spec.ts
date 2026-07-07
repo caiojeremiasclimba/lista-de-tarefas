@@ -1,4 +1,5 @@
 import { test, expect } from './fixtures'
+import { categoryFilterButton, expandCategoryFilters } from './helpers/categories'
 import {
   createTask,
   expandStatusFilters,
@@ -95,6 +96,19 @@ test.describe('Tarefas — filtros e busca', () => {
     const nav = page.getByRole('navigation', { name: 'Navegação e filtros' })
     const pendentesBtn = nav.getByRole('button', { name: /Pendentes/i })
     await expect(pendentesBtn.getByText('1', { exact: true })).toBeVisible()
+
+    const vencidasBtn = overviewFilterButton(page, 'Vencidas')
+    await expect(vencidasBtn.getByText('1', { exact: true })).toBeVisible()
+  })
+
+  test('contador de categoria na sidebar exclui tarefas vencidas', async ({
+    page,
+    authenticatedWithOverdueCategoryTasks: _state,
+  }) => {
+    await expandCategoryFilters(page)
+
+    const trabalhoBtn = categoryFilterButton(page, 'Trabalho')
+    await expect(trabalhoBtn.getByText('1', { exact: true })).toBeVisible()
 
     const vencidasBtn = overviewFilterButton(page, 'Vencidas')
     await expect(vencidasBtn.getByText('1', { exact: true })).toBeVisible()
