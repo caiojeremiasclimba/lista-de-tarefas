@@ -1,6 +1,7 @@
 import { test, expect } from './fixtures'
 import {
   createTask,
+  expandStatusFilters,
   filterByOverview,
   filterByPrioridade,
   filterByStatus,
@@ -50,6 +51,7 @@ test.describe('Tarefas — filtros e busca', () => {
     authenticatedWithMixedTasks: _state,
   }) => {
     await expect(taskSection(page, 'PENDENTES')).toBeVisible()
+    await expect(taskSection(page, 'EM ANDAMENTO')).toBeVisible()
     await expect(taskSection(page, 'CONCLUÍDAS')).toBeVisible()
     await expect(taskSection(page, 'CANCELADAS')).toHaveCount(0)
   })
@@ -68,6 +70,20 @@ test.describe('Tarefas — filtros e busca', () => {
     await page.getByPlaceholder('Buscar...').fill('inexistente')
 
     await expect(page.getByText('Nenhum resultado para "inexistente"')).toBeVisible()
+  })
+
+  test('contador de Pendentes na sidebar exclui tarefas vencidas', async ({
+    page,
+    authenticatedWithOverdueTasks: _state,
+  }) => {
+    await expandStatusFilters(page)
+
+    const nav = page.getByRole('navigation', { name: 'Navegação e filtros' })
+    const pendentesBtn = nav.getByRole('button', { name: /Pendentes/i })
+    await expect(pendentesBtn.getByText('1', { exact: true })).toBeVisible()
+
+    const vencidasBtn = overviewFilterButton(page, 'Vencidas')
+    await expect(vencidasBtn.getByText('1', { exact: true })).toBeVisible()
   })
 
   test('filtra tarefas vencidas', async ({ page, authenticatedWithOverdueTasks: _state }) => {

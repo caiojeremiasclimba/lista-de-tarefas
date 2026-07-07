@@ -287,6 +287,24 @@ describe('computeTodoFilters', () => {
     ])
   })
 
+  it('contadores de status ativo excluem tarefas em Vencidas e Vence hoje', () => {
+    const todos = buildFixtureTodos()
+    const result = computeTodoFilters({
+      todos,
+      categorias,
+      busca: '',
+      filtroAtivo: 'todas',
+      filtroCategoria: null,
+      filtroPrioridade: null,
+    })
+
+    expect(result.counts.pendente).toBe(2)
+    expect(result.counts.vencidas).toBe(1)
+    expect(result.counts.vence_hoje).toBe(1)
+    expect(result.porStatus.pendente).toHaveLength(4)
+    expect(result.porStatusVisaoGeral.pendente).toHaveLength(2)
+  })
+
   it('calcula contadores por status e vencidas', () => {
     const todos = buildFixtureTodos()
     const result = computeTodoFilters({
@@ -300,7 +318,7 @@ describe('computeTodoFilters', () => {
 
     expect(result.counts).toMatchObject({
       todas: 7,
-      pendente: 4,
+      pendente: 2,
       em_andamento: 1,
       concluida: 1,
       cancelada: 1,
