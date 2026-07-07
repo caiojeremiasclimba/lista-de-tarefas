@@ -383,6 +383,49 @@ describe('computeTodoFilters', () => {
     expect(result.countsPorPrioridade).toEqual({ alta: 1, media: 0, baixa: 1 })
     expect(result.prioridadeAtivaLabel).toBe('Alta')
   })
+
+  it('ajusta countsPorCategoria conforme filtro de prioridade', () => {
+    const todos = [
+      makeTodo({ id: 'alta-1', categoria_id: 'cat-1', prioridade: 'alta' }),
+      makeTodo({ id: 'alta-2', categoria_id: 'cat-1', prioridade: 'alta' }),
+      makeTodo({ id: 'baixa-1', categoria_id: 'cat-1', prioridade: 'baixa' }),
+      makeTodo({ id: 'alta-3', categoria_id: 'cat-2', prioridade: 'alta' }),
+    ]
+    const result = computeTodoFilters({
+      todos,
+      categorias,
+      busca: '',
+      filtroAtivo: 'todas',
+      filtroCategoria: null,
+      filtroPrioridade: 'alta',
+    })
+
+    expect(result.countsPorCategoria).toEqual({
+      'cat-1': 2,
+      'cat-2': 1,
+    })
+  })
+
+  it('mantém countsPorCategoria de todas as categorias com prioridade ativa', () => {
+    const todos = [
+      makeTodo({ id: 'alta-trabalho', categoria_id: 'cat-1', prioridade: 'alta' }),
+      makeTodo({ id: 'alta-pessoal', categoria_id: 'cat-2', prioridade: 'alta' }),
+      makeTodo({ id: 'baixa-pessoal', categoria_id: 'cat-2', prioridade: 'baixa' }),
+    ]
+    const result = computeTodoFilters({
+      todos,
+      categorias,
+      busca: '',
+      filtroAtivo: 'todas',
+      filtroCategoria: 'cat-1',
+      filtroPrioridade: 'alta',
+    })
+
+    expect(result.countsPorCategoria).toEqual({
+      'cat-1': 1,
+      'cat-2': 1,
+    })
+  })
 })
 
 describe('getListaVaziaMensagem', () => {
