@@ -16,6 +16,7 @@ export function createMockQueryBuilder(result: MockQueryResult = { data: null, e
     eq: vi.fn(),
     in: vi.fn(),
     neq: vi.fn(),
+    gte: vi.fn(),
     or: vi.fn(),
     limit: vi.fn(),
     order: vi.fn(),
@@ -35,6 +36,7 @@ export function createMockQueryBuilder(result: MockQueryResult = { data: null, e
   builder.eq.mockReturnValue(builder)
   builder.in.mockReturnValue(builder)
   builder.neq.mockReturnValue(builder)
+  builder.gte.mockReturnValue(builder)
   builder.or.mockReturnValue(builder)
   builder.limit.mockReturnValue(builder)
   builder.order.mockReturnValue(builder)
