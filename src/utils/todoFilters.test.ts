@@ -1,3 +1,4 @@
+import type { FiltroTarefas } from '../components/FilterSidebar'
 import { TODO_STATUSES } from '../constants/todoStatus'
 import { makeCategoria, makeSubtarefa, makeTodo, FIXED_TODAY } from '../test/fixtures/todos'
 import type { Todo, TodoStatus } from '../types/todo'
@@ -426,6 +427,24 @@ describe('computeTodoFilters', () => {
       'cat-2': 1,
     })
   })
+
+  it('ajusta countsPorPrioridade conforme filtro de categoria', () => {
+    const todos = [
+      makeTodo({ id: 'alta-trabalho', categoria_id: 'cat-1', prioridade: 'alta' }),
+      makeTodo({ id: 'alta-pessoal', categoria_id: 'cat-2', prioridade: 'alta' }),
+      makeTodo({ id: 'baixa-pessoal', categoria_id: 'cat-2', prioridade: 'baixa' }),
+    ]
+    const result = computeTodoFilters({
+      todos,
+      categorias,
+      busca: '',
+      filtroAtivo: 'todas',
+      filtroCategoria: 'cat-2',
+      filtroPrioridade: null,
+    })
+
+    expect(result.countsPorPrioridade).toEqual({ alta: 1, media: 0, baixa: 1 })
+  })
 })
 
 describe('getListaVaziaMensagem', () => {
@@ -489,5 +508,68 @@ describe('getListaVaziaMensagem', () => {
     expect(getListaVaziaMensagem('', null, 5, 'todas', 'Alta')).toBe(
       'Nenhuma tarefa com prioridade alta'
     )
+  })
+
+  describe('combinações com prioridade', () => {
+    it.each<{
+      busca: string
+      categoria: string | null
+      prioridade: string | null
+      filtro: FiltroTarefas
+      esperado: string
+    }>([
+      {
+        busca: 'relatório',
+        categoria: 'Trabalho',
+        prioridade: 'Alta',
+        filtro: 'pendente',
+        esperado:
+          'Nenhum resultado para "relatório" em Pendente (prioridade alta, "Trabalho")',
+      },
+      {
+        busca: 'relatório',
+        categoria: 'Trabalho',
+        prioridade: 'Alta',
+        filtro: 'todas',
+        esperado: 'Nenhum resultado para "relatório" em prioridade alta ("Trabalho")',
+      },
+      {
+        busca: 'relatório',
+        categoria: null,
+        prioridade: 'Alta',
+        filtro: 'vencidas',
+        esperado: 'Nenhum resultado para "relatório" em Vencidas (prioridade alta)',
+      },
+      {
+        busca: 'relatório',
+        categoria: null,
+        prioridade: 'Alta',
+        filtro: 'todas',
+        esperado: 'Nenhum resultado para "relatório" em prioridade alta',
+      },
+      {
+        busca: '',
+        categoria: 'Trabalho',
+        prioridade: 'Alta',
+        filtro: 'pendente',
+        esperado: 'Nenhuma tarefa pendente com prioridade alta em "Trabalho"',
+      },
+      {
+        busca: '',
+        categoria: 'Trabalho',
+        prioridade: 'Alta',
+        filtro: 'todas',
+        esperado: 'Nenhuma tarefa com prioridade alta em "Trabalho"',
+      },
+      {
+        busca: '',
+        categoria: null,
+        prioridade: 'Alta',
+        filtro: 'vencidas',
+        esperado: 'Nenhuma tarefa vencida com prioridade alta',
+      },
+    ])('$esperado', ({ busca, categoria, prioridade, filtro, esperado }) => {
+      expect(getListaVaziaMensagem(busca, categoria, 5, filtro, prioridade)).toBe(esperado)
+    })
   })
 })

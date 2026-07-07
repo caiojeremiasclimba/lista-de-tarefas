@@ -151,6 +151,18 @@ test.describe('Tarefas — filtros e busca', () => {
     await expect(page.getByRole('heading', { name: 'Tarefa prioridade média' })).not.toBeVisible()
     await expect(page.getByRole('heading', { name: 'Tarefa prioridade baixa' })).not.toBeVisible()
   })
+
+  test('busca sem resultado com filtro de prioridade alta', async ({
+    page,
+    authenticatedWithMixedPriorities: _state,
+  }) => {
+    await filterByPrioridade(page, 'Alta')
+    await page.getByPlaceholder('Buscar...').fill('inexistente')
+
+    await expect(
+      page.getByText('Nenhum resultado para "inexistente" em prioridade alta')
+    ).toBeVisible()
+  })
 })
 
 test.describe('Tarefas — status', () => {
