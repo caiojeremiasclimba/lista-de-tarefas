@@ -15,9 +15,34 @@ Stack: React 19, Vite 8, TypeScript, Tailwind CSS 4 e Supabase.
 - Recorrência (diária, semanal ou mensal) — ao concluir, cria automaticamente a próxima ocorrência
 - Categorias com cores personalizáveis e filtros na sidebar (por status, categoria e prioridade)
 - Filtro "Vence hoje" e "Vencidas" na visão geral
+- Na visão **Todas**, seções **Vencidas** e **Vence hoje** no topo (sem duplicar tarefas nas seções de status)
+- Seções de status vazias ficam ocultas na visão **Todas**
 - Dashboard com indicadores de produtividade
 - Perfil com nome, avatar e troca de senha
 - Sincronização em tempo real entre abas (Supabase Realtime)
+
+## Filtros e contadores da sidebar
+
+Os números ao lado de cada filtro refletem as tarefas **após busca** e **filtros cruzados** (categoria e prioridade ativos), mas com regras específicas por tipo:
+
+| Filtro                          | O que conta                                                                   |
+| ------------------------------- | ----------------------------------------------------------------------------- |
+| **Todas**                       | Todas as tarefas visíveis com os filtros ativos                               |
+| **Vence hoje**                  | Tarefas ativas (não concluídas/canceladas) cuja data prevista é hoje          |
+| **Vencidas**                    | Tarefas ativas com data prevista anterior a hoje                              |
+| **Pendentes**                   | Tarefas pendentes, **exceto** as que já aparecem em Vencidas ou Vence hoje    |
+| **Em andamento**                | Tarefas em andamento, **exceto** as que já aparecem em Vencidas ou Vence hoje |
+| **Concluídas** / **Canceladas** | Todas com aquele status                                                       |
+
+**Visão Todas (lista principal):**
+
+1. Seções **VENCIDAS** e **VENCE HOJE** aparecem no topo quando há tarefas nessas condições.
+2. As mesmas tarefas **não são repetidas** nas seções Pendentes ou Em andamento.
+3. Seções de status **sem tarefas** (ex.: Canceladas vazia) **não são exibidas**.
+
+**Contadores de categoria e prioridade** contam todas as tarefas do grupo, incluindo vencidas e que vencem hoje — são filtros independentes da divisão por prazo.
+
+A ordenação escolhida (inteligente, data prevista, prioridade etc.) aplica-se dentro de cada seção visível, inclusive Vencidas e Vence hoje.
 
 ## Rodar localmente
 

@@ -189,12 +189,13 @@ export const SORTABLE_OVERDUE_TODOS: MockTodo[] = [
   }),
 ]
 
-/** Tarefas que vencem hoje com títulos distintos para ordenação na seção VENCE HOJE. */
+/** Tarefas que vencem hoje com títulos e prioridades distintos para ordenação na seção VENCE HOJE. */
 export const SORTABLE_DUE_TODAY_TODOS: MockTodo[] = [
   baseTodo({
     id: 'e2e-hoje-zebra',
     titulo: 'Zebra hoje',
     status: 'pendente',
+    prioridade: 'baixa',
     data_prevista: '2026-07-02',
     created_at: '2026-06-01T10:00:00.000Z',
   }),
@@ -202,6 +203,7 @@ export const SORTABLE_DUE_TODAY_TODOS: MockTodo[] = [
     id: 'e2e-hoje-abacaxi',
     titulo: 'Abacaxi hoje',
     status: 'pendente',
+    prioridade: 'alta',
     data_prevista: '2026-07-02',
     created_at: '2026-06-02T10:00:00.000Z',
   }),

@@ -59,6 +59,20 @@ test.describe('Tarefas — ordenação', () => {
     await expect(venceHoje.getByRole('heading').nth(1)).toHaveText('Zebra hoje')
   })
 
+  test('ordena seção Vence hoje por data prevista na visão Todas', async ({
+    page,
+    authenticatedWithSortableDueTodayTasks: _state,
+  }) => {
+    await page.clock.install({ time: new Date('2026-07-02T12:00:00') })
+    await page.reload()
+
+    await page.locator('#ordenacao').selectOption('Data prevista')
+
+    const venceHoje = taskSection(page, 'VENCE HOJE')
+    await expect(venceHoje.getByRole('heading').nth(0)).toHaveText('Abacaxi hoje')
+    await expect(venceHoje.getByRole('heading').nth(1)).toHaveText('Zebra hoje')
+  })
+
   test('persiste ordenação após recarregar a página', async ({
     page,
     authenticatedWithSortableTasks: _state,
