@@ -305,6 +305,36 @@ describe('computeTodoFilters', () => {
     expect(result.porStatusVisaoGeral.pendente).toHaveLength(2)
   })
 
+  it('contador de em andamento exclui tarefas em Vencidas e Vence hoje', () => {
+    const todos = [
+      ...buildFixtureTodos(),
+      makeTodo({
+        id: 'em-andamento-vencida',
+        titulo: 'Deploy atrasado',
+        status: 'em_andamento',
+        data_prevista: '2026-07-01',
+      }),
+      makeTodo({
+        id: 'em-andamento-hoje',
+        titulo: 'Daily hoje',
+        status: 'em_andamento',
+        data_prevista: '2026-07-02',
+      }),
+    ]
+    const result = computeTodoFilters({
+      todos,
+      categorias,
+      busca: '',
+      filtroAtivo: 'todas',
+      filtroCategoria: null,
+      filtroPrioridade: null,
+    })
+
+    expect(result.counts.em_andamento).toBe(1)
+    expect(result.counts.vencidas).toBe(2)
+    expect(result.counts.vence_hoje).toBe(2)
+  })
+
   it('calcula contadores por status e vencidas', () => {
     const todos = buildFixtureTodos()
     const result = computeTodoFilters({

@@ -171,6 +171,60 @@ export const SORTABLE_TODOS: MockTodo[] = [
   }),
 ]
 
+/** Tarefas vencidas com títulos e datas distintos para ordenação na seção VENCIDAS. */
+export const SORTABLE_OVERDUE_TODOS: MockTodo[] = [
+  baseTodo({
+    id: 'e2e-overdue-zebra',
+    titulo: 'Zebra vencida',
+    status: 'pendente',
+    data_prevista: '2020-01-15',
+    created_at: '2026-06-01T10:00:00.000Z',
+  }),
+  baseTodo({
+    id: 'e2e-overdue-abacaxi',
+    titulo: 'Abacaxi vencida',
+    status: 'pendente',
+    data_prevista: '2020-01-01',
+    created_at: '2026-06-02T10:00:00.000Z',
+  }),
+]
+
+/** Tarefas que vencem hoje com títulos distintos para ordenação na seção VENCE HOJE. */
+export const SORTABLE_DUE_TODAY_TODOS: MockTodo[] = [
+  baseTodo({
+    id: 'e2e-hoje-zebra',
+    titulo: 'Zebra hoje',
+    status: 'pendente',
+    data_prevista: '2026-07-02',
+    created_at: '2026-06-01T10:00:00.000Z',
+  }),
+  baseTodo({
+    id: 'e2e-hoje-abacaxi',
+    titulo: 'Abacaxi hoje',
+    status: 'pendente',
+    data_prevista: '2026-07-02',
+    created_at: '2026-06-02T10:00:00.000Z',
+  }),
+]
+
+/** Tarefas em andamento com e sem atraso para contadores da sidebar. */
+export const OVERDUE_EM_ANDAMENTO_TODOS: MockTodo[] = [
+  baseTodo({
+    id: 'e2e-andamento-vencida',
+    titulo: 'Tarefa em andamento vencida',
+    status: 'em_andamento',
+    data_prevista: '2020-01-01',
+    created_at: '2026-06-07T10:00:00.000Z',
+  }),
+  baseTodo({
+    id: 'e2e-andamento-em-dia',
+    titulo: 'Tarefa em andamento em dia',
+    status: 'em_andamento',
+    data_prevista: '2099-12-31',
+    created_at: '2026-06-08T10:00:00.000Z',
+  }),
+]
+
 export const CANCELLED_TODOS: MockTodo[] = [
   baseTodo({
     id: 'e2e-todo-cancelada',
