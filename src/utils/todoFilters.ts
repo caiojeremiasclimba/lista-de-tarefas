@@ -65,7 +65,7 @@ export function computeTodoFilters(input: TodoFiltersInput): TodoFiltersResult {
     filtroPrioridade,
     ordenacao = DEFAULT_TODO_ORDENACAO,
   } = input
-  const termo = busca.toLowerCase()
+  const termo = busca.trim().toLowerCase()
 
   const filtradosParaContadores = todos.filter((t) => matchesSearch(t, termo))
 

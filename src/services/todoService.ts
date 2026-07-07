@@ -332,10 +332,11 @@ export async function deleteTodo(id: string, anexoPath?: string | null): Promise
   }
 }
 
-async function hasActiveOccurrenceInSeries(
+async function hasActiveOccurrenceOnOrAfter(
   userId: string,
   seriesRootId: string,
-  excludeTodoId: string
+  excludeTodoId: string,
+  fromDate: string
 ): Promise<boolean> {
   const { data, error } = await supabase
     .from('tarefas')
@@ -345,6 +346,7 @@ async function hasActiveOccurrenceInSeries(
     .neq('id', excludeTodoId)
     .or(`recorrencia_origem_id.eq.${seriesRootId},id.eq.${seriesRootId}`)
     .neq('recorrencia_tipo', 'nenhuma')
+    .gte('data_prevista', fromDate)
     .limit(1)
 
   if (error) throw new Error(error.message)
@@ -360,7 +362,7 @@ async function createNextRecurringTodo(todo: Todo): Promise<Todo | null> {
   if (!nextDate) return null
 
   const seriesRootId = getRecurrenceSeriesRootId(todo)
-  if (await hasActiveOccurrenceInSeries(todo.user_id, seriesRootId, todo.id)) {
+  if (await hasActiveOccurrenceOnOrAfter(todo.user_id, seriesRootId, todo.id, nextDate)) {
     return null
   }
 

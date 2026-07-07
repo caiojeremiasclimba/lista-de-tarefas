@@ -179,6 +179,35 @@ describe('computeTodoFilters', () => {
     expect(result.filtradosPorBusca.map((t) => t.id)).toEqual(['com-subtarefa'])
   })
 
+  it('ignora busca com só espaços e retorna todas as tarefas', () => {
+    const todos = buildFixtureTodos()
+    const result = computeTodoFilters({
+      todos,
+      categorias,
+      busca: '   ',
+      filtroAtivo: 'todas',
+      filtroCategoria: null,
+      filtroPrioridade: null,
+    })
+
+    expect(result.tarefasVisiveis).toHaveLength(7)
+    expect(result.counts.todas).toBe(7)
+  })
+
+  it('aplica trim na busca antes de filtrar', () => {
+    const todos = buildFixtureTodos()
+    const result = computeTodoFilters({
+      todos,
+      categorias,
+      busca: '  relatório  ',
+      filtroAtivo: 'todas',
+      filtroCategoria: null,
+      filtroPrioridade: null,
+    })
+
+    expect(result.filtradosPorBusca.map((t) => t.id)).toEqual(['pendente-vencida'])
+  })
+
   it('filtra por categoria e ajusta contadores', () => {
     const todos = buildFixtureTodos()
     const result = computeTodoFilters({

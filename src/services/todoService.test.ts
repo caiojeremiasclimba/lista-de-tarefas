@@ -255,6 +255,64 @@ describe('toggleTodoStatus', () => {
     expect(tarefasCalls).toBe(2)
   })
 
+  it('cria próxima ocorrência mesmo com ocorrência anterior reaberta na série', async () => {
+    const todo = makeTodo({
+      id: 'todo-2',
+      status: 'em_andamento',
+      data_prevista: '2026-07-09',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+      recorrencia_origem_id: 'todo-1',
+      subtarefas: [],
+    })
+    const updated = makeTodo({
+      id: 'todo-2',
+      status: 'concluida',
+      data_prevista: '2026-07-09',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+      recorrencia_origem_id: 'todo-1',
+    })
+    const next = makeTodo({
+      id: 'todo-3',
+      status: 'pendente',
+      data_prevista: '2026-07-16',
+      recorrencia_tipo: 'semanal',
+      recorrencia_intervalo: 1,
+      recorrencia_origem_id: 'todo-1',
+      subtarefas: undefined,
+    })
+    const updateBuilder = createMockQueryBuilder({ data: updated, error: null })
+    // A ocorrência raiz 'todo-1' foi reaberta (data_prevista 2026-07-02, anterior à próxima),
+    // portanto o filtro por data não a considera e a série deve avançar.
+    const seriesCheckBuilder = createSeriesCheckBuilder([])
+    const insertTodoBuilder = createMockQueryBuilder({ data: next, error: null })
+
+    let tarefasCalls = 0
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'tarefas') {
+        tarefasCalls++
+        if (tarefasCalls === 1) return updateBuilder
+        if (tarefasCalls === 2) return seriesCheckBuilder
+        return insertTodoBuilder
+      }
+      return createMockQueryBuilder({ data: [], error: null })
+    })
+
+    const result = await toggleTodoStatus(todo)
+
+    expect(seriesCheckBuilder.gte).toHaveBeenCalledWith('data_prevista', '2026-07-16')
+    expect(insertTodoBuilder.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data_prevista: '2026-07-16',
+        recorrencia_origem_id: 'todo-1',
+        status: 'pendente',
+      })
+    )
+    expect(result.createdNextTodo).toEqual({ ...next, subtarefas: [] })
+    expect(tarefasCalls).toBe(3)
+  })
+
   it('lança erro para tarefa cancelada', async () => {
     const todo = makeTodo({ status: 'cancelada' })
 
