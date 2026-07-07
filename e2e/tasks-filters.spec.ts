@@ -45,6 +45,15 @@ test.describe('Tarefas — filtros e busca', () => {
     await expect(page.getByRole('heading', { name: 'Tarefa concluída' })).toBeVisible()
   })
 
+  test('oculta seções de status vazias na visão Todas', async ({
+    page,
+    authenticatedWithMixedTasks: _state,
+  }) => {
+    await expect(taskSection(page, 'PENDENTES')).toBeVisible()
+    await expect(taskSection(page, 'CONCLUÍDAS')).toBeVisible()
+    await expect(taskSection(page, 'CANCELADAS')).toHaveCount(0)
+  })
+
   test('busca tarefas pelo título', async ({ page, authenticatedWithMixedTasks: _state }) => {
     await page.getByPlaceholder('Buscar...').fill('Relatório')
 
