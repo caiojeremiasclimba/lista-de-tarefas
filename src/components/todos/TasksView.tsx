@@ -20,6 +20,7 @@ interface TasksViewProps {
   tarefasVisiveis: Todo[]
   listaVaziaMensagem: string
   porStatus: Record<TodoStatus, Todo[]>
+  porStatusVisaoGeral: Record<TodoStatus, Todo[]>
   vencidas: Todo[]
   venceHoje: Todo[]
   secoesVisiveis: TodoStatus[]
@@ -42,6 +43,7 @@ export default function TasksView({
   tarefasVisiveis,
   listaVaziaMensagem,
   porStatus,
+  porStatusVisaoGeral,
   vencidas,
   venceHoje,
   secoesVisiveis,
@@ -100,21 +102,51 @@ export default function TasksView({
               categoriasPorId={categoriasPorId}
             />
           ) : (
-            secoesVisiveis.map((status) => (
-              <TaskSection
-                key={status}
-                title={TODO_STATUS_CONFIG[status].sectionTitle}
-                variant={status}
-                todos={porStatus[status]}
-                isOpen={secoesAbertas[status]}
-                onToggle={() => onToggleSecao(status)}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                onToggleStatus={onToggleStatus}
-                onToggleSubtarefa={onToggleSubtarefa}
-                categoriasPorId={categoriasPorId}
-              />
-            ))
+            <>
+              {filtroAtivo === 'todas' && vencidas.length > 0 && (
+                <TaskSection
+                  title="VENCIDAS"
+                  variant="vencidas"
+                  todos={vencidas}
+                  isOpen={secoesAbertas.vencidas}
+                  onToggle={() => onToggleSecao('vencidas')}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onToggleStatus={onToggleStatus}
+                  onToggleSubtarefa={onToggleSubtarefa}
+                  categoriasPorId={categoriasPorId}
+                />
+              )}
+              {filtroAtivo === 'todas' && venceHoje.length > 0 && (
+                <TaskSection
+                  title="VENCE HOJE"
+                  variant="vence_hoje"
+                  todos={venceHoje}
+                  isOpen={secoesAbertas.vence_hoje}
+                  onToggle={() => onToggleSecao('vence_hoje')}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onToggleStatus={onToggleStatus}
+                  onToggleSubtarefa={onToggleSubtarefa}
+                  categoriasPorId={categoriasPorId}
+                />
+              )}
+              {secoesVisiveis.map((status) => (
+                <TaskSection
+                  key={status}
+                  title={TODO_STATUS_CONFIG[status].sectionTitle}
+                  variant={status}
+                  todos={(filtroAtivo === 'todas' ? porStatusVisaoGeral : porStatus)[status]}
+                  isOpen={secoesAbertas[status]}
+                  onToggle={() => onToggleSecao(status)}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onToggleStatus={onToggleStatus}
+                  onToggleSubtarefa={onToggleSubtarefa}
+                  categoriasPorId={categoriasPorId}
+                />
+              ))}
+            </>
           )}
         </div>
       )}
