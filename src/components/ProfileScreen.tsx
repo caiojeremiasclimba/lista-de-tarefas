@@ -237,7 +237,9 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
   return (
     <div className="mx-auto max-w-lg space-y-6">
       <header className="text-left">
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 sm:text-3xl">Meu perfil</h1>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 sm:text-3xl">
+          Meu perfil
+        </h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 sm:text-base">
           Gerencie suas informações pessoais
         </p>
@@ -247,7 +249,9 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
 
       <section className={cardClass}>
         <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Aparência</h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400">Escolha entre modo claro e escuro.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Escolha entre modo claro e escuro.
+        </p>
         <ThemeToggle showLabel />
       </section>
 
@@ -286,7 +290,9 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
           onChange={handleAvatarChange}
         />
 
-        <p className="text-xs text-slate-400 dark:text-slate-500">JPEG, PNG ou WebP. Máximo 2 MB.</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500">
+          JPEG, PNG ou WebP. Máximo 2 MB.
+        </p>
 
         {avatarError && <AuthAlert type="error">{avatarError}</AuthAlert>}
         {avatarSuccess && <AuthAlert type="success">{avatarSuccess}</AuthAlert>}
@@ -317,7 +323,9 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
             icon={<MailIcon />}
             readOnly
           />
-          <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">O e-mail não pode ser alterado aqui.</p>
+          <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
+            O e-mail não pode ser alterado aqui.
+          </p>
         </div>
 
         {success && <AuthAlert type="success">{success}</AuthAlert>}
@@ -333,7 +341,9 @@ export default function ProfileScreen({ user }: ProfileScreenProps) {
 
       {canChangePassword ? (
         <form onSubmit={handlePasswordSubmit} className={cardClass}>
-          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Alterar senha</h2>
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+            Alterar senha
+          </h2>
 
           <AuthField
             id="profile-senha-atual"

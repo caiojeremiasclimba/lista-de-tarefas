@@ -7,10 +7,10 @@ export async function clearThemePreference(page: Page) {
 }
 
 export async function setThemePreference(page: Page, theme: 'light' | 'dark') {
-  await page.evaluate(
-    ({ key, value }) => localStorage.setItem(key, value),
-    { key: THEME_PREFS_KEY, value: theme }
-  )
+  await page.evaluate(({ key, value }) => localStorage.setItem(key, value), {
+    key: THEME_PREFS_KEY,
+    value: theme,
+  })
 }
 
 export async function getThemePreference(page: Page): Promise<string | null> {

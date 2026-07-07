@@ -228,8 +228,12 @@ export default function TodoItem({
 
           {todo.anexo_path && (
             <div className="mt-2">
-              {anexoLoading && <p className="text-xs text-slate-500 dark:text-slate-400">Carregando anexo...</p>}
-              {anexoError && <p className="text-xs text-slate-500 dark:text-slate-400">Anexo indisponível</p>}
+              {anexoLoading && (
+                <p className="text-xs text-slate-500 dark:text-slate-400">Carregando anexo...</p>
+              )}
+              {anexoError && (
+                <p className="text-xs text-slate-500 dark:text-slate-400">Anexo indisponível</p>
+              )}
               {!anexoLoading && !anexoError && anexoUrl && isImageAnexo && (
                 <button
                   type="button"

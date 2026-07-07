@@ -67,7 +67,10 @@ export default function CategoriaForm({
       </h2>
 
       <div>
-        <label htmlFor="categoria-nome" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+        <label
+          htmlFor="categoria-nome"
+          className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200"
+        >
           Nome *
         </label>
         <input
@@ -82,7 +85,9 @@ export default function CategoriaForm({
       </div>
 
       <fieldset>
-        <legend className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Cor</legend>
+        <legend className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+          Cor
+        </legend>
         <div className="flex flex-wrap gap-2">
           {CATEGORIA_CORES.map((corOption) => {
             const config = CATEGORIA_COR_CONFIG[corOption]
@@ -109,7 +114,9 @@ export default function CategoriaForm({
       </fieldset>
 
       {submitError && (
-        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/40 dark:text-red-400">{submitError}</p>
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/40 dark:text-red-400">
+          {submitError}
+        </p>
       )}
 
       <div className="flex gap-2 pt-1">

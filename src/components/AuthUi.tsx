@@ -158,7 +158,10 @@ export function AuthField({
 }: AuthFieldProps) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+      <label
+        htmlFor={id}
+        className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-200"
+      >
         {label}
       </label>
       <div className="relative">
@@ -233,7 +236,9 @@ export function AuthDivider({ label = 'ou continue com' }: { label?: string }) {
         <div className="w-full border-t border-slate-200 dark:border-slate-700" />
       </div>
       <div className="relative flex justify-center text-xs uppercase">
-        <span className="bg-white px-3 font-medium text-slate-400 dark:bg-slate-800 dark:text-slate-500">{label}</span>
+        <span className="bg-white px-3 font-medium text-slate-400 dark:bg-slate-800 dark:text-slate-500">
+          {label}
+        </span>
       </div>
     </div>
   )

@@ -92,7 +92,9 @@ function StatusDonutChart({ slices }: { slices: StatusChartSlice[] }) {
               aria-hidden
             />
             <span className="text-slate-600 dark:text-slate-300">{slice.label}</span>
-            <span className="ml-auto font-medium text-slate-800 dark:text-slate-100">{slice.value}</span>
+            <span className="ml-auto font-medium text-slate-800 dark:text-slate-100">
+              {slice.value}
+            </span>
           </li>
         ))}
       </ul>
@@ -111,13 +113,17 @@ export default function ProductivityDashboard({ todos, loading }: ProductivityDa
   const chartData = useMemo(() => buildStatusChartData(todos), [todos])
 
   if (loading) {
-    return <p className="text-center text-slate-500 dark:text-slate-400">Carregando indicadores...</p>
+    return (
+      <p className="text-center text-slate-500 dark:text-slate-400">Carregando indicadores...</p>
+    )
   }
 
   return (
     <div className="space-y-6">
       <header className="text-left">
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 sm:text-3xl">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 sm:text-3xl">
+          Dashboard
+        </h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 sm:text-base">{subtitle}</p>
         <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">
           Indicadores derivados das suas tarefas em tempo real — sem tabela separada.
@@ -129,7 +135,9 @@ export default function ProductivityDashboard({ todos, loading }: ProductivityDa
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
             % concluído
           </p>
-          <p className="mt-2 text-3xl font-bold text-green-600 dark:text-green-400">{percentConcluido}%</p>
+          <p className="mt-2 text-3xl font-bold text-green-600 dark:text-green-400">
+            {percentConcluido}%
+          </p>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {totaisPorStatus.concluida} de {totalElegivel} tarefas
           </p>
@@ -142,7 +150,9 @@ export default function ProductivityDashboard({ todos, loading }: ProductivityDa
         </div>
 
         <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-800 dark:ring-slate-700/60">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">Por status</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+            Por status
+          </p>
           <ul className="mt-3 space-y-2">
             {TODO_STATUSES.map((status) => (
               <li key={status} className="flex items-center justify-between text-sm">
@@ -151,7 +161,9 @@ export default function ProductivityDashboard({ todos, loading }: ProductivityDa
                 >
                   {TODO_STATUS_CONFIG[status].label}
                 </span>
-                <span className="font-semibold text-slate-800 dark:text-slate-100">{totaisPorStatus[status]}</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-100">
+                  {totaisPorStatus[status]}
+                </span>
               </li>
             ))}
           </ul>
@@ -181,8 +193,12 @@ export default function ProductivityDashboard({ todos, loading }: ProductivityDa
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
             Concluídas na semana
           </p>
-          <p className="mt-2 text-3xl font-bold text-blue-600 dark:text-blue-400">{concluidasNaSemana}</p>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Marcadas como concluídas nesta semana</p>
+          <p className="mt-2 text-3xl font-bold text-blue-600 dark:text-blue-400">
+            {concluidasNaSemana}
+          </p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Marcadas como concluídas nesta semana
+          </p>
         </div>
       </div>
 

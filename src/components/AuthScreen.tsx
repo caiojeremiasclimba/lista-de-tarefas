@@ -33,7 +33,9 @@ export default function AuthScreen() {
           <ClipboardIcon />
         </div>
 
-        <h1 className="text-center text-2xl font-bold text-slate-800 dark:text-slate-100">Lista de Tarefas</h1>
+        <h1 className="text-center text-2xl font-bold text-slate-800 dark:text-slate-100">
+          Lista de Tarefas
+        </h1>
         <p className="mb-8 mt-2 text-center text-sm text-slate-500 dark:text-slate-400">
           Organize suas tarefas e aumente sua produtividade.
         </p>

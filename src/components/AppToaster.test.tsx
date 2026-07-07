@@ -3,9 +3,7 @@ import { ThemeProvider } from '../contexts/ThemeProvider'
 import AppToaster from './AppToaster'
 
 vi.mock('sonner', () => ({
-  Toaster: ({ theme }: { theme: string }) => (
-    <div data-testid="toaster" data-theme={theme} />
-  ),
+  Toaster: ({ theme }: { theme: string }) => <div data-testid="toaster" data-theme={theme} />,
 }))
 
 function renderWithTheme(initialTheme?: 'light' | 'dark') {

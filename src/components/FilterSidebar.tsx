@@ -239,7 +239,9 @@ function CategoryFilterButton({
         onClick={() => onChange(isActive ? null : categoria.id)}
         aria-current={isActive ? 'page' : undefined}
         className={`flex min-w-0 flex-1 items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
-          isActive ? 'font-medium text-blue-700 dark:text-blue-300' : 'text-slate-600 dark:text-slate-300'
+          isActive
+            ? 'font-medium text-blue-700 dark:text-blue-300'
+            : 'text-slate-600 dark:text-slate-300'
         }`}
       >
         <span
@@ -250,8 +252,8 @@ function CategoryFilterButton({
         <span
           className={`ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-xs font-medium ${
             isActive
-            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
-            : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+              : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
           }`}
         >
           {count}
@@ -333,7 +335,9 @@ function FilterGroup({
 }) {
   return (
     <div className="space-y-1">
-      <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{title}</p>
+      <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+        {title}
+      </p>
       {items.map((item) => (
         <FilterButton
           key={item.id}
@@ -381,9 +385,13 @@ export default function FilterSidebar({
       </div>
 
       <div className={filtersMuted ? 'opacity-50' : undefined}>
-        <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">Filtros</p>
+        <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+          Filtros
+        </p>
         {filtersMuted && (
-          <p className="px-3 pb-2 text-xs text-slate-400 dark:text-slate-500">Aplicam-se à visão Tarefas</p>
+          <p className="px-3 pb-2 text-xs text-slate-400 dark:text-slate-500">
+            Aplicam-se à visão Tarefas
+          </p>
         )}
       </div>
       <div className={filtersMuted ? 'pointer-events-none space-y-6 opacity-50' : 'space-y-6'}>
@@ -430,7 +438,9 @@ export default function FilterSidebar({
           onToggle={() => setCategoriaOpen((o) => !o)}
         >
           {categorias.length === 0 ? (
-            <p className="px-3 py-2 text-sm text-slate-500 dark:text-slate-400">Nenhuma categoria ainda</p>
+            <p className="px-3 py-2 text-sm text-slate-500 dark:text-slate-400">
+              Nenhuma categoria ainda
+            </p>
           ) : (
             categorias.map((cat) => (
               <CategoryFilterButton

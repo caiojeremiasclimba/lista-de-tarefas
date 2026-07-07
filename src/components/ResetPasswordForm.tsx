@@ -80,7 +80,9 @@ export default function ResetPasswordForm({ onSuccess }: ResetPasswordFormProps)
           <ClipboardIcon />
         </div>
 
-        <h1 className="text-center text-2xl font-bold text-slate-800 dark:text-slate-100">Nova senha</h1>
+        <h1 className="text-center text-2xl font-bold text-slate-800 dark:text-slate-100">
+          Nova senha
+        </h1>
         <p className="mb-8 mt-2 text-center text-sm text-slate-500 dark:text-slate-400">
           Defina uma nova senha para acessar sua conta.
         </p>

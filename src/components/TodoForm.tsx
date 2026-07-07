@@ -198,7 +198,10 @@ export default function TodoForm({
       </h2>
 
       <div>
-        <label htmlFor="titulo" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+        <label
+          htmlFor="titulo"
+          className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200"
+        >
           Título *
         </label>
         <input
@@ -209,11 +212,16 @@ export default function TodoForm({
           className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
           placeholder="Ex: Estudar React"
         />
-        {erros.titulo && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{erros.titulo}</p>}
+        {erros.titulo && (
+          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{erros.titulo}</p>
+        )}
       </div>
 
       <div>
-        <label htmlFor="descricao" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+        <label
+          htmlFor="descricao"
+          className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200"
+        >
           Descrição
         </label>
         <textarea
@@ -227,10 +235,15 @@ export default function TodoForm({
       </div>
 
       <div>
-        <label htmlFor="anexo" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+        <label
+          htmlFor="anexo"
+          className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200"
+        >
           Anexo
         </label>
-        <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">Imagem (JPEG, PNG, WebP) ou PDF, até 5 MB</p>
+        <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">
+          Imagem (JPEG, PNG, WebP) ou PDF, até 5 MB
+        </p>
 
         {hasExistingAnexo && (
           <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900">
@@ -293,7 +306,10 @@ export default function TodoForm({
       </div>
 
       <div>
-        <label htmlFor="categoria_id" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+        <label
+          htmlFor="categoria_id"
+          className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200"
+        >
           Categoria
         </label>
         <select
@@ -311,12 +327,16 @@ export default function TodoForm({
           ))}
         </select>
         {categorias.length === 0 && (
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Crie uma categoria na sidebar</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Crie uma categoria na sidebar
+          </p>
         )}
       </div>
 
       <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Subtarefas</label>
+        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+          Subtarefas
+        </label>
         <SubtarefaList
           mode="editable"
           subtarefas={form.subtarefas}
@@ -326,7 +346,10 @@ export default function TodoForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="data_prevista" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+          <label
+            htmlFor="data_prevista"
+            className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200"
+          >
             Data prevista
           </label>
           <input
@@ -342,7 +365,10 @@ export default function TodoForm({
         </div>
 
         <div>
-          <label htmlFor="prioridade" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+          <label
+            htmlFor="prioridade"
+            className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200"
+          >
             Prioridade
           </label>
           <select
@@ -413,10 +439,14 @@ export default function TodoForm({
                   onChange={(e) => updateField('recorrencia_intervalo', Number(e.target.value))}
                   className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
                 />
-                <span className="shrink-0 text-sm text-slate-500 dark:text-slate-400">{recorrenciaIntervalLabel}</span>
+                <span className="shrink-0 text-sm text-slate-500 dark:text-slate-400">
+                  {recorrenciaIntervalLabel}
+                </span>
               </div>
               {erros.recorrencia_intervalo && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{erros.recorrencia_intervalo}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {erros.recorrencia_intervalo}
+                </p>
               )}
             </div>
 
@@ -435,7 +465,9 @@ export default function TodoForm({
                 className="w-full rounded-xl border border-slate-200 px-3 py-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
               />
               {erros.recorrencia_fim && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{erros.recorrencia_fim}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {erros.recorrencia_fim}
+                </p>
               )}
             </div>
           </div>
@@ -443,7 +475,10 @@ export default function TodoForm({
       </div>
 
       <div>
-        <label htmlFor="status" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+        <label
+          htmlFor="status"
+          className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200"
+        >
           Status
         </label>
         <select
@@ -461,7 +496,9 @@ export default function TodoForm({
       </div>
 
       {submitError && (
-        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/40 dark:text-red-400">{submitError}</p>
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/40 dark:text-red-400">
+          {submitError}
+        </p>
       )}
 
       <div className="flex gap-2 pt-1">

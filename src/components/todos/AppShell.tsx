@@ -147,7 +147,9 @@ export default function AppShell({
             className="flex min-w-0 w-full items-center gap-2.5 rounded-xl px-1 py-1 transition hover:bg-slate-50 dark:hover:bg-slate-600"
           >
             <UserAvatar user={user} size="sm" />
-            <p className="min-w-0 truncate text-sm text-slate-500 dark:text-slate-400">{displayName}</p>
+            <p className="min-w-0 truncate text-sm text-slate-500 dark:text-slate-400">
+              {displayName}
+            </p>
           </button>
           <button
             type="button"
@@ -172,9 +174,13 @@ export default function AppShell({
             <MenuIcon />
           </button>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">{mobileHeaderTitle}</p>
+            <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
+              {mobileHeaderTitle}
+            </p>
             {mobileHeaderSubtitle && (
-              <p className="truncate text-xs text-slate-500 dark:text-slate-400">{mobileHeaderSubtitle}</p>
+              <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                {mobileHeaderSubtitle}
+              </p>
             )}
           </div>
           <button
