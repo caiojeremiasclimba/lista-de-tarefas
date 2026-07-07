@@ -57,6 +57,12 @@ export default function TasksView({
 }: TasksViewProps) {
   const { title, subtitle } = formatTodayHeader()
 
+  const statusSource = filtroAtivo === 'todas' ? porStatusVisaoGeral : porStatus
+  const secoesParaRenderizar =
+    filtroAtivo === 'todas'
+      ? secoesVisiveis.filter((status) => statusSource[status].length > 0)
+      : secoesVisiveis
+
   return (
     <>
       <header className="text-left">
@@ -131,12 +137,12 @@ export default function TasksView({
                   categoriasPorId={categoriasPorId}
                 />
               )}
-              {secoesVisiveis.map((status) => (
+              {secoesParaRenderizar.map((status) => (
                 <TaskSection
                   key={status}
                   title={TODO_STATUS_CONFIG[status].sectionTitle}
                   variant={status}
-                  todos={(filtroAtivo === 'todas' ? porStatusVisaoGeral : porStatus)[status]}
+                  todos={statusSource[status]}
                   isOpen={secoesAbertas[status]}
                   onToggle={() => onToggleSecao(status)}
                   onEdit={onEdit}
