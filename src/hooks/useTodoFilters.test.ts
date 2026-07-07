@@ -92,7 +92,9 @@ describe('useTodoFilters', () => {
         filtroCategoria: 'cat-1',
         filtroPrioridade: 'alta',
         filtroAtivo: 'pendente',
-        todos: [makeTodo({ id: '1', titulo: 'Urgente', categoria_id: 'cat-1', prioridade: 'baixa' })],
+        todos: [
+          makeTodo({ id: '1', titulo: 'Urgente', categoria_id: 'cat-1', prioridade: 'baixa' }),
+        ],
       })
     )
 

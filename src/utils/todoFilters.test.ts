@@ -523,8 +523,7 @@ describe('getListaVaziaMensagem', () => {
         categoria: 'Trabalho',
         prioridade: 'Alta',
         filtro: 'pendente',
-        esperado:
-          'Nenhum resultado para "relatório" em Pendente (prioridade alta, "Trabalho")',
+        esperado: 'Nenhum resultado para "relatório" em Pendente (prioridade alta, "Trabalho")',
       },
       {
         busca: 'relatório',
